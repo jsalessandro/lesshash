@@ -85,9 +85,9 @@ params:
   # 社交链接
   socialIcons:
     - name: github
-      url: "https://github.com/yourusername"
+      url: "https://github.com/jsalessandro"
     - name: email
-      url: "mailto:your-email@example.com"
+      url: "mailto:jsalessandro@gmail.com"
 
   # 搜索配置
   fuseOpts:

@@ -11,8 +11,32 @@ description: "深入浅出讲解单例模式，从基础概念到高级实现，
 
 ## 🎯 什么是单例模式？
 
+### 概念图解
+```mermaid
+graph TD
+    A[多个客户端] --> B[请求获取实例]
+    B --> C{单例类}
+    C --> D[唯一实例]
+    D --> E[返回同一个对象]
+    E --> A
+
+    style C fill:#f9f,stroke:#333,stroke-width:2px
+    style D fill:#bbf,stroke:#333,stroke-width:2px
+```
+
 ### 生活中的例子
 想象一下，一个国家只能有一个总统，一个公司只能有一个 CEO，一台电脑只能有一个操作系统。这就是单例模式的核心思想：**确保一个类只有一个实例，并提供全局访问点**。
+
+```
+🏛️ 政府大楼               🏢 公司总部
+   ┌─────────┐              ┌─────────┐
+   │   总统   │              │  CEO   │
+   │  (唯一)  │              │ (唯一) │
+   └─────────┘              └─────────┘
+      ↑   ↑                    ↑   ↑
+   👨‍💼 👩‍💼 👨‍💼              👨‍💼 👩‍💼 👨‍💼
+  (所有人都访问同一个领导)     (所有员工都服务于同一个CEO)
+```
 
 ### 问题背景
 在软件开发中，有些对象我们只需要一个：
@@ -29,11 +53,53 @@ description: "深入浅出讲解单例模式，从基础概念到高级实现，
 
 ## 🧠 设计思想
 
+### UML类图
+```mermaid
+classDiagram
+    class Singleton {
+        -static instance: Singleton
+        -Singleton()
+        +static getInstance(): Singleton
+        +doSomething(): void
+    }
+
+    class Client1 {
+        +main(): void
+    }
+
+    class Client2 {
+        +main(): void
+    }
+
+    Client1 --> Singleton : getInstance()
+    Client2 --> Singleton : getInstance()
+
+    note for Singleton "私有构造函数\n静态实例\n全局访问点"
+```
+
 ### 核心原则
 1. **私有构造函数** - 防止外部直接创建实例
 2. **静态实例变量** - 保存唯一实例
 3. **静态获取方法** - 提供全局访问点
 4. **线程安全** - 确保多线程环境下的正确性
+
+### 结构图解
+```
+┌─────────────────────────┐
+│      Singleton类        │
+├─────────────────────────┤
+│ - instance: Singleton   │ ← 私有静态实例
+│ - Singleton()           │ ← 私有构造函数
+├─────────────────────────┤
+│ + getInstance()         │ ← 公共获取方法
+│ + doSomething()         │ ← 业务方法
+└─────────────────────────┘
+          ↑
+          │
+    ┌───────────┐
+    │ 全局唯一实例 │
+    └───────────┘
+```
 
 ### 记忆口诀
 > **"私有构造，静态实例，全局访问"**
