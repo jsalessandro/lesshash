@@ -1,0 +1,35 @@
+User-agent: *
+Allow: /
+
+# 优化搜索引擎爬取频率
+Crawl-delay: 1
+
+# 网站地图位置
+Sitemap: https://blog.lesshash.com/sitemap.xml
+Sitemap: https://blog.lesshash.com/index.xml
+
+# 禁止访问的路径
+Disallow: /admin/
+Disallow: /private/
+Disallow: /*.json$
+Disallow: /search/
+
+# 特定搜索引擎优化
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Baiduspider
+Allow: /
+Crawl-delay: 2
+
+# 社交媒体爬虫
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /

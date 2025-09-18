@@ -1,0 +1,56 @@
+{{- $pctx := . -}}
+{{- if .IsHome -}}{{ $pctx = .Site }}{{- end -}}
+{{- $pages := slice -}}
+{{- if or $.IsHome $.IsSection -}}
+{{- $pages = $pctx.RegularPages -}}
+{{- else -}}
+{{- $pages = $pctx.Pages -}}
+{{- end -}}
+{{- $limit := .Site.Config.Services.RSS.Limit -}}
+{{- if ge $limit 1 -}}
+{{- $pages = $pages | first $limit -}}
+{{- end -}}
+{{- printf "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>" | safeHTML }}
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>{{ if eq  .Title  .Site.Title }}{{ .Site.Title }}{{ else }}{{ with .Title }}{{.}} - {{ end }}{{ .Site.Title }}{{ end }}</title>
+    <link>{{ .Permalink }}</link>
+    <description>{{ .Site.Params.description | default "专注设计模式、数据结构与算法的专业技术博客" }}</description>
+    <generator>Hugo {{ hugo.Version }}</generator>
+    <language>{{ .Site.LanguageCode }}</language>
+    <managingEditor>{{ .Site.Params.author }}@{{ .Site.BaseURL | replaceRE "^https?://" "" }}</managingEditor>
+    <webMaster>{{ .Site.Params.author }}@{{ .Site.BaseURL | replaceRE "^https?://" "" }}</webMaster>
+    {{ with .Site.Copyright }}<copyright>{{ . }}</copyright>{{ end }}
+    {{ if not .Date.IsZero }}<lastBuildDate>{{ .Date.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}</lastBuildDate>{{ end }}
+    {{ with .OutputFormats.Get "RSS" }}<atom:link href="{{ .Permalink }}" rel="self" type="application/rss+xml" />{{ end }}
+    <category>技术博客</category>
+    <category>设计模式</category>
+    <category>数据结构</category>
+    <category>算法</category>
+    <category>编程教程</category>
+    <ttl>60</ttl>
+    {{ range $pages }}
+    <item>
+      <title>{{ .Title }}</title>
+      <link>{{ .Permalink }}</link>
+      <pubDate>{{ .Date.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}</pubDate>
+      <author>{{ $.Site.Params.author }}@{{ $.Site.BaseURL | replaceRE "^https?://" "" }} ({{ $.Site.Params.author }})</author>
+      <guid>{{ .Permalink }}</guid>
+      <description>{{ with .Description }}{{ . }}{{ else }}{{ .Summary | html }}{{ end }}</description>
+      {{ if .Content }}
+      <content:encoded><![CDATA[{{ .Content | html }}]]></content:encoded>
+      {{ end }}
+      {{ range .Params.tags }}
+      <category>{{ . }}</category>
+      {{ end }}
+      {{ if .Params.keywords }}
+      {{ range .Params.keywords }}
+      <dc:subject>{{ . }}</dc:subject>
+      {{ end }}
+      {{ end }}
+      <dc:creator>{{ $.Site.Params.author }}</dc:creator>
+      {{ if .Lastmod }}<dc:date>{{ .Lastmod.Format "2006-01-02T15:04:05Z07:00" }}</dc:date>{{ end }}
+    </item>
+    {{ end }}
+  </channel>
+</rss>

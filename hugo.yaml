@@ -1,7 +1,27 @@
 baseURL: https://blog.lesshash.com/
 languageCode: zh-cn
-title: Less is more's Blog
+title: Less is more's Blog - 设计模式与算法专业技术博客
 theme: PaperMod
+
+# SEO优化配置
+sitemap:
+  changefreq: daily
+  priority: 0.8
+  filename: sitemap.xml
+
+# 多语言支持
+defaultContentLanguage: zh-cn
+hasCJKLanguage: true
+
+# 启用表情符号支持
+enableEmoji: true
+
+# URL配置
+permalinks:
+  posts: "/:year/:month/:slug/"
+
+# RSS配置
+rssLimit: 20
 
 # 启用 Git 信息
 enableGitInfo: true
@@ -51,10 +71,38 @@ menu:
       weight: 50
 
 params:
-  # 网站描述
-  description: "专注设计模式、数据结构与算法的技术博客，提供深度教程和实战代码"
+  # SEO核心配置
+  description: "专注设计模式、数据结构与算法的专业技术博客。提供Java、Python等编程语言的深度教程、实战代码和面试题解析。涵盖链表、队列、递归、排序、二分查找、跳表、散列表等核心知识点。"
   author: "lesshash"
-  keywords: ["设计模式", "数据结构", "算法", "Java", "编程", "技术博客"]
+  keywords: ["设计模式", "数据结构", "算法", "Java", "Python", "编程", "技术博客", "面试题", "代码实现", "链表", "队列", "递归", "排序算法", "二分查找", "跳表", "散列表", "KMP算法", "Trie树", "动态规划", "贪心算法", "深度优先", "广度优先", "二叉树", "红黑树", "堆排序", "A*算法", "Dijkstra算法"]
+
+  # Open Graph和Twitter Cards
+  images: ["images/og-image.jpg"]
+
+  # 网站元信息
+  env: production
+  DateFormat: "2006-01-02"
+  defaultTheme: auto
+  disableThemeToggle: false
+
+  # SEO和分析
+  googleAnalytics: ""
+  googleSiteVerificationTag: ""
+  bingSiteVerificationTag: ""
+  yandexSiteVerificationTag: ""
+
+  # 结构化数据
+  schema:
+    publisherType: "Organization"
+    publisherName: "Less is more's Blog"
+    publisherLogo: ""
+
+  # 社交媒体
+  social:
+    twitter: ""
+    facebook: ""
+    linkedin: ""
+    github: "jsalessandro"
 
   # 网站统计配置
   analytics:
@@ -81,7 +129,7 @@ params:
   profileMode:
     enabled: true
     title: "👋 欢迎来到我的技术博客"
-    subtitle: "专注于设计模式、数据结构与算法的深度分享，助力编程技能提升"
+    subtitle: "专注于设计模式、数据结构与算法的深度分享，助力编程技能提升。提供Java、Python实战代码和面试题解析。"
     imageUrl: "" # 可以添加头像图片
     imageWidth: 120
     imageHeight: 120
@@ -94,6 +142,17 @@ params:
         url: tags
       - name: 📂 文章分类
         url: categories
+
+  # SEO增强功能
+  cover:
+    hidden: false
+    hiddenInList: false
+    hiddenInSingle: false
+
+  # 启用搜索引擎优化
+  ShowRssButtonInSectionTermList: true
+  ShowAllPagesInArchive: true
+  ShowPageNums: true
 
   # 社交链接
   socialIcons:
