@@ -244,15 +244,8 @@ var _hmt = _hmt || [];
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 9999;
-    opacity: 0.05;
-    background-image: repeating-linear-gradient(
-        45deg,
-        transparent,
-        transparent 120px,
-        rgba(0,0,0,0.02) 120px,
-        rgba(0,0,0,0.02) 140px
-    );
+    z-index: 1000;
+    opacity: 1;
 }
 
 .watermark::before {
@@ -263,11 +256,30 @@ var _hmt = _hmt || [];
     transform: translate(-50%, -50%) rotate(-45deg);
     font-size: 80px;
     font-weight: bold;
-    color: var(--primary);
-    opacity: 0.03;
+    color: #cccccc;
+    opacity: 0.1;
     white-space: nowrap;
     user-select: none;
     pointer-events: none;
+    font-family: 'Arial Black', sans-serif;
+}
+
+/* 额外的水印背景 */
+.watermark-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 999;
+    background-image: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 150px,
+        rgba(204,204,204,0.02) 150px,
+        rgba(204,204,204,0.02) 170px
+    );
 }
 
 .watermark-pattern {
@@ -318,14 +330,25 @@ pre, code, .highlight {
 <!-- 网络水印和防复制脚本 -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 创建网络水印
+    // 创建主水印元素
     const watermark = document.createElement('div');
     watermark.className = 'watermark';
+    watermark.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1000;
+        opacity: 1;
+    `;
 
-    const pattern = document.createElement('div');
-    pattern.className = 'watermark-pattern';
-    watermark.appendChild(pattern);
+    // 创建背景水印
+    const watermarkBg = document.createElement('div');
+    watermarkBg.className = 'watermark-bg';
 
+    document.body.appendChild(watermarkBg);
     document.body.appendChild(watermark);
 
     // 添加多个水印文字
@@ -349,15 +372,45 @@ document.addEventListener('DOMContentLoaded', function() {
             transform: rotate(${pos.rotate});
             font-size: 24px;
             font-weight: bold;
-            color: var(--primary);
-            opacity: 0.02;
+            color: #666666;
+            opacity: 0.08;
             pointer-events: none;
             user-select: none;
             white-space: nowrap;
-            font-family: monospace;
+            font-family: 'Arial Black', sans-serif;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         `;
         watermark.appendChild(textEl);
     });
+
+    // 强制添加CSS确保水印显示
+    const style = document.createElement('style');
+    style.textContent = `
+        .watermark::before {
+            content: "jsalessandro" !important;
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) rotate(-45deg) !important;
+            font-size: 80px !important;
+            font-weight: 900 !important;
+            color: #999999 !important;
+            opacity: 0.15 !important;
+            white-space: nowrap !important;
+            user-select: none !important;
+            pointer-events: none !important;
+            font-family: 'Arial Black', 'Arial', sans-serif !important;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1) !important;
+            z-index: 1001 !important;
+        }
+
+        /* 深色模式调整 */
+        [data-theme="dark"] .watermark::before {
+            color: #444444 !important;
+            opacity: 0.12 !important;
+        }
+    `;
+    document.head.appendChild(style);
 
     // 禁用文本选择和复制
     document.body.classList.add('no-select');
@@ -447,6 +500,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }, false);
+
+    // 验证水印是否正确创建
+    setTimeout(() => {
+        const watermarkEl = document.querySelector('.watermark');
+        if (watermarkEl) {
+            console.log('✅ 水印元素创建成功');
+            console.log('水印元素样式:', window.getComputedStyle(watermarkEl));
+        } else {
+            console.log('❌ 水印元素创建失败');
+        }
+    }, 1000);
 
     console.log('网络水印和防复制功能已启用 - jsalessandro');
 });
