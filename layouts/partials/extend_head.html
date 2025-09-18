@@ -30,10 +30,22 @@
 <style>
 /* 统计数据加载时的占位样式 */
 #busuanzi_value_site_pv:empty::before,
-#busuanzi_value_site_uv:empty::before {
+#busuanzi_value_site_uv:empty::before,
+#busuanzi_value_site_uv_duplicate:empty::before {
     content: "···";
     color: var(--secondary);
     animation: loading 1.5s infinite;
+}
+
+/* 主要访客数字的特殊样式 */
+.visitor-big-number:empty::before {
+    content: "🔢";
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.05); }
 }
 
 @keyframes loading {
