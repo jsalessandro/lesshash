@@ -1,5 +1,5 @@
 ---
-title: "设计模式详解：工厂方法模式(Factory Method) - 对象创建的艺术"
+title: "设计模式详解02：工厂方法模式(Factory Method) - 对象创建的艺术"
 date: 2024-12-02T10:02:00+08:00
 draft: false
 tags: ["设计模式", "工厂方法模式", "Factory Method", "Java", "创建型模式"]

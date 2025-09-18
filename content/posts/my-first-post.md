@@ -1,6 +1,6 @@
 ---
 title: "我的第一篇博客"
-date: 2024-01-18T10:00:00+08:00
+date: 2023-01-18T10:00:00+08:00
 draft: false
 tags: ["Hugo", "博客", "GitHub Pages"]
 categories: ["技术"]

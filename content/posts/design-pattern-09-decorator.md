@@ -1,5 +1,5 @@
 ---
-title: "设计模式详解：装饰器模式(Decorator) - 动态扩展对象功能"
+title: "设计模式详解09：装饰器模式(Decorator) - 动态扩展对象功能"
 date: 2024-12-09T10:09:00+08:00
 draft: false
 tags: ["设计模式", "装饰器模式", "Decorator", "Java", "结构型模式"]

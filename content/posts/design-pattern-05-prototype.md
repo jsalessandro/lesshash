@@ -1,5 +1,5 @@
 ---
-title: "设计模式详解：原型模式(Prototype) - 对象克隆的高效实现"
+title: "设计模式详解05：原型模式(Prototype) - 对象克隆的高效实现"
 date: 2024-12-05T10:05:00+08:00
 draft: false
 tags: ["设计模式", "原型模式", "Prototype", "Java", "创建型模式"]

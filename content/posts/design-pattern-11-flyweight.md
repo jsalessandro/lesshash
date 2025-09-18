@@ -1,5 +1,5 @@
 ---
-title: "设计模式详解：享元模式(Flyweight) - 高效共享相似对象"
+title: "设计模式详解11：享元模式(Flyweight) - 高效共享相似对象"
 date: 2024-12-11T10:11:00+08:00
 draft: false
 tags: ["设计模式", "享元模式", "Flyweight", "Java", "结构型模式"]

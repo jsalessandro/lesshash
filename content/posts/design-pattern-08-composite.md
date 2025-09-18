@@ -1,5 +1,5 @@
 ---
-title: "设计模式详解：组合模式(Composite) - 树形结构的统一处理"
+title: "设计模式详解08：组合模式(Composite) - 树形结构的统一处理"
 date: 2024-12-08T10:08:00+08:00
 draft: false
 tags: ["设计模式", "组合模式", "Composite", "Java", "结构型模式"]

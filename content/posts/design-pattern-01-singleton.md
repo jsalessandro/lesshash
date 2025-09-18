@@ -1,5 +1,5 @@
 ---
-title: "设计模式详解：单例模式(Singleton) - 全局唯一实例的优雅实现"
+title: "设计模式详解01：单例模式(Singleton) - 全局唯一实例的优雅实现"
 date: 2024-12-01T10:01:00+08:00
 draft: false
 tags: ["设计模式", "单例模式", "Singleton", "Java", "创建型模式"]

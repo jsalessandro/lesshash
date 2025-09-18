@@ -1,5 +1,5 @@
 ---
-title: "设计模式详解：责任链模式(Chain of Responsibility) - 请求处理的链式传递"
+title: "设计模式详解14：责任链模式(Chain of Responsibility) - 请求处理的链式传递"
 date: 2024-12-14T10:14:00+08:00
 draft: false
 tags: ["设计模式", "责任链模式", "Chain of Responsibility", "Java", "行为型模式"]
