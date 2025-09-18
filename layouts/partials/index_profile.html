@@ -1,0 +1,209 @@
+<div class="profile">
+    {{- with site.Params.profileMode }}
+    <div class="profile_inner">
+        {{- if .imageUrl -}}
+        {{- $img := "" }}
+        {{- if not (urls.Parse .imageUrl).IsAbs }}
+            {{- $img = resources.Get .imageUrl }}
+        {{- end }}
+        {{- if $img }}
+            {{- $processableFormats := (slice "jpg" "jpeg" "png" "tif" "bmp" "gif") -}}
+            {{- if hugo.IsExtended -}}
+                {{- $processableFormats = $processableFormats | append "webp" -}}
+            {{- end -}}
+            {{- $prod := (hugo.IsProduction | or (eq site.Params.env "production")) }}
+            {{- if and (in $processableFormats $img.MediaType.SubType) (eq $prod true)}}
+                {{- if (not (and (not .imageHeight) (not .imageWidth))) }}
+                    {{- $img = $img.Resize (printf "%dx%d" .imageWidth .imageHeight) }}
+                {{- else if .imageHeight }}
+                    {{- $img = $img.Resize (printf "x%d" .imageHeight) }}
+                {{ else if .imageWidth }}
+                    {{- $img = $img.Resize (printf "%dx" .imageWidth) }}
+                {{ else }}
+                    {{- $img = $img.Resize "150x150" }}
+                {{- end }}
+            {{- end }}
+            <img draggable="false" src="{{ $img.Permalink }}" alt="{{ .imageTitle | default "profile image" }}" title="{{ .imageTitle }}"
+                height="{{ .imageHeight | default 150 }}" width="{{ .imageWidth | default 150 }}" />
+        {{- else }}
+        <img draggable="false" src="{{ .imageUrl | absURL }}" alt="{{ .imageTitle | default "profile image" }}" title="{{ .imageTitle }}"
+            height="{{ .imageHeight | default 150 }}" width="{{ .imageWidth | default 150 }}" />
+        {{- end }}
+        {{- end }}
+        <h1>{{ .title | default site.Title | markdownify }}</h1>
+        <span>{{ .subtitle | markdownify }}</span>
+
+        <!-- 新增：网站统计信息 -->
+        <div class="site-stats">
+            {{- $posts := where site.RegularPages "Section" "posts" }}
+            {{- $postCount := len $posts }}
+            {{- $designPatterns := where $posts ".Params.series" "intersect" (slice "设计模式入门教程") }}
+            {{- $algorithms := where $posts ".Params.series" "intersect" (slice "高级算法入门教程") }}
+            {{- $dataStructures := where $posts ".Params.series" "intersect" (slice "数据结构入门教程") }}
+
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span class="stat-number">{{ $postCount }}</span>
+                    <span class="stat-label">篇文章</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">{{ len $designPatterns }}</span>
+                    <span class="stat-label">设计模式</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">{{ len $algorithms }}</span>
+                    <span class="stat-label">核心算法</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">{{ len $dataStructures }}</span>
+                    <span class="stat-label">数据结构</span>
+                </div>
+            </div>
+
+            <!-- 访问统计 (使用不蒜子) -->
+            <div class="visitor-stats">
+                <div class="visitor-item">
+                    <span class="visitor-label">总访问量：</span>
+                    <span id="busuanzi_value_site_pv" class="visitor-number">加载中...</span>
+                </div>
+                <div class="visitor-item">
+                    <span class="visitor-label">访客数：</span>
+                    <span id="busuanzi_value_site_uv" class="visitor-number">加载中...</span>
+                </div>
+            </div>
+        </div>
+
+        {{- partial "social_icons.html" -}}
+
+        {{- with .buttons }}
+        <div class="buttons">
+            {{- range . }}
+            <a class="button" href="{{ trim .url " " }}" rel="noopener" title="{{ .name }}">
+                <span class="button-inner">
+                    {{ .name }}
+                    {{- if (findRE "://" .url) }}&nbsp;
+                    <svg fill="none" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round"
+                        stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24" height="14" width="14">
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+                        <path d="M15 3h6v6"></path>
+                        <path d="M10 14L21 3"></path>
+                    </svg>
+                    {{- end }}
+                </span>
+            </a>
+            {{- end }}
+        </div>
+        {{- end }}
+    </div>
+    {{- end}}
+</div>
+
+<!-- 不蒜子访问统计脚本 -->
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<style>
+.site-stats {
+    margin: 20px 0;
+    padding: 20px;
+    background: var(--theme);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 10px;
+    background: var(--code-bg);
+    border-radius: 8px;
+    transition: transform 0.2s ease;
+}
+
+.stat-item:hover {
+    transform: translateY(-2px);
+}
+
+.stat-number {
+    display: block;
+    font-size: 1.8em;
+    font-weight: bold;
+    color: var(--primary);
+    line-height: 1.2;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.85em;
+    color: var(--secondary);
+    margin-top: 5px;
+}
+
+.visitor-stats {
+    border-top: 1px solid var(--border);
+    padding-top: 15px;
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+}
+
+.visitor-item {
+    text-align: center;
+    flex: 1;
+}
+
+.visitor-label {
+    font-size: 0.9em;
+    color: var(--secondary);
+}
+
+.visitor-number {
+    font-weight: bold;
+    color: var(--primary);
+    margin-left: 5px;
+}
+
+/* 深色模式适配 */
+[data-theme="dark"] .site-stats {
+    background: var(--entry);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .stat-item {
+    background: var(--hljs-bg);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .stats-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .stat-number {
+        font-size: 1.5em;
+    }
+
+    .visitor-stats {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .site-stats {
+        margin: 15px 0;
+        padding: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-container {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+</style>
