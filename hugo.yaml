@@ -1,0 +1,95 @@
+baseURL: https://blog.lesshash.com/
+languageCode: zh-cn
+title: Less is more's Blog
+theme: PaperMod
+
+# 启用 Git 信息
+enableGitInfo: true
+
+# 菜单配置
+menu:
+  main:
+    - identifier: posts
+      name: 文章
+      url: /posts/
+      weight: 10
+    - identifier: resume
+      name: 简历
+      url: /resume/
+      weight: 20
+    - identifier: search
+      name: 搜索
+      url: /search/
+      weight: 30
+    - identifier: archives
+      name: 归档
+      url: /archives/
+      weight: 40
+
+params:
+  # 网站描述
+  description: "个人博客 - 记录技术与生活"
+  author: Your Name
+
+  # 显示阅读时间
+  ShowReadingTime: true
+  # 显示发布日期
+  ShowPostNavLinks: true
+  # 显示面包屑导航
+  ShowBreadCrumbs: true
+  # 显示代码复制按钮
+  ShowCodeCopyButtons: true
+  # 显示全屏按钮
+  ShowFullTextinRSS: true
+  # 显示分享按钮
+  ShowShareButtons: false
+  # 显示目录
+  ShowToc: true
+  # 默认展开目录
+  TocOpen: false
+
+  # 主页配置
+  profileMode:
+    enabled: true
+    title: "👋 欢迎来到我的博客"
+    subtitle: "这里记录着我的技术笔记和生活感悟"
+    imageUrl: "" # 可以添加头像图片
+    imageWidth: 120
+    imageHeight: 120
+    buttons:
+      - name: 文章
+        url: posts
+      - name: 简历
+        url: resume
+
+  # 社交链接
+  socialIcons:
+    - name: github
+      url: "https://github.com/yourusername"
+    - name: email
+      url: "mailto:your-email@example.com"
+
+  # 搜索配置
+  fuseOpts:
+    isCaseSensitive: false
+    shouldSort: true
+    location: 0
+    distance: 1000
+    threshold: 0.4
+    minMatchCharLength: 0
+    keys: ["title", "permalink", "summary", "content"]
+
+outputs:
+  home:
+    - HTML
+    - RSS
+    - JSON
+
+# 文章输出配置
+markup:
+  highlight:
+    codeFences: true
+    guessSyntax: true
+    lineNos: true
+    noClasses: false
+    style: monokai
