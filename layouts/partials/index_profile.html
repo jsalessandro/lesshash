@@ -68,7 +68,7 @@
                             {{- if hugo.IsProduction -}}
                                 📊
                             {{- else -}}
-                                {{ add (mul (now.Unix | mod 1000) 3) 1288 }}
+                                1435
                             {{- end -}}
                         </span>
                         <span class="visitor-big-label">人次访问过本网站</span>
@@ -81,7 +81,7 @@
                             {{- if hugo.IsProduction -}}
                                 加载中...
                             {{- else -}}
-                                {{ add (mul (now.Unix | mod 2000) 5) 5632 }}
+                                6247
                             {{- end -}}
                         </span>
                     </div>
@@ -91,7 +91,7 @@
                             {{- if hugo.IsProduction -}}
                                 加载中...
                             {{- else -}}
-                                {{ add (mul (now.Unix | mod 800) 2) 856 }}
+                                1435
                             {{- end -}}
                         </span>
                     </div>
@@ -263,13 +263,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (checkCount >= maxChecks) {
                 console.log('统计数据加载超时，显示默认值');
                 if (uvElement && (!uvElement.textContent || uvElement.textContent === '📊')) {
-                    uvElement.textContent = '1,288';
+                    uvElement.textContent = '1,435';
                 }
                 if (pvElement && pvElement.textContent === '加载中...') {
-                    pvElement.textContent = '5,632';
+                    pvElement.textContent = '6,247';
                 }
                 if (uvDuplicateElement && uvDuplicateElement.textContent === '加载中...') {
-                    uvDuplicateElement.textContent = '856';
+                    uvDuplicateElement.textContent = '1,435';
                 }
                 clearInterval(checkStatistics);
             }
@@ -287,9 +287,9 @@ window.addEventListener('load', function() {
         // 检查移动端访问统计是否正常加载
         if (uvElement && (!uvElement.textContent || uvElement.textContent.trim() === '' || uvElement.textContent === '📊')) {
             console.log('访问统计未正常加载，启用备用方案');
-            // 使用随机但合理的数据作为默认值
-            const baseUV = 1200 + Math.floor(Math.random() * 200);
-            const basePV = baseUV * 4 + Math.floor(Math.random() * 500);
+            // 使用固定的一致数据
+            const baseUV = 1435;
+            const basePV = 6247;
 
             uvElement.textContent = '0';
             animateNumber(uvElement, baseUV);
@@ -298,12 +298,15 @@ window.addEventListener('load', function() {
                 uvDuplicateElement.textContent = '0';
                 setTimeout(() => animateNumber(uvDuplicateElement, baseUV), 600);
             }
+
+            if (pvElement && pvElement.textContent === '加载中...') {
+                pvElement.textContent = '0';
+                setTimeout(() => animateNumber(pvElement, basePV), 300);
+            }
         }
 
         if (pvElement && (!pvElement.textContent || pvElement.textContent.trim() === '' || pvElement.textContent === '加载中...')) {
-            const baseUV = parseInt(uvElement.textContent) || 1200;
-            const basePV = baseUV * 4 + Math.floor(Math.random() * 500);
-
+            const basePV = 6247;
             pvElement.textContent = '0';
             setTimeout(() => animateNumber(pvElement, basePV), 300);
         }
@@ -325,14 +328,14 @@ if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(naviga
             // 如果5秒后还没有加载，直接显示备用数据
             if (uvElement && (!uvElement.textContent || uvElement.textContent === '📊' || uvElement.textContent.trim() === '')) {
                 console.log('移动端启用备用统计数据');
-                uvElement.textContent = (1200 + Math.floor(Math.random() * 300)).toLocaleString();
+                uvElement.textContent = '1,435';
 
                 if (pvElement && pvElement.textContent === '加载中...') {
-                    pvElement.textContent = (5600 + Math.floor(Math.random() * 1000)).toLocaleString();
+                    pvElement.textContent = '6,247';
                 }
 
                 if (uvDuplicateElement && uvDuplicateElement.textContent === '加载中...') {
-                    uvDuplicateElement.textContent = uvElement.textContent;
+                    uvDuplicateElement.textContent = '1,435';
                 }
             }
         }, 5000);
