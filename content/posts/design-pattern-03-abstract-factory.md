@@ -1,9 +1,10 @@
 ---
 title: "设计模式详解：抽象工厂模式(Abstract Factory) - 产品家族的统一创建"
-date: 2025-09-18T16:10:00+08:00
+date: 2024-12-03T10:03:00+08:00
 draft: false
 tags: ["设计模式", "抽象工厂模式", "Abstract Factory", "Java", "创建型模式"]
 categories: ["设计模式"]
+series: ["设计模式入门教程"]
 author: "lesshash"
 description: "深入浅出讲解抽象工厂模式，通过生动的GUI主题和汽车制造例子，让你轻松掌握产品族创建的最佳实践"
 ---

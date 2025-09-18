@@ -1,9 +1,10 @@
 ---
 title: "设计模式详解：原型模式(Prototype) - 对象克隆的高效实现"
-date: 2025-09-18T20:00:00+08:00
+date: 2024-12-05T10:05:00+08:00
 draft: false
 tags: ["设计模式", "原型模式", "Prototype", "Java", "创建型模式"]
 categories: ["设计模式"]
+series: ["设计模式入门教程"]
 author: "lesshash"
 description: "深入浅出讲解原型模式，从基础概念到高级实现，包含深克隆、浅克隆等实战技巧，让你彻底掌握对象克隆的艺术"
 ---

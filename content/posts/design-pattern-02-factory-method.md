@@ -1,9 +1,10 @@
 ---
 title: "设计模式详解：工厂方法模式(Factory Method) - 对象创建的艺术"
-date: 2025-09-18T16:05:00+08:00
+date: 2024-12-02T10:02:00+08:00
 draft: false
 tags: ["设计模式", "工厂方法模式", "Factory Method", "Java", "创建型模式"]
 categories: ["设计模式"]
+series: ["设计模式入门教程"]
 author: "lesshash"
 description: "深入浅出讲解工厂方法模式，通过生动的例子和完整的代码演示，让你轻松掌握对象创建的最佳实践"
 ---

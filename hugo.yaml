@@ -6,6 +6,21 @@ theme: PaperMod
 # 启用 Git 信息
 enableGitInfo: true
 
+# 构建设置
+buildDrafts: false
+buildFuture: true  # 允许显示未来日期的文章
+buildExpired: false
+
+# 分页设置
+paginate: 10
+paginatePath: "page"
+
+# 分类和标签的页面配置
+taxonomies:
+  category: categories
+  tag: tags
+  series: series
+
 # 菜单配置
 menu:
   main:

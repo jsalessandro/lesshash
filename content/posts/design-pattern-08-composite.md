@@ -1,9 +1,10 @@
 ---
 title: "设计模式详解：组合模式(Composite) - 树形结构的统一处理"
-date: 2025-09-18T23:00:00+08:00
+date: 2024-12-08T10:08:00+08:00
 draft: false
 tags: ["设计模式", "组合模式", "Composite", "Java", "结构型模式"]
 categories: ["设计模式"]
+series: ["设计模式入门教程"]
 author: "lesshash"
 description: "深入浅出讲解组合模式，从基础概念到高级实现，包含树形结构、递归处理等实战技巧，让你彻底掌握层次结构的统一处理方案"
 ---

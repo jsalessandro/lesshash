@@ -1,9 +1,10 @@
 ---
 title: "设计模式详解：责任链模式(Chain of Responsibility) - 请求处理的链式传递"
-date: 2025-09-19T05:00:00+08:00
+date: 2024-12-14T10:14:00+08:00
 draft: false
 tags: ["设计模式", "责任链模式", "Chain of Responsibility", "Java", "行为型模式"]
 categories: ["设计模式"]
+series: ["设计模式入门教程"]
 author: "lesshash"
 description: "深入浅出讲解责任链模式，从基础概念到高级实现，包含纯责任链、不纯责任链、过滤器链等实战技巧，让你彻底掌握请求传递的艺术"
 ---
