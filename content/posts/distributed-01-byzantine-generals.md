@@ -151,27 +151,51 @@ description: "深入理解拜占庭将军问题：分布式系统容错的经典
 
 让我们用一个直观的例子来理解：
 
-#### 流程图表
+#### 🎯 拜占庭将军通信示意图
 
-**节点说明：**
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 15px; margin: 20px 0; color: white; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
 
-| 节点 | 描述 |
-|------|------|
-| A | 节点A 说：攻击 |
-| B | 节点B 说：撤退 |
-| C | 节点C 🤔 困惑了 |
-| D | A是诚实的，B是叛徒？ |
-| E | B是诚实的，A是叛徒？ |
-| F | 😵 无法判断！ |
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px;">
 
-**关系流向：**
-```
-A →消息1| C
-B →消息2| C
-C → D
-C → E
-D → F
-```
+<div style="text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; backdrop-filter: blur(10px);">
+<div style="font-size: 32px; margin-bottom: 8px;">⚔️</div>
+<div style="font-weight: bold; color: #FFD700;">将军 A</div>
+<div style="font-size: 14px; margin-top: 5px;">发送: "攻击"</div>
+<div style="background: #4CAF50; color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px; margin-top: 5px;">✅ 忠诚</div>
+</div>
+
+<div style="text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; backdrop-filter: blur(10px);">
+<div style="font-size: 32px; margin-bottom: 8px;">🛡️</div>
+<div style="font-weight: bold; color: #FFD700;">将军 B</div>
+<div style="font-size: 14px; margin-top: 5px;">发送: "撤退"</div>
+<div style="background: #F44336; color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px; margin-top: 5px;">❌ 叛徒</div>
+</div>
+
+<div style="text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; backdrop-filter: blur(10px);">
+<div style="font-size: 32px; margin-bottom: 8px;">🤔</div>
+<div style="font-weight: bold; color: #FFD700;">将军 C</div>
+<div style="font-size: 14px; margin-top: 5px;">接收矛盾信息</div>
+<div style="background: #FF9800; color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px; margin-top: 5px;">❓ 困惑</div>
+</div>
+
+</div>
+
+<div style="text-align: center; margin: 20px 0;">
+<div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">📡 通信流程</div>
+<div style="display: flex; justify-content: center; align-items: center; gap: 15px; flex-wrap: wrap;">
+<span style="background: rgba(255,255,255,0.2); padding: 8px 12px; border-radius: 8px;">A ➡️ C: "攻击"</span>
+<span style="background: rgba(255,255,255,0.2); padding: 8px 12px; border-radius: 8px;">B ➡️ C: "撤退"</span>
+<span style="background: rgba(255,255,255,0.2); padding: 8px 12px; border-radius: 8px;">C: "无法决策" 😵</span>
+</div>
+</div>
+
+<div style="text-align: center; background: rgba(255,0,0,0.2); padding: 15px; border-radius: 10px; border-left: 4px solid #FF5722;">
+<div style="font-weight: bold; font-size: 16px;">⚠️ 关键问题</div>
+<div style="margin-top: 8px;">3个节点无法容忍1个拜占庭故障！</div>
+<div style="font-size: 14px; margin-top: 5px; opacity: 0.9;">将军C无法区分A和B谁是叛徒，导致系统无法达成共识</div>
+</div>
+
+</div>
 
 **结论**：3个节点无法容忍1个拜占庭故障！
 

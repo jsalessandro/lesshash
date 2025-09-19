@@ -14,14 +14,81 @@ description: "深入理解队列数据结构，包含普通队列、循环队列
 
 **队列（Queue）**是一种线性数据结构，只允许在一端（队尾rear）插入元素，在另一端（队头front）删除元素。这种特性使得队列成为处理按序服务场景的完美工具。
 
-#### 流程图表
+#### 🎬 队列工作原理可视化
 
+<div style="background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%); padding: 25px; border-radius: 15px; margin: 20px 0; color: white; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
 
-**关系流向：**
-```
-A[队尾 rear] →|入队 enqueue| B[队列内部] →|出队 dequeue| C[队头 front]
-D[30] → E[20] → F[10]
-```
+<div style="text-align: center; margin-bottom: 20px;">
+<div style="font-size: 20px; font-weight: bold; margin-bottom: 10px;">🎭 队列：先进先出（FIFO）</div>
+<div style="font-size: 14px; opacity: 0.9;">就像电影院排队买票，先来的人先买到票</div>
+</div>
+
+<!-- 队列操作区域 -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin: 25px 0; flex-wrap: wrap;">
+
+<!-- 入队操作 -->
+<div style="text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; min-width: 120px;">
+<div style="font-size: 32px; margin-bottom: 8px;">👥</div>
+<div style="font-weight: bold; color: #FFD700;">入队区域</div>
+<div style="font-size: 14px; margin-top: 5px;">REAR</div>
+<div style="background: #00b894; padding: 5px 10px; border-radius: 8px; margin-top: 8px; font-size: 12px;">enqueue()</div>
+</div>
+
+<!-- 队列主体 -->
+<div style="flex: 1; margin: 0 20px;">
+<div style="background: rgba(255,255,255,0.15); border-radius: 12px; padding: 15px;">
+<div style="text-align: center; font-weight: bold; margin-bottom: 15px; color: #FFD700;">📦 队列内容</div>
+
+<div style="display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap;">
+<!-- 队列元素 -->
+<div style="background: #6c5ce7; padding: 12px; border-radius: 8px; text-align: center; min-width: 60px; border: 2px solid rgba(255,255,255,0.3);">
+<div style="font-size: 16px; font-weight: bold;">30</div>
+<div style="font-size: 10px; opacity: 0.8;">第3个</div>
+</div>
+
+<div style="font-size: 16px; color: #FFD700;">➡️</div>
+
+<div style="background: #6c5ce7; padding: 12px; border-radius: 8px; text-align: center; min-width: 60px; border: 2px solid rgba(255,255,255,0.3);">
+<div style="font-size: 16px; font-weight: bold;">20</div>
+<div style="font-size: 10px; opacity: 0.8;">第2个</div>
+</div>
+
+<div style="font-size: 16px; color: #FFD700;">➡️</div>
+
+<div style="background: #6c5ce7; padding: 12px; border-radius: 8px; text-align: center; min-width: 60px; border: 2px solid rgba(255,255,255,0.3);">
+<div style="font-size: 16px; font-weight: bold;">10</div>
+<div style="font-size: 10px; opacity: 0.8;">第1个</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<!-- 出队操作 -->
+<div style="text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; min-width: 120px;">
+<div style="font-size: 32px; margin-bottom: 8px;">🎫</div>
+<div style="font-weight: bold; color: #FFD700;">出队区域</div>
+<div style="font-size: 14px; margin-top: 5px;">FRONT</div>
+<div style="background: #e17055; padding: 5px 10px; border-radius: 8px; margin-top: 8px; font-size: 12px;">dequeue()</div>
+</div>
+
+</div>
+
+<!-- 操作流程说明 -->
+<div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; text-align: center;">
+<div style="font-size: 16px; font-weight: bold; margin-bottom: 10px;">🔄 操作流程</div>
+<div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+<span style="background: #00b894; padding: 8px 12px; border-radius: 8px; font-size: 14px;">新元素 ➡️ 队尾入队</span>
+<span style="background: #e17055; padding: 8px 12px; border-radius: 8px; font-size: 14px;">队头元素 ➡️ 先出队</span>
+</div>
+</div>
+
+<div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; text-align: center; margin-top: 15px;">
+<div style="font-size: 16px; font-weight: bold; margin-bottom: 8px;">🎬 现实类比</div>
+<div style="font-size: 14px; opacity: 0.9;">电影院排队、银行窗口、打印队列、CPU进程调度</div>
+</div>
+
+</div>
 
 ## 🏗️ 队列的基本结构
 

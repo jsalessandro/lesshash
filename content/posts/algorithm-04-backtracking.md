@@ -14,17 +14,94 @@ description: "深入探讨回溯算法的本质与应用，从决策树到剪枝
 ### 核心思想
 回溯算法（Backtracking）是一种通过系统性地搜索问题的解空间来寻找所有可能解的算法思想。它采用"试错"的策略，当发现当前选择无法得到有效解时，就"回退"到上一步，尝试其他选择。
 
-#### 流程图表
+#### 🔄 回溯算法工作流程
 
+<div style="background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%); padding: 25px; border-radius: 15px; margin: 20px 0; color: white; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
 
-**关系流向：**
-```
-A[开始] → B[做出选择]
-B → C{是否满足约束?}
-C →|是| D{是否找到解?}
-C →|否| E[撤销选择，回退]
-D →|是| F[记录解]
-```
+<div style="text-align: center; margin-bottom: 20px;">
+<div style="font-size: 20px; font-weight: bold; margin-bottom: 10px;">🎯 回溯算法：试错与回退</div>
+<div style="font-size: 14px; opacity: 0.9;">系统性地搜索问题解空间，遇到障碍就回退</div>
+</div>
+
+<!-- 流程步骤 -->
+<div style="display: flex; flex-direction: column; align-items: center; gap: 15px; margin: 25px 0;">
+
+<!-- 开始 -->
+<div style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border-radius: 12px; padding: 18px; text-align: center; min-width: 180px; border: 2px solid #FFD700;">
+<div style="font-size: 24px; margin-bottom: 8px;">🚀</div>
+<div style="font-weight: bold; color: #FFD700; margin-bottom: 8px;">开始</div>
+<div style="background: #00b894; padding: 6px 12px; border-radius: 8px; font-size: 14px;">初始状态</div>
+</div>
+
+<div style="font-size: 20px; color: #FFD700;">⬇️</div>
+
+<!-- 做出选择 -->
+<div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 12px; padding: 18px; text-align: center; min-width: 180px; border: 2px solid rgba(255,255,255,0.4);">
+<div style="font-size: 24px; margin-bottom: 8px;">🎲</div>
+<div style="font-weight: bold; color: #FFD700; margin-bottom: 8px;">做出选择</div>
+<div style="background: #74b9ff; padding: 6px 12px; border-radius: 8px; font-size: 14px;">尝试可能的选项</div>
+</div>
+
+<div style="font-size: 20px; color: #FFD700;">⬇️</div>
+
+<!-- 判断约束 -->
+<div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 12px; padding: 18px; text-align: center; min-width: 180px; border: 2px solid rgba(255,255,255,0.3);">
+<div style="font-size: 24px; margin-bottom: 8px;">🤔</div>
+<div style="font-weight: bold; color: #FFD700; margin-bottom: 8px;">约束检查</div>
+<div style="background: #fdcb6e; padding: 6px 12px; border-radius: 8px; font-size: 14px;">是否满足条件？</div>
+</div>
+
+<!-- 分支 -->
+<div style="display: flex; justify-content: center; gap: 30px; margin: 20px 0; flex-wrap: wrap;">
+
+<!-- 满足约束分支 -->
+<div style="text-align: center;">
+<div style="font-size: 16px; color: #00b894; font-weight: bold; margin-bottom: 10px;">✅ 满足约束</div>
+<div style="background: rgba(0, 184, 148, 0.2); border-radius: 12px; padding: 15px; min-width: 160px;">
+<div style="font-size: 20px; margin-bottom: 8px;">🎯</div>
+<div style="font-weight: bold; margin-bottom: 8px;">找到解？</div>
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<div style="background: #00b894; padding: 5px 10px; border-radius: 6px; font-size: 12px;">是 → 记录解</div>
+<div style="background: #74b9ff; padding: 5px 10px; border-radius: 6px; font-size: 12px;">否 → 继续搜索</div>
+</div>
+</div>
+</div>
+
+<!-- 不满足约束分支 -->
+<div style="text-align: center;">
+<div style="font-size: 16px; color: #e17055; font-weight: bold; margin-bottom: 10px;">❌ 不满足约束</div>
+<div style="background: rgba(225, 112, 85, 0.2); border-radius: 12px; padding: 15px; min-width: 160px;">
+<div style="font-size: 20px; margin-bottom: 8px;">🔙</div>
+<div style="font-weight: bold; margin-bottom: 8px;">回退</div>
+<div style="background: #e17055; padding: 5px 10px; border-radius: 6px; font-size: 12px;">撤销选择</div>
+<div style="background: #fd79a8; padding: 5px 10px; border-radius: 6px; font-size: 12px; margin-top: 5px;">尝试其他选项</div>
+</div>
+</div>
+
+</div>
+
+</div>
+
+<!-- 核心特点 -->
+<div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; margin-top: 20px;">
+<div style="text-align: center; font-weight: bold; margin-bottom: 15px; color: #FFD700; font-size: 18px;">🧠 算法特点</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+<div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; text-align: center;">
+<div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">🔍 系统搜索</div>
+<div style="font-size: 12px; opacity: 0.9;">遍历所有可能的解</div>
+</div>
+<div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; text-align: center;">
+<div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">⚡ 剪枝优化</div>
+<div style="font-size: 12px; opacity: 0.9;">提前排除无效分支</div>
+</div>
+<div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; text-align: center;">
+<div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">🔄 状态恢复</div>
+<div style="font-size: 12px; opacity: 0.9;">回退时恢复状态</div>
+</div>
+</div>
+</div>
+
+</div>
 
 ### 决策树视角
 回溯算法本质上是对决策树的深度优先搜索（DFS）：

@@ -14,14 +14,67 @@ description: "深入理解链表数据结构，包含单链表、双链表、循
 
 **链表（Linked List）**是一种线性数据结构，其中的元素（节点）在内存中不是连续存储的。每个节点包含两部分：**数据域**和**指针域**，指针域存储着下一个节点的地址。
 
-#### 流程图表
+#### 🔗 链表结构可视化
 
+<div style="background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%); padding: 25px; border-radius: 15px; margin: 20px 0; color: white; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
 
-**关系流向：**
-```
-A["节点1<br/>数据: 10<br/>指针: →"] → B["节点2<br/>数据: 20<br/>指针: →"]
-B → C["节点3<br/>数据: 30<br/>指针: null"]
-```
+<div style="text-align: center; margin-bottom: 20px;">
+<div style="font-size: 20px; font-weight: bold; margin-bottom: 10px;">📦 单向链表结构</div>
+<div style="font-size: 14px; opacity: 0.9;">每个节点包含数据和指向下一个节点的指针</div>
+</div>
+
+<div style="display: flex; justify-content: center; align-items: center; gap: 15px; flex-wrap: wrap; margin: 25px 0;">
+
+<!-- 节点1 -->
+<div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 12px; padding: 15px; text-align: center; min-width: 120px; border: 2px solid rgba(255,255,255,0.3);">
+<div style="font-weight: bold; color: #FFD700; margin-bottom: 8px;">节点 1</div>
+<div style="background: #00b894; padding: 8px; border-radius: 8px; margin-bottom: 8px;">
+<div style="font-size: 12px; opacity: 0.8;">数据</div>
+<div style="font-size: 18px; font-weight: bold;">10</div>
+</div>
+<div style="background: #6c5ce7; padding: 5px; border-radius: 6px;">
+<div style="font-size: 12px;">指针 ➡️</div>
+</div>
+</div>
+
+<!-- 箭头 -->
+<div style="font-size: 24px; color: #FFD700;">➡️</div>
+
+<!-- 节点2 -->
+<div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 12px; padding: 15px; text-align: center; min-width: 120px; border: 2px solid rgba(255,255,255,0.3);">
+<div style="font-weight: bold; color: #FFD700; margin-bottom: 8px;">节点 2</div>
+<div style="background: #00b894; padding: 8px; border-radius: 8px; margin-bottom: 8px;">
+<div style="font-size: 12px; opacity: 0.8;">数据</div>
+<div style="font-size: 18px; font-weight: bold;">20</div>
+</div>
+<div style="background: #6c5ce7; padding: 5px; border-radius: 6px;">
+<div style="font-size: 12px;">指针 ➡️</div>
+</div>
+</div>
+
+<!-- 箭头 -->
+<div style="font-size: 24px; color: #FFD700;">➡️</div>
+
+<!-- 节点3 -->
+<div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 12px; padding: 15px; text-align: center; min-width: 120px; border: 2px solid rgba(255,255,255,0.3);">
+<div style="font-weight: bold; color: #FFD700; margin-bottom: 8px;">节点 3</div>
+<div style="background: #00b894; padding: 8px; border-radius: 8px; margin-bottom: 8px;">
+<div style="font-size: 12px; opacity: 0.8;">数据</div>
+<div style="font-size: 18px; font-weight: bold;">30</div>
+</div>
+<div style="background: #e17055; padding: 5px; border-radius: 6px;">
+<div style="font-size: 12px;">NULL ❌</div>
+</div>
+</div>
+
+</div>
+
+<div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; text-align: center;">
+<div style="font-size: 16px; font-weight: bold; margin-bottom: 8px;">🚂 类比：火车车厢</div>
+<div style="font-size: 14px; opacity: 0.9;">每个节点就像一节车厢，车厢装载货物（数据），通过连接器（指针）连接到下一节车厢</div>
+</div>
+
+</div>
 
 ## 🏗️ 链表的基本结构
 

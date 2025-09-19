@@ -14,16 +14,74 @@ description: "深入理解递归算法的原理和实现，包含递归基础、
 
 **递归（Recursion）**是一种解决问题的方法，其中函数调用自身来解决更小规模的相同问题。递归就像是程序世界的"分而治之"策略，将复杂问题分解成更简单的同类问题。
 
-#### 流程图表
+#### 🌀 递归调用可视化
 
+<div style="background: linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%); padding: 25px; border-radius: 15px; margin: 20px 0; color: white; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
 
-**关系流向：**
-```
-A["原问题 f(n)"] → B["子问题 f(n-1)"]
-B → C["子问题 f(n-2)"]
-C → D["..."]
-D → E["基础情况 f(1) 或 f(0)"]
-```
+<div style="text-align: center; margin-bottom: 20px;">
+<div style="font-size: 20px; font-weight: bold; margin-bottom: 10px;">🔄 递归：函数调用自身</div>
+<div style="font-size: 14px; opacity: 0.9;">将大问题分解为相同类型的小问题，直到达到基础情况</div>
+</div>
+
+<!-- 递归调用链 -->
+<div style="display: flex; flex-direction: column; align-items: center; gap: 15px; margin: 25px 0;">
+
+<!-- 原问题 -->
+<div style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; text-align: center; min-width: 200px; border: 3px solid #FFD700;">
+<div style="font-size: 24px; margin-bottom: 8px;">🎯</div>
+<div style="font-weight: bold; color: #FFD700; margin-bottom: 8px;">原问题</div>
+<div style="background: #e74c3c; padding: 8px 15px; border-radius: 8px; font-size: 16px; font-weight: bold;">f(n)</div>
+<div style="font-size: 12px; margin-top: 5px; opacity: 0.9;">需要解决的完整问题</div>
+</div>
+
+<div style="font-size: 24px; color: #FFD700;">⬇️</div>
+
+<!-- 子问题1 -->
+<div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 12px; padding: 18px; text-align: center; min-width: 180px; border: 2px solid rgba(255,255,255,0.4);">
+<div style="font-size: 20px; margin-bottom: 8px;">🔍</div>
+<div style="font-weight: bold; color: #FFD700; margin-bottom: 8px;">子问题 1</div>
+<div style="background: #f39c12; padding: 6px 12px; border-radius: 8px; font-size: 14px; font-weight: bold;">f(n-1)</div>
+<div style="font-size: 11px; margin-top: 5px; opacity: 0.8;">规模减少的相同问题</div>
+</div>
+
+<div style="font-size: 20px; color: #FFD700;">⬇️</div>
+
+<!-- 子问题2 -->
+<div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 12px; padding: 16px; text-align: center; min-width: 160px; border: 2px solid rgba(255,255,255,0.3);">
+<div style="font-size: 18px; margin-bottom: 8px;">🔎</div>
+<div style="font-weight: bold; color: #FFD700; margin-bottom: 8px;">子问题 2</div>
+<div style="background: #e67e22; padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: bold;">f(n-2)</div>
+<div style="font-size: 10px; margin-top: 5px; opacity: 0.8;">继续分解...</div>
+</div>
+
+<div style="font-size: 18px; color: #FFD700;">⬇️</div>
+
+<!-- 基础情况 -->
+<div style="background: rgba(39, 174, 96, 0.8); backdrop-filter: blur(10px); border-radius: 12px; padding: 16px; text-align: center; min-width: 140px; border: 2px solid #2ecc71;">
+<div style="font-size: 24px; margin-bottom: 8px;">✅</div>
+<div style="font-weight: bold; color: white; margin-bottom: 8px;">基础情况</div>
+<div style="background: #27ae60; padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: bold;">f(0) 或 f(1)</div>
+<div style="font-size: 10px; margin-top: 5px;">递归结束条件</div>
+</div>
+
+</div>
+
+<!-- 返回过程 -->
+<div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; margin-top: 20px;">
+<div style="text-align: center; font-weight: bold; margin-bottom: 15px; color: #FFD700; font-size: 18px;">🔙 结果返回过程</div>
+<div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+<span style="background: #27ae60; padding: 8px 12px; border-radius: 8px; font-size: 14px;">基础情况 ➡️ 返回值</span>
+<span style="background: #e67e22; padding: 8px 12px; border-radius: 8px; font-size: 14px;">子问题 ➡️ 计算结果</span>
+<span style="background: #e74c3c; padding: 8px 12px; border-radius: 8px; font-size: 14px;">原问题 ➡️ 最终答案</span>
+</div>
+</div>
+
+<div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; text-align: center; margin-top: 15px;">
+<div style="font-size: 16px; font-weight: bold; margin-bottom: 8px;">🧠 核心思想</div>
+<div style="font-size: 14px; opacity: 0.9;">分解问题 → 递归调用 → 合并结果</div>
+</div>
+
+</div>
 
 ## 🏗️ 递归的基本构成
 
