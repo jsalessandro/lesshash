@@ -10,152 +10,368 @@ description: "深入理解拜占庭将军问题：分布式系统容错的经典
 
 ## 引言
 
-拜占庭将军问题是分布式计算中最经典的问题之一，它描述了在存在恶意节点的分布式系统中如何达成共识的挑战。这个问题不仅是理论研究的基础，更是现代区块链、分布式数据库等系统设计的核心考量。
+想象一下，你正在使用支付宝转账给朋友，但是网络中存在恶意攻击者试图篡改交易信息。如何确保你的转账能够安全、准确地完成？这就是拜占庭将军问题要解决的核心挑战。
+
+拜占庭将军问题是分布式计算中最经典的问题之一，它用一个生动的军事隐喻描述了在存在恶意节点的分布式系统中如何达成共识的挑战。这个问题不仅是理论研究的基石，更是现代区块链、分布式数据库、云计算等系统设计的核心考量。
+
+### 为什么要了解拜占庭将军问题？
+
+- 🌐 **互联网安全**：理解网络中恶意节点的威胁
+- 💰 **数字货币**：区块链共识机制的理论基础
+- 🏢 **企业应用**：分布式数据库的一致性保证
+- 🛡️ **系统设计**：构建容错分布式系统的指导原则
 
 ## 问题描述
 
-### 经典场景
+### 📚 经典故事：拜占庭帝国的军事难题
 
-想象拜占庭帝国的将军们围攻一座城市，他们需要决定是否发起攻击：
-
-```
-城市 🏰
-   ↑
-将军A ← → 将军B
-   ↑     ↑
-将军C ← → 将军D
-```
-
-**挑战**：
-- 将军们只能通过信使传递消息
-- 部分将军可能是叛徒，发送虚假信息
-- 必须确保忠诚的将军达成一致决策
-
-### 形式化定义
+公元1000年，拜占庭帝国的将军们围攻一座敌方城市。他们面临一个生死攸关的决策：
 
 ```mermaid
-graph TD
-    A[诚实节点集合 H] --> B[拜占庭节点集合 B]
-    B --> C[总节点数 n]
-    C --> D[需要达成共识的值 v]
-    D --> E[共识条件]
-    E --> F[一致性：所有诚实节点输出相同值]
-    E --> G[正确性：输出值必须是某个诚实节点的输入]
-    E --> H[终止性：算法必须在有限时间内结束]
+graph TB
+    subgraph "围攻态势"
+        城市[🏰 敌方城市]
+        将军A[👨‍💼 将军A<br/>忠诚]
+        将军B[👨‍💼 将军B<br/>叛徒]
+        将军C[👨‍💼 将军C<br/>忠诚]
+        将军D[👨‍💼 将军D<br/>忠诚]
+
+        将军A -.->|信使| 将军B
+        将军B -.->|信使| 将军C
+        将军C -.->|信使| 将军D
+        将军D -.->|信使| 将军A
+        将军A -.->|信使| 将军C
+        将军B -.->|信使| 将军D
+    end
 ```
 
-## 理论分析
+### 🎯 核心挑战
 
-### 不可能性定理
+| 约束条件 | 具体含义 | 现实对应 |
+|---------|----------|----------|
+| 🔄 **分布式通信** | 将军们只能通过信使传递消息 | 网络节点间的消息传递 |
+| 🎭 **恶意节点** | 部分将军可能是叛徒，发送虚假信息 | 系统中的恶意攻击者 |
+| 🤝 **一致性要求** | 忠诚的将军必须达成一致决策 | 分布式系统的状态同步 |
+| ⏰ **时间限制** | 必须在有限时间内做出决策 | 系统响应时间要求 |
 
-**FLP不可能性定理**：在异步网络中，即使只有一个节点可能故障，也不存在既保证安全性又保证活性的确定性共识算法。
+### 🌍 现代应用场景
 
-### 容错边界
-
-对于拜占庭容错，存在重要的理论界限：
-
+**区块链网络**
 ```
-┌─────────────────────────────────────┐
-│ 拜占庭容错理论界限                      │
-├─────────────────────────────────────┤
-│ • 同步网络：n ≥ 3f + 1                │
-│ • 异步网络：不可能 (FLP定理)           │
-│ • 部分同步：n ≥ 3f + 1 + 额外假设      │
-└─────────────────────────────────────┘
+节点A (诚实) ←→ 节点B (恶意)
+    ↕              ↕
+节点C (诚实) ←→ 节点D (诚实)
 
-其中：
-n = 总节点数
-f = 最大拜占庭故障节点数
+问题：如何确保诚实节点对交易达成共识？
 ```
 
-### 数学证明思路
-
-**为什么需要 n ≥ 3f + 1？**
-
+**分布式数据库**
 ```
-假设场景：
-- 总节点数：n
-- 拜占庭节点数：f
-- 诚实节点数：n - f
+数据库1 ←→ 数据库2 (故障)
+    ↕           ↕
+数据库3 ←→ 数据库4
 
-最坏情况分析：
-1. f个拜占庭节点可以向不同组发送不同消息
-2. 需要确保诚实节点能够区分真假消息
-3. 需要足够的诚实节点形成多数
-
-推导：
-n - f > f  (诚实节点数 > 拜占庭节点数)
-n > 2f
-但考虑到信息传递的复杂性：
-n ≥ 3f + 1
+问题：如何保证数据的一致性和完整性？
 ```
 
-## 解决方案
+### 🔬 形式化定义
+
+```mermaid
+flowchart TD
+    subgraph "系统模型"
+        A["🟢 诚实节点集合 H<br/>|H| = n - f"]
+        B["🔴 拜占庭节点集合 B<br/>|B| ≤ f"]
+        C["📊 总节点数 n"]
+    end
+
+    subgraph "共识目标"
+        D["💎 共识值 v"]
+    end
+
+    subgraph "安全性要求"
+        F["🎯 一致性<br/>所有诚实节点输出相同值"]
+        G["✅ 正确性<br/>输出值来自诚实节点输入"]
+        H["⏱️ 终止性<br/>算法在有限时间内结束"]
+    end
+
+    A --> D
+    B --> D
+    C --> D
+    D --> F
+    D --> G
+    D --> H
+```
+
+### 🧮 数学表示
+
+设分布式系统有 `n` 个节点，其中最多有 `f` 个拜占庭故障节点：
+
+```
+系统参数：
+• n：总节点数
+• f：最大拜占庭故障节点数
+• H：诚实节点集合，|H| = n - f
+• B：拜占庭节点集合，|B| ≤ f
+
+共识属性：
+• Agreement：∀i,j ∈ H，decision_i = decision_j
+• Validity：如果所有诚实节点输入相同值v，则决策值为v
+• Termination：所有诚实节点最终都会产生决策
+```
+
+## 🧠 理论分析
+
+### 🚫 不可能性定理（FLP定理）
+
+**发现者**：Fischer, Lynch, Paterson (1985)
+
+**定理内容**：在异步网络中，即使只有一个节点可能故障，也不存在既保证安全性又保证活性的确定性共识算法。
+
+```mermaid
+graph LR
+    subgraph "网络模型"
+        A[同步网络<br/>🟢 可解决]
+        B[异步网络<br/>🔴 不可解决]
+        C[部分同步<br/>🟡 有条件解决]
+    end
+
+    A --> A1["消息有确定延迟上界"]
+    B --> B1["消息延迟无界"]
+    C --> C1["最终同步假设"]
+```
+
+### 📏 容错边界分析
+
+#### 🔢 神奇的"3f+1"公式
+
+拜占庭容错系统必须满足：**n ≥ 3f + 1**
+
+| 网络类型 | 容错条件 | 说明 |
+|---------|----------|------|
+| 🔄 **同步网络** | n ≥ 3f + 1 | 消息传递有时间上界 |
+| ⚡ **异步网络** | 不可能 | FLP定理限制 |
+| 🌓 **部分同步** | n ≥ 3f + 1 + 额外假设 | 最终同步或故障检测 |
+
+#### 🤔 为什么是"3f+1"而不是"2f+1"？
+
+让我们用一个直观的例子来理解：
+
+```mermaid
+flowchart TD
+    subgraph "场景：n=3, f=1"
+        A["节点A<br/>说：攻击"]
+        B["节点B<br/>说：撤退"]
+        C["节点C<br/>🤔 困惑了"]
+    end
+
+    A -.->|消息1| C
+    B -.->|消息2| C
+
+    subgraph "C的困境"
+        D["A是诚实的，B是叛徒？"]
+        E["B是诚实的，A是叛徒？"]
+        F["😵 无法判断！"]
+    end
+
+    C --> D
+    C --> E
+    D --> F
+    E --> F
+```
+
+**结论**：3个节点无法容忍1个拜占庭故障！
+
+### 🧮 数学证明：为什么需要 n ≥ 3f + 1？
+
+#### 📋 证明思路
+
+**步骤1：基本约束**
+```
+诚实节点数 > 拜占庭节点数
+n - f > f
+因此：n > 2f
+```
+
+**步骤2：信息传递复杂性**
+
+考虑一个更复杂的场景：
+
+```mermaid
+sequenceDiagram
+    participant A as 节点A(诚实)
+    participant B as 节点B(?)
+    participant C as 节点C(诚实)
+    participant D as 节点D(?)
+
+    Note over A,D: 初始提议阶段
+    A->>B: 提议：攻击
+    A->>C: 提议：攻击
+    A->>D: 提议：攻击
+
+    Note over A,D: B可能是叛徒的情况
+    B->>C: "A说撤退" (谎言)
+    B->>D: "A说攻击" (真话)
+
+    Note over A,D: C需要做决策
+    C->>C: 收到矛盾信息，如何判断？
+```
+
+**步骤3：最坏情况分析**
+
+假设系统被分为两部分，拜占庭节点可能向两部分发送不同的消息：
+
+```
+情况1：网络分区
+┌─────────────┐    ┌─────────────┐
+│   组 X      │    │    组 Y     │
+│ 诚实: a个   │    │  诚实: b个  │
+│ 拜占庭: f个 │    │  拜占庭: 0个│
+└─────────────┘    └─────────────┘
+
+其中：a + b = n - f, a ≥ f (组X能够检测拜占庭行为)
+
+为了保证每组都能正确工作：
+a ≥ f 且 b ≥ f
+因此：a + b ≥ 2f
+即：n - f ≥ 2f
+所以：n ≥ 3f
+```
+
+**步骤4：边界条件**
+
+实际上需要严格大于：**n ≥ 3f + 1**
+
+#### 🎨 直观理解
+
+```mermaid
+flowchart LR
+    subgraph "n=4, f=1 (✅可行)"
+        A1[诚实]
+        A2[诚实]
+        A3[诚实]
+        A4[叛徒]
+
+        A1 -.-> A2
+        A2 -.-> A3
+        A3 -.-> A1
+        A4 -.-> A1
+        A4 -.-> A2
+        A4 -.-> A3
+    end
+
+    subgraph "n=3, f=1 (❌不可行)"
+        B1[诚实]
+        B2[诚实]
+        B3[叛徒]
+
+        B1 -.-> B2
+        B3 -.-> B1
+        B3 -.-> B2
+    end
+```
+
+## 💡 解决方案大全
+
+拜占庭将军问题催生了多种巧妙的解决方案，每种方案都有其特定的应用场景和优势。让我们从最基础的算法开始，逐步探索更先进的解决方案。
 
 ### 1. 口头消息算法 (OM算法)
 
 **基本思想**：通过多轮消息传递，让每个节点收集足够信息做出决策。
 
-```python
-class ByzantineGeneralsOM:
-    def __init__(self, n, f):
-        self.n = n  # 总节点数
-        self.f = f  # 最大拜占庭节点数
-        self.nodes = list(range(n))
+```java
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
-    def oral_message(self, commander_value, m):
-        """
-        OM(m)算法实现
-        commander_value: 指挥官的初始值
-        m: 轮数，通常设置为f
-        """
-        if m == 0:
-            # 基础情况：直接返回指挥官的值
-            return commander_value
+public class ByzantineGeneralsOM {
+    private int n; // 总节点数
+    private int f; // 最大拜占庭节点数
+    private Set<Integer> byzantineNodes;
 
-        # 第一轮：指挥官向所有副官发送值
-        messages = {}
-        for i in range(1, self.n):
-            # 模拟可能的拜占庭行为
-            if self.is_byzantine(0):  # 如果指挥官是拜占庭的
-                messages[i] = self.byzantine_value(i)
-            else:
-                messages[i] = commander_value
+    public ByzantineGeneralsOM(int n, int f) {
+        this.n = n;
+        this.f = f;
+        this.byzantineNodes = new HashSet<>();
+    }
 
-        # 后续轮次：递归处理
-        results = {}
-        for i in range(1, self.n):
-            if not self.is_byzantine(i):
-                # 诚实节点运行OM(m-1)
-                results[i] = self.oral_message(messages[i], m-1)
+    /**
+     * OM(m)算法实现
+     * @param commanderValue 指挥官的初始值
+     * @param m 轮数，通常设置为f
+     * @return 共识结果
+     */
+    public int oralMessage(int commanderValue, int m) {
+        if (m == 0) {
+            // 基础情况：直接返回指挥官的值
+            return commanderValue;
+        }
 
-        return self.majority_vote(results)
+        // 第一轮：指挥官向所有副官发送值
+        Map<Integer, Integer> messages = new HashMap<>();
+        for (int i = 1; i < n; i++) {
+            // 模拟可能的拜占庭行为
+            if (isByzantine(0)) { // 如果指挥官是拜占庭的
+                messages.put(i, byzantineValue(i));
+            } else {
+                messages.put(i, commanderValue);
+            }
+        }
 
-    def majority_vote(self, values):
-        """多数投票决策"""
-        vote_count = {}
-        for v in values.values():
-            vote_count[v] = vote_count.get(v, 0) + 1
+        // 后续轮次：递归处理
+        Map<Integer, Integer> results = new HashMap<>();
+        for (int i = 1; i < n; i++) {
+            if (!isByzantine(i)) {
+                // 诚实节点运行OM(m-1)
+                results.put(i, oralMessage(messages.get(i), m - 1));
+            }
+        }
 
-        return max(vote_count, key=vote_count.get)
+        return majorityVote(results);
+    }
 
-    def is_byzantine(self, node_id):
-        """检查节点是否为拜占庭节点"""
-        # 简化实现，实际中这是未知的
-        return node_id in self.byzantine_nodes
+    /**
+     * 多数投票决策
+     */
+    private int majorityVote(Map<Integer, Integer> values) {
+        Map<Integer, Integer> voteCount = new HashMap<>();
+        for (Integer value : values.values()) {
+            voteCount.put(value, voteCount.getOrDefault(value, 0) + 1);
+        }
 
-    def byzantine_value(self, target_node):
-        """拜占庭节点发送的恶意值"""
-        # 拜占庭节点可能发送不同的值给不同节点
-        return random.choice([0, 1])
+        return voteCount.entrySet().stream()
+            .max(Map.Entry.comparingByValue())
+            .map(Map.Entry::getKey)
+            .orElse(0);
+    }
 
-# 使用示例
-n, f = 4, 1  # 4个节点，最多1个拜占庭节点
-bg = ByzantineGeneralsOM(n, f)
-bg.byzantine_nodes = {3}  # 节点3是拜占庭节点
+    /**
+     * 检查节点是否为拜占庭节点
+     */
+    private boolean isByzantine(int nodeId) {
+        return byzantineNodes.contains(nodeId);
+    }
 
-result = bg.oral_message(commander_value=1, m=f)
-print(f"共识结果: {result}")
+    /**
+     * 拜占庭节点发送的恶意值
+     */
+    private int byzantineValue(int targetNode) {
+        // 拜占庭节点可能发送不同的值给不同节点
+        return ThreadLocalRandom.current().nextInt(2);
+    }
+
+    public void setByzantineNodes(Set<Integer> nodes) {
+        this.byzantineNodes = nodes;
+    }
+
+    // 使用示例
+    public static void main(String[] args) {
+        int n = 4, f = 1; // 4个节点，最多1个拜占庭节点
+        ByzantineGeneralsOM bg = new ByzantineGeneralsOM(n, f);
+        bg.setByzantineNodes(Set.of(3)); // 节点3是拜占庭节点
+
+        int result = bg.oralMessage(1, f);
+        System.out.println("共识结果: " + result);
+    }
+}
 ```
 
 **算法流程图**：
@@ -186,232 +402,570 @@ OM(m)算法流程：
 
 引入数字签名机制，提高效率和安全性：
 
-```python
-import hashlib
-import json
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
+```java
+import java.security.*;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.crypto.Cipher;
 
-class SignedMessage:
-    def __init__(self, value, sender_id, signature_chain=None):
-        self.value = value
-        self.sender_id = sender_id
-        self.signature_chain = signature_chain or []
+class SignatureEntry {
+    private int signerId;
+    private String signature;
 
-    def sign(self, private_key, signer_id):
-        """为消息添加数字签名"""
-        message_data = json.dumps({
-            'value': self.value,
-            'sender_id': self.sender_id,
-            'chain': self.signature_chain
-        }, sort_keys=True).encode()
+    public SignatureEntry(int signerId, String signature) {
+        this.signerId = signerId;
+        this.signature = signature;
+    }
 
-        signature = private_key.sign(
-            message_data,
-            padding.PSS(
-                mgf=padding.MGF1(hashes.SHA256()),
-                salt_length=padding.PSS.MAX_LENGTH
-            ),
-            hashes.SHA256()
-        )
+    public int getSignerId() { return signerId; }
+    public String getSignature() { return signature; }
+}
 
-        self.signature_chain.append({
-            'signer_id': signer_id,
-            'signature': signature.hex()
-        })
+class SignedMessage {
+    private int value;
+    private int senderId;
+    private List<SignatureEntry> signatureChain;
 
-        return self
+    public SignedMessage(int value, int senderId) {
+        this.value = value;
+        this.senderId = senderId;
+        this.signatureChain = new ArrayList<>();
+    }
 
-class ByzantineGeneralsSM:
-    def __init__(self, n, f):
-        self.n = n
-        self.f = f
-        self.generate_keys()
+    public SignedMessage(int value, int senderId, List<SignatureEntry> chain) {
+        this.value = value;
+        this.senderId = senderId;
+        this.signatureChain = new ArrayList<>(chain);
+    }
 
-    def generate_keys(self):
-        """为每个节点生成公私钥对"""
-        self.private_keys = {}
-        self.public_keys = {}
+    /**
+     * 为消息添加数字签名
+     */
+    public SignedMessage sign(PrivateKey privateKey, int signerId) throws Exception {
+        // 创建消息摘要
+        String messageData = String.format("{value:%d,senderId:%d,chainSize:%d}",
+                                          value, senderId, signatureChain.size());
 
-        for i in range(self.n):
-            private_key = rsa.generate_private_key(
-                public_exponent=65537,
-                key_size=2048
-            )
-            public_key = private_key.public_key()
+        // 生成签名
+        Signature signature = Signature.getInstance("SHA256withRSA");
+        signature.initSign(privateKey);
+        signature.update(messageData.getBytes());
+        byte[] signatureBytes = signature.sign();
 
-            self.private_keys[i] = private_key
-            self.public_keys[i] = public_key
+        // 添加到签名链
+        signatureChain.add(new SignatureEntry(signerId,
+                          Base64.getEncoder().encodeToString(signatureBytes)));
 
-    def signed_message_algorithm(self, commander_value, commander_id):
-        """SM算法实现"""
-        # 第一阶段：指挥官签名并广播
-        initial_message = SignedMessage(commander_value, commander_id)
-        initial_message.sign(self.private_keys[commander_id], commander_id)
+        return this;
+    }
 
-        # 模拟消息传播
-        node_messages = {i: [] for i in range(self.n)}
+    public int getValue() { return value; }
+    public int getSenderId() { return senderId; }
+    public List<SignatureEntry> getSignatureChain() { return signatureChain; }
+}
 
-        # 指挥官向所有节点发送签名消息
-        for i in range(self.n):
-            if i != commander_id:
-                node_messages[i].append(initial_message)
+public class ByzantineGeneralsSM {
+    private int n;
+    private int f;
+    private Map<Integer, KeyPair> keyPairs;
+    private Set<Integer> byzantineNodes;
 
-        # 多轮转发和签名
-        for round_num in range(self.f):
-            new_messages = {i: [] for i in range(self.n)}
+    public ByzantineGeneralsSM(int n, int f) throws Exception {
+        this.n = n;
+        this.f = f;
+        this.byzantineNodes = new HashSet<>();
+        generateKeys();
+    }
 
-            for node_id in range(self.n):
-                if node_id == commander_id or self.is_byzantine(node_id):
-                    continue
+    /**
+     * 为每个节点生成公私钥对
+     */
+    private void generateKeys() throws Exception {
+        keyPairs = new HashMap<>();
+        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+        keyGen.initialize(2048);
 
-                # 诚实节点转发收到的消息
-                for msg in node_messages[node_id]:
-                    if len(msg.signature_chain) <= self.f:
-                        # 添加自己的签名并转发
-                        forwarded_msg = SignedMessage(
-                            msg.value,
-                            msg.sender_id,
-                            msg.signature_chain.copy()
-                        )
-                        forwarded_msg.sign(self.private_keys[node_id], node_id)
+        for (int i = 0; i < n; i++) {
+            KeyPair keyPair = keyGen.generateKeyPair();
+            keyPairs.put(i, keyPair);
+        }
+    }
 
-                        # 发送给其他节点
-                        for target_id in range(self.n):
-                            if target_id != node_id and target_id not in [s['signer_id'] for s in forwarded_msg.signature_chain]:
-                                new_messages[target_id].append(forwarded_msg)
+    /**
+     * SM算法实现
+     */
+    public Map<Integer, Integer> signedMessageAlgorithm(int commanderValue, int commanderId)
+            throws Exception {
 
-            # 更新消息集合
-            for node_id in range(self.n):
-                node_messages[node_id].extend(new_messages[node_id])
+        // 第一阶段：指挥官签名并广播
+        SignedMessage initialMessage = new SignedMessage(commanderValue, commanderId);
+        initialMessage.sign(keyPairs.get(commanderId).getPrivate(), commanderId);
 
-        # 决策阶段
-        decisions = {}
-        for node_id in range(self.n):
-            if not self.is_byzantine(node_id):
-                decisions[node_id] = self.make_decision(node_messages[node_id])
+        // 模拟消息传播
+        Map<Integer, List<SignedMessage>> nodeMessages = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            nodeMessages.put(i, new ArrayList<>());
+        }
 
-        return decisions
+        // 指挥官向所有节点发送签名消息
+        for (int i = 0; i < n; i++) {
+            if (i != commanderId) {
+                nodeMessages.get(i).add(initialMessage);
+            }
+        }
 
-    def verify_signature_chain(self, message):
-        """验证签名链的有效性"""
-        # 简化实现，实际中需要完整的签名验证
-        return len(set(s['signer_id'] for s in message.signature_chain)) >= self.f + 1
+        // 多轮转发和签名
+        for (int round = 0; round < f; round++) {
+            Map<Integer, List<SignedMessage>> newMessages = new HashMap<>();
+            for (int i = 0; i < n; i++) {
+                newMessages.put(i, new ArrayList<>());
+            }
 
-    def make_decision(self, messages):
-        """基于收到的消息做出决策"""
-        valid_messages = [msg for msg in messages if self.verify_signature_chain(msg)]
+            for (int nodeId = 0; nodeId < n; nodeId++) {
+                if (nodeId == commanderId || isByzantine(nodeId)) {
+                    continue;
+                }
 
-        if not valid_messages:
-            return None  # 默认值
+                // 诚实节点转发收到的消息
+                for (SignedMessage msg : nodeMessages.get(nodeId)) {
+                    if (msg.getSignatureChain().size() <= f) {
+                        // 添加自己的签名并转发
+                        SignedMessage forwardedMsg = new SignedMessage(
+                            msg.getValue(), msg.getSenderId(), msg.getSignatureChain());
+                        forwardedMsg.sign(keyPairs.get(nodeId).getPrivate(), nodeId);
 
-        # 选择具有最多有效签名的值
-        value_counts = {}
-        for msg in valid_messages:
-            value_counts[msg.value] = value_counts.get(msg.value, 0) + len(msg.signature_chain)
+                        // 发送给其他节点
+                        Set<Integer> signerIds = msg.getSignatureChain().stream()
+                            .map(SignatureEntry::getSignerId)
+                            .collect(Collectors.toSet());
 
-        return max(value_counts, key=value_counts.get)
+                        for (int targetId = 0; targetId < n; targetId++) {
+                            if (targetId != nodeId && !signerIds.contains(targetId)) {
+                                newMessages.get(targetId).add(forwardedMsg);
+                            }
+                        }
+                    }
+                }
+            }
 
-    def is_byzantine(self, node_id):
-        """检查是否为拜占庭节点"""
-        return node_id in getattr(self, 'byzantine_nodes', set())
+            // 更新消息集合
+            for (int nodeId = 0; nodeId < n; nodeId++) {
+                nodeMessages.get(nodeId).addAll(newMessages.get(nodeId));
+            }
+        }
 
-# 使用示例
-bg_sm = ByzantineGeneralsSM(n=4, f=1)
-bg_sm.byzantine_nodes = {3}
+        // 决策阶段
+        Map<Integer, Integer> decisions = new HashMap<>();
+        for (int nodeId = 0; nodeId < n; nodeId++) {
+            if (!isByzantine(nodeId)) {
+                decisions.put(nodeId, makeDecision(nodeMessages.get(nodeId)));
+            }
+        }
 
-decisions = bg_sm.signed_message_algorithm(commander_value=1, commander_id=0)
-print("各节点决策结果:", decisions)
+        return decisions;
+    }
+
+    /**
+     * 验证签名链的有效性
+     */
+    private boolean verifySignatureChain(SignedMessage message) {
+        // 简化实现，实际中需要完整的签名验证
+        Set<Integer> signerIds = message.getSignatureChain().stream()
+            .map(SignatureEntry::getSignerId)
+            .collect(Collectors.toSet());
+        return signerIds.size() >= f + 1;
+    }
+
+    /**
+     * 基于收到的消息做出决策
+     */
+    private Integer makeDecision(List<SignedMessage> messages) {
+        List<SignedMessage> validMessages = messages.stream()
+            .filter(this::verifySignatureChain)
+            .collect(Collectors.toList());
+
+        if (validMessages.isEmpty()) {
+            return null; // 默认值
+        }
+
+        // 选择具有最多有效签名的值
+        Map<Integer, Integer> valueCounts = new HashMap<>();
+        for (SignedMessage msg : validMessages) {
+            int value = msg.getValue();
+            int weight = msg.getSignatureChain().size();
+            valueCounts.put(value, valueCounts.getOrDefault(value, 0) + weight);
+        }
+
+        return valueCounts.entrySet().stream()
+            .max(Map.Entry.comparingByValue())
+            .map(Map.Entry::getKey)
+            .orElse(null);
+    }
+
+    /**
+     * 检查是否为拜占庭节点
+     */
+    private boolean isByzantine(int nodeId) {
+        return byzantineNodes.contains(nodeId);
+    }
+
+    public void setByzantineNodes(Set<Integer> nodes) {
+        this.byzantineNodes = nodes;
+    }
+
+    // 使用示例
+    public static void main(String[] args) throws Exception {
+        ByzantineGeneralsSM bgSm = new ByzantineGeneralsSM(4, 1);
+        bgSm.setByzantineNodes(Set.of(3));
+
+        Map<Integer, Integer> decisions = bgSm.signedMessageAlgorithm(1, 0);
+        System.out.println("各节点决策结果: " + decisions);
+    }
+}
 ```
 
 ## 现代应用
 
 ### 1. 区块链中的应用
 
-```python
-class BlockchainBFT:
-    """区块链中的拜占庭容错实现"""
+```java
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.time.Instant;
 
-    def __init__(self, validators):
-        self.validators = validators
-        self.f = (len(validators) - 1) // 3
+class BlockProposal {
+    private int view;
+    private int sequence;
+    private String blockData;
+    private long timestamp;
 
-    def propose_block(self, block_data):
-        """提议新区块"""
-        # PBFT三阶段协议
+    public BlockProposal(int view, int sequence, String blockData) {
+        this.view = view;
+        this.sequence = sequence;
+        this.blockData = blockData;
+        this.timestamp = Instant.now().toEpochMilli();
+    }
 
-        # 1. Pre-prepare阶段
-        proposal = {
-            'view': self.current_view,
-            'sequence': self.sequence_number,
-            'block': block_data,
-            'timestamp': time.time()
+    // Getters
+    public int getView() { return view; }
+    public int getSequence() { return sequence; }
+    public String getBlockData() { return blockData; }
+    public long getTimestamp() { return timestamp; }
+}
+
+class Validator {
+    private int id;
+    private boolean isByzantine;
+
+    public Validator(int id, boolean isByzantine) {
+        this.id = id;
+        this.isByzantine = isByzantine;
+    }
+
+    public boolean validateProposal(BlockProposal proposal) {
+        // 简化的验证逻辑
+        return !isByzantine && proposal.getBlockData() != null;
+    }
+
+    public String signPreprepare(BlockProposal proposal) {
+        return "preprepare_" + id + "_" + proposal.getSequence();
+    }
+
+    public String signPrepare(BlockProposal proposal) {
+        return "prepare_" + id + "_" + proposal.getSequence();
+    }
+
+    public String signCommit(BlockProposal proposal) {
+        return "commit_" + id + "_" + proposal.getSequence();
+    }
+
+    public int getId() { return id; }
+}
+
+public class BlockchainBFT {
+    private List<Validator> validators;
+    private int f; // 最大拜占庭节点数
+    private int currentView;
+    private int sequenceNumber;
+
+    public BlockchainBFT(List<Validator> validators) {
+        this.validators = validators;
+        this.f = (validators.size() - 1) / 3;
+        this.currentView = 0;
+        this.sequenceNumber = 0;
+    }
+
+    /**
+     * 提议新区块
+     */
+    public boolean proposeBlock(String blockData) {
+        // PBFT三阶段协议
+
+        // 1. Pre-prepare阶段
+        BlockProposal proposal = new BlockProposal(currentView, sequenceNumber++, blockData);
+        List<String> preprepareVotes = broadcastPreprepare(proposal);
+
+        // 2. Prepare阶段
+        if (preprepareVotes.size() >= 2 * f + 1) {
+            List<String> prepareVotes = broadcastPrepare(proposal);
+
+            // 3. Commit阶段
+            if (prepareVotes.size() >= 2 * f + 1) {
+                List<String> commitVotes = broadcastCommit(proposal);
+
+                if (commitVotes.size() >= 2 * f + 1) {
+                    return finalizeBlock(blockData);
+                }
+            }
         }
 
-        preprepare_votes = self.broadcast_preprepare(proposal)
+        return false;
+    }
 
-        # 2. Prepare阶段
-        if len(preprepare_votes) >= 2 * self.f + 1:
-            prepare_votes = self.broadcast_prepare(proposal)
+    /**
+     * 广播pre-prepare消息
+     */
+    private List<String> broadcastPreprepare(BlockProposal proposal) {
+        List<String> votes = new ArrayList<>();
+        for (Validator validator : validators) {
+            if (validator.validateProposal(proposal)) {
+                String vote = validator.signPreprepare(proposal);
+                votes.add(vote);
+            }
+        }
+        return votes;
+    }
 
-            # 3. Commit阶段
-            if len(prepare_votes) >= 2 * self.f + 1:
-                commit_votes = self.broadcast_commit(proposal)
+    /**
+     * 广播prepare消息
+     */
+    private List<String> broadcastPrepare(BlockProposal proposal) {
+        List<String> votes = new ArrayList<>();
+        for (Validator validator : validators) {
+            if (validator.validateProposal(proposal)) {
+                String vote = validator.signPrepare(proposal);
+                votes.add(vote);
+            }
+        }
+        return votes;
+    }
 
-                if len(commit_votes) >= 2 * self.f + 1:
-                    return self.finalize_block(block_data)
+    /**
+     * 广播commit消息
+     */
+    private List<String> broadcastCommit(BlockProposal proposal) {
+        List<String> votes = new ArrayList<>();
+        for (Validator validator : validators) {
+            if (validator.validateProposal(proposal)) {
+                String vote = validator.signCommit(proposal);
+                votes.add(vote);
+            }
+        }
+        return votes;
+    }
 
-        return None
+    /**
+     * 最终确认区块
+     */
+    private boolean finalizeBlock(String blockData) {
+        System.out.println("区块已确认: " + blockData);
+        return true;
+    }
 
-    def broadcast_preprepare(self, proposal):
-        """广播pre-prepare消息"""
-        votes = []
-        for validator in self.validators:
-            if validator.validate_proposal(proposal):
-                vote = validator.sign_preprepare(proposal)
-                votes.append(vote)
-        return votes
+    // 使用示例
+    public static void main(String[] args) {
+        List<Validator> validators = Arrays.asList(
+            new Validator(0, false),
+            new Validator(1, false),
+            new Validator(2, false),
+            new Validator(3, true)  // 拜占庭节点
+        );
+
+        BlockchainBFT bft = new BlockchainBFT(validators);
+        boolean success = bft.proposeBlock("新区块数据");
+        System.out.println("区块提议结果: " + success);
+    }
+}
 ```
 
 ### 2. 分布式数据库
 
-```python
-class DistributedDatabase:
-    """分布式数据库的拜占庭容错实现"""
+```java
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-    def __init__(self, replicas):
-        self.replicas = replicas
-        self.f = (len(replicas) - 1) // 3
+class Transaction {
+    private String id;
+    private List<String> operations;
+    private long timestamp;
 
-    def execute_transaction(self, transaction):
-        """执行事务"""
-        # 使用拜占庭容错确保事务一致性
+    public Transaction(String id, List<String> operations) {
+        this.id = id;
+        this.operations = operations;
+        this.timestamp = System.currentTimeMillis();
+    }
 
-        # 1. 事务提议阶段
-        proposal = {
-            'tx_id': transaction['id'],
-            'operations': transaction['ops'],
-            'timestamp': time.time()
+    public String getId() { return id; }
+    public List<String> getOperations() { return operations; }
+    public long getTimestamp() { return timestamp; }
+}
+
+class TransactionProposal {
+    private String txId;
+    private List<String> operations;
+    private long timestamp;
+
+    public TransactionProposal(String txId, List<String> operations, long timestamp) {
+        this.txId = txId;
+        this.operations = operations;
+        this.timestamp = timestamp;
+    }
+
+    public String getTxId() { return txId; }
+    public List<String> getOperations() { return operations; }
+    public long getTimestamp() { return timestamp; }
+}
+
+class DatabaseReplica {
+    private int id;
+    private boolean isByzantine;
+    private Map<String, String> data;
+
+    public DatabaseReplica(int id, boolean isByzantine) {
+        this.id = id;
+        this.isByzantine = isByzantine;
+        this.data = new ConcurrentHashMap<>();
+    }
+
+    public boolean validateTransaction(Transaction transaction) {
+        // 简化的事务验证逻辑
+        return !isByzantine && transaction.getOperations() != null && !transaction.getOperations().isEmpty();
+    }
+
+    public String voteCommit(TransactionProposal proposal) {
+        if (isByzantine) {
+            // 拜占庭节点可能发送恶意投票
+            return "byzantine_vote_" + id;
+        }
+        return "commit_vote_" + id + "_" + proposal.getTxId();
+    }
+
+    public boolean commitTransaction(Transaction transaction) {
+        if (isByzantine) {
+            return false; // 拜占庭节点可能拒绝提交
         }
 
-        # 2. 投票阶段
-        votes = []
-        for replica in self.replicas:
-            if replica.validate_transaction(transaction):
-                vote = replica.vote_commit(proposal)
-                votes.append(vote)
+        // 模拟事务提交
+        for (String operation : transaction.getOperations()) {
+            data.put("tx_" + transaction.getId(), operation);
+        }
+        System.out.println("副本 " + id + " 提交事务: " + transaction.getId());
+        return true;
+    }
 
-        # 3. 决策阶段
-        if len(votes) >= 2 * self.f + 1:
-            # 提交事务
-            for replica in self.replicas:
-                replica.commit_transaction(transaction)
-            return True
-        else:
-            # 回滚事务
-            for replica in self.replicas:
-                replica.abort_transaction(transaction)
-            return False
+    public void abortTransaction(Transaction transaction) {
+        System.out.println("副本 " + id + " 中止事务: " + transaction.getId());
+    }
+
+    public int getId() { return id; }
+}
+
+public class DistributedDatabase {
+    private List<DatabaseReplica> replicas;
+    private int f; // 最大拜占庭节点数
+    private ExecutorService executor;
+
+    public DistributedDatabase(List<DatabaseReplica> replicas) {
+        this.replicas = replicas;
+        this.f = (replicas.size() - 1) / 3;
+        this.executor = Executors.newCachedThreadPool();
+    }
+
+    /**
+     * 执行事务
+     */
+    public boolean executeTransaction(Transaction transaction) {
+        // 使用拜占庭容错确保事务一致性
+
+        // 1. 事务提议阶段
+        TransactionProposal proposal = new TransactionProposal(
+            transaction.getId(),
+            transaction.getOperations(),
+            transaction.getTimestamp()
+        );
+
+        // 2. 投票阶段
+        List<String> votes = new ArrayList<>();
+        List<CompletableFuture<String>> voteFutures = new ArrayList<>();
+
+        for (DatabaseReplica replica : replicas) {
+            CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+                if (replica.validateTransaction(transaction)) {
+                    return replica.voteCommit(proposal);
+                }
+                return null;
+            }, executor);
+            voteFutures.add(future);
+        }
+
+        // 收集投票结果
+        for (CompletableFuture<String> future : voteFutures) {
+            try {
+                String vote = future.get();
+                if (vote != null && !vote.startsWith("byzantine")) {
+                    votes.add(vote);
+                }
+            } catch (Exception e) {
+                System.err.println("投票收集异常: " + e.getMessage());
+            }
+        }
+
+        // 3. 决策阶段
+        if (votes.size() >= 2 * f + 1) {
+            // 提交事务
+            System.out.println("事务 " + transaction.getId() + " 获得足够投票，开始提交");
+            for (DatabaseReplica replica : replicas) {
+                replica.commitTransaction(transaction);
+            }
+            return true;
+        } else {
+            // 回滚事务
+            System.out.println("事务 " + transaction.getId() + " 投票不足，开始回滚");
+            for (DatabaseReplica replica : replicas) {
+                replica.abortTransaction(transaction);
+            }
+            return false;
+        }
+    }
+
+    public void shutdown() {
+        executor.shutdown();
+    }
+
+    // 使用示例
+    public static void main(String[] args) {
+        List<DatabaseReplica> replicas = Arrays.asList(
+            new DatabaseReplica(0, false),
+            new DatabaseReplica(1, false),
+            new DatabaseReplica(2, false),
+            new DatabaseReplica(3, true)  // 拜占庭节点
+        );
+
+        DistributedDatabase db = new DistributedDatabase(replicas);
+
+        Transaction tx = new Transaction("tx_001",
+            Arrays.asList("INSERT user1", "UPDATE balance"));
+
+        boolean success = db.executeTransaction(tx);
+        System.out.println("事务执行结果: " + success);
+
+        db.shutdown();
+    }
+}
 ```
 
 ## 性能分析
@@ -431,108 +985,314 @@ class DistributedDatabase:
 
 ### 实际性能测试
 
-```python
-import time
-import random
+```java
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
-def performance_test():
-    """性能测试函数"""
-    node_counts = [4, 7, 10, 13, 16]
-    algorithms = ['OM', 'SM', 'PBFT']
+public class PerformanceTest {
 
-    results = {}
+    /**
+     * 性能测试函数
+     */
+    public static Map<Integer, Map<String, Long>> performanceTest() {
+        int[] nodeCounts = {4, 7, 10, 13, 16};
+        String[] algorithms = {"OM", "SM", "PBFT"};
 
-    for n in node_counts:
-        f = (n - 1) // 3
-        results[n] = {}
+        Map<Integer, Map<String, Long>> results = new HashMap<>();
 
-        for algo in algorithms:
-            start_time = time.time()
+        for (int n : nodeCounts) {
+            int f = (n - 1) / 3;
+            Map<String, Long> algoResults = new HashMap<>();
 
-            if algo == 'OM':
-                bg = ByzantineGeneralsOM(n, f)
-                bg.byzantine_nodes = set(random.sample(range(n), f))
-                result = bg.oral_message(1, f)
+            for (String algo : algorithms) {
+                long startTime = System.currentTimeMillis();
 
-            elif algo == 'SM':
-                bg = ByzantineGeneralsSM(n, f)
-                bg.byzantine_nodes = set(random.sample(range(n), f))
-                result = bg.signed_message_algorithm(1, 0)
+                try {
+                    if ("OM".equals(algo)) {
+                        ByzantineGeneralsOM bg = new ByzantineGeneralsOM(n, f);
+                        Set<Integer> byzantineNodes = new HashSet<>();
+                        // 随机选择f个拜占庭节点
+                        for (int i = 0; i < f; i++) {
+                            byzantineNodes.add(ThreadLocalRandom.current().nextInt(n));
+                        }
+                        bg.setByzantineNodes(byzantineNodes);
+                        bg.oralMessage(1, f);
 
-            end_time = time.time()
-            results[n][algo] = end_time - start_time
+                    } else if ("SM".equals(algo)) {
+                        ByzantineGeneralsSM bg = new ByzantineGeneralsSM(n, f);
+                        Set<Integer> byzantineNodes = new HashSet<>();
+                        for (int i = 0; i < f; i++) {
+                            byzantineNodes.add(ThreadLocalRandom.current().nextInt(n));
+                        }
+                        bg.setByzantineNodes(byzantineNodes);
+                        bg.signedMessageAlgorithm(1, 0);
 
-    return results
+                    } else if ("PBFT".equals(algo)) {
+                        // 模拟PBFT性能
+                        Thread.sleep(n * 10); // 模拟复杂度
+                    }
+                } catch (Exception e) {
+                    System.err.println("算法 " + algo + " 执行异常: " + e.getMessage());
+                }
 
-# 运行性能测试
-perf_results = performance_test()
-print("性能测试结果 (秒):")
-for n, algos in perf_results.items():
-    print(f"节点数 {n}: {algos}")
+                long endTime = System.currentTimeMillis();
+                algoResults.put(algo, endTime - startTime);
+            }
+
+            results.put(n, algoResults);
+        }
+
+        return results;
+    }
+
+    public static void main(String[] args) {
+        Map<Integer, Map<String, Long>> perfResults = performanceTest();
+        System.out.println("性能测试结果 (毫秒):");
+
+        for (Map.Entry<Integer, Map<String, Long>> entry : perfResults.entrySet()) {
+            System.out.println("节点数 " + entry.getKey() + ": " + entry.getValue());
+        }
+    }
+}
+```
 ```
 
 ## 优化策略
 
 ### 1. 消息聚合
 
-```python
-class OptimizedBFT:
-    """优化的拜占庭容错算法"""
+```java
+import java.util.*;
+import java.util.stream.Collectors;
 
-    def aggregate_signatures(self, messages):
-        """聚合多个签名以减少通信开销"""
-        # 使用BLS签名等技术聚合签名
-        aggregated = {
-            'values': [msg.value for msg in messages],
-            'signers': [msg.sender_id for msg in messages],
-            'aggregated_signature': self.bls_aggregate([msg.signature for msg in messages])
+class AggregatedSignature {
+    private List<Integer> values;
+    private List<Integer> signers;
+    private String aggregatedSignature;
+
+    public AggregatedSignature(List<Integer> values, List<Integer> signers, String signature) {
+        this.values = values;
+        this.signers = signers;
+        this.aggregatedSignature = signature;
+    }
+
+    // Getters
+    public List<Integer> getValues() { return values; }
+    public List<Integer> getSigners() { return signers; }
+    public String getAggregatedSignature() { return aggregatedSignature; }
+}
+
+public class OptimizedBFT {
+
+    /**
+     * 聚合多个签名以减少通信开销
+     */
+    public AggregatedSignature aggregateSignatures(List<SignedMessage> messages) {
+        List<Integer> values = messages.stream()
+            .map(SignedMessage::getValue)
+            .collect(Collectors.toList());
+
+        List<Integer> signers = messages.stream()
+            .map(SignedMessage::getSenderId)
+            .collect(Collectors.toList());
+
+        // 使用BLS签名等技术聚合签名
+        String aggregatedSig = blsAggregate(messages.stream()
+            .flatMap(msg -> msg.getSignatureChain().stream())
+            .map(SignatureEntry::getSignature)
+            .collect(Collectors.toList()));
+
+        return new AggregatedSignature(values, signers, aggregatedSig);
+    }
+
+    /**
+     * 批量处理事务以提高吞吐量
+     */
+    public List<Boolean> batchProcessing(List<Transaction> transactions) {
+        final int BATCH_SIZE = 1000;
+        List<List<Transaction>> batches = new ArrayList<>();
+
+        // 分批处理
+        for (int i = 0; i < transactions.size(); i += BATCH_SIZE) {
+            int end = Math.min(i + BATCH_SIZE, transactions.size());
+            batches.add(transactions.subList(i, end));
         }
-        return aggregated
 
-    def batch_processing(self, transactions):
-        """批量处理事务以提高吞吐量"""
-        batch_size = 1000
-        batches = [transactions[i:i+batch_size] for i in range(0, len(transactions), batch_size)]
+        List<Boolean> results = new ArrayList<>();
+        for (List<Transaction> batch : batches) {
+            Boolean result = processTransactionBatch(batch);
+            results.add(result);
+        }
 
-        results = []
-        for batch in batches:
-            result = self.process_transaction_batch(batch)
-            results.append(result)
+        return results;
+    }
 
-        return results
+    /**
+     * BLS签名聚合（简化实现）
+     */
+    private String blsAggregate(List<String> signatures) {
+        // 简化实现，实际中需要使用真正的BLS签名库
+        return "aggregated_" + signatures.size() + "_signatures";
+    }
+
+    /**
+     * 处理事务批次
+     */
+    private Boolean processTransactionBatch(List<Transaction> batch) {
+        // 简化实现
+        System.out.println("处理事务批次，大小: " + batch.size());
+        return true;
+    }
+}
 ```
 
 ### 2. 异步优化
 
-```python
-import asyncio
+```java
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
-class AsyncByzantineConsensus:
-    """异步拜占庭共识实现"""
+class ConsensusResponse {
+    private boolean valid;
+    private int value;
+    private int nodeId;
 
-    async def async_consensus(self, value):
-        """异步共识算法"""
-        tasks = []
+    public ConsensusResponse(boolean valid, int value, int nodeId) {
+        this.valid = valid;
+        this.value = value;
+        this.nodeId = nodeId;
+    }
 
-        # 并行发送消息到所有节点
-        for node in self.nodes:
-            task = asyncio.create_task(self.send_message_async(node, value))
-            tasks.append(task)
+    public boolean isValid() { return valid; }
+    public int getValue() { return value; }
+    public int getNodeId() { return nodeId; }
+}
 
-        # 等待足够多的响应
-        responses = await asyncio.gather(*tasks)
+class ConsensusNode {
+    private int id;
+    private boolean isByzantine;
 
-        # 处理响应并达成共识
-        valid_responses = [r for r in responses if r.is_valid()]
+    public ConsensusNode(int id, boolean isByzantine) {
+        this.id = id;
+        this.isByzantine = isByzantine;
+    }
 
-        if len(valid_responses) >= 2 * self.f + 1:
-            return self.compute_consensus(valid_responses)
+    public CompletableFuture<ConsensusResponse> processMessage(int message) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // 模拟网络延迟
+                Thread.sleep(ThreadLocalRandom.current().nextInt(100, 500));
 
-        return None
+                if (isByzantine) {
+                    // 拜占庭节点可能返回错误响应
+                    return new ConsensusResponse(false, -1, id);
+                } else {
+                    // 诚实节点返回正常响应
+                    return new ConsensusResponse(true, message, id);
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return new ConsensusResponse(false, -1, id);
+            }
+        });
+    }
 
-    async def send_message_async(self, node, message):
-        """异步发送消息"""
-        return await node.process_message(message)
+    public int getId() { return id; }
+}
+
+public class AsyncByzantineConsensus {
+    private List<ConsensusNode> nodes;
+    private int f; // 最大拜占庭节点数
+    private ExecutorService executor;
+
+    public AsyncByzantineConsensus(List<ConsensusNode> nodes) {
+        this.nodes = nodes;
+        this.f = (nodes.size() - 1) / 3;
+        this.executor = Executors.newCachedThreadPool();
+    }
+
+    /**
+     * 异步共识算法
+     */
+    public CompletableFuture<Integer> asyncConsensus(int value) {
+        List<CompletableFuture<ConsensusResponse>> tasks = new ArrayList<>();
+
+        // 并行发送消息到所有节点
+        for (ConsensusNode node : nodes) {
+            CompletableFuture<ConsensusResponse> task = sendMessageAsync(node, value);
+            tasks.add(task);
+        }
+
+        // 等待所有响应
+        CompletableFuture<Void> allTasks = CompletableFuture.allOf(
+            tasks.toArray(new CompletableFuture[0]));
+
+        return allTasks.thenApply(v -> {
+            // 收集所有响应
+            List<ConsensusResponse> responses = tasks.stream()
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList());
+
+            // 处理响应并达成共识
+            List<ConsensusResponse> validResponses = responses.stream()
+                .filter(ConsensusResponse::isValid)
+                .collect(Collectors.toList());
+
+            if (validResponses.size() >= 2 * f + 1) {
+                return computeConsensus(validResponses);
+            }
+
+            return null;
+        });
+    }
+
+    /**
+     * 异步发送消息
+     */
+    private CompletableFuture<ConsensusResponse> sendMessageAsync(ConsensusNode node, int message) {
+        return node.processMessage(message);
+    }
+
+    /**
+     * 计算共识结果
+     */
+    private Integer computeConsensus(List<ConsensusResponse> validResponses) {
+        Map<Integer, Long> valueCounts = validResponses.stream()
+            .collect(Collectors.groupingBy(
+                ConsensusResponse::getValue,
+                Collectors.counting()
+            ));
+
+        return valueCounts.entrySet().stream()
+            .max(Map.Entry.comparingByValue())
+            .map(Map.Entry::getKey)
+            .orElse(null);
+    }
+
+    public void shutdown() {
+        executor.shutdown();
+    }
+
+    // 使用示例
+    public static void main(String[] args) throws Exception {
+        List<ConsensusNode> nodes = Arrays.asList(
+            new ConsensusNode(0, false),
+            new ConsensusNode(1, false),
+            new ConsensusNode(2, false),
+            new ConsensusNode(3, true)  // 拜占庭节点
+        );
+
+        AsyncByzantineConsensus consensus = new AsyncByzantineConsensus(nodes);
+
+        CompletableFuture<Integer> result = consensus.asyncConsensus(1);
+        Integer consensusValue = result.get(5, TimeUnit.SECONDS);
+
+        System.out.println("异步共识结果: " + consensusValue);
+
+        consensus.shutdown();
+    }
+}
 ```
 
 ## 安全性分析
@@ -563,35 +1323,154 @@ class AsyncByzantineConsensus:
 
 ### 防御机制
 
-```python
-class SecurityMechanism:
-    """安全机制实现"""
+```java
+import java.util.*;
+import java.util.stream.Collectors;
 
-    def __init__(self):
-        self.reputation_system = ReputationSystem()
-        self.identity_verification = IdentityVerification()
+class NodeHistory {
+    private int nodeId;
+    private List<String> messageHistory;
+    private List<Long> timestamps;
+    private List<Integer> votes;
 
-    def detect_byzantine_behavior(self, node_history):
-        """检测拜占庭行为"""
-        suspicious_patterns = [
-            self.check_message_consistency(node_history),
-            self.check_timing_anomalies(node_history),
-            self.check_voting_patterns(node_history)
-        ]
+    public NodeHistory(int nodeId) {
+        this.nodeId = nodeId;
+        this.messageHistory = new ArrayList<>();
+        this.timestamps = new ArrayList<>();
+        this.votes = new ArrayList<>();
+    }
 
-        return any(suspicious_patterns)
+    public void addMessage(String message, long timestamp) {
+        messageHistory.add(message);
+        timestamps.add(timestamp);
+    }
 
-    def reputation_based_filtering(self, messages):
-        """基于声誉的消息过滤"""
-        filtered_messages = []
+    public void addVote(int vote) {
+        votes.add(vote);
+    }
 
-        for msg in messages:
-            sender_reputation = self.reputation_system.get_reputation(msg.sender_id)
+    // Getters
+    public int getNodeId() { return nodeId; }
+    public List<String> getMessageHistory() { return messageHistory; }
+    public List<Long> getTimestamps() { return timestamps; }
+    public List<Integer> getVotes() { return votes; }
+}
 
-            if sender_reputation > self.reputation_threshold:
-                filtered_messages.append(msg)
+class ReputationSystem {
+    private Map<Integer, Double> reputations;
 
-        return filtered_messages
+    public ReputationSystem() {
+        this.reputations = new HashMap<>();
+    }
+
+    public double getReputation(int nodeId) {
+        return reputations.getOrDefault(nodeId, 1.0); // 默认声誉值
+    }
+
+    public void updateReputation(int nodeId, double delta) {
+        double currentRep = getReputation(nodeId);
+        reputations.put(nodeId, Math.max(0.0, Math.min(1.0, currentRep + delta)));
+    }
+}
+
+class IdentityVerification {
+    private Set<Integer> verifiedNodes;
+
+    public IdentityVerification() {
+        this.verifiedNodes = new HashSet<>();
+    }
+
+    public boolean isVerified(int nodeId) {
+        return verifiedNodes.contains(nodeId);
+    }
+
+    public void addVerifiedNode(int nodeId) {
+        verifiedNodes.add(nodeId);
+    }
+}
+
+public class SecurityMechanism {
+    private ReputationSystem reputationSystem;
+    private IdentityVerification identityVerification;
+    private double reputationThreshold;
+
+    public SecurityMechanism() {
+        this.reputationSystem = new ReputationSystem();
+        this.identityVerification = new IdentityVerification();
+        this.reputationThreshold = 0.5;
+    }
+
+    /**
+     * 检测拜占庭行为
+     */
+    public boolean detectByzantineBehavior(NodeHistory nodeHistory) {
+        boolean[] suspiciousPatterns = {
+            checkMessageConsistency(nodeHistory),
+            checkTimingAnomalies(nodeHistory),
+            checkVotingPatterns(nodeHistory)
+        };
+
+        // 如果任何一个模式可疑，则认为可能是拜占庭节点
+        return Arrays.stream(suspiciousPatterns).anyMatch(pattern -> pattern);
+    }
+
+    /**
+     * 基于声誉的消息过滤
+     */
+    public List<SignedMessage> reputationBasedFiltering(List<SignedMessage> messages) {
+        return messages.stream()
+            .filter(msg -> {
+                double senderReputation = reputationSystem.getReputation(msg.getSenderId());
+                return senderReputation > reputationThreshold;
+            })
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * 检查消息一致性
+     */
+    private boolean checkMessageConsistency(NodeHistory history) {
+        List<String> messages = history.getMessageHistory();
+        if (messages.size() < 2) return false;
+
+        // 简化检查：检查是否有相互矛盾的消息
+        Set<String> uniqueMessages = new HashSet<>(messages);
+        return uniqueMessages.size() < messages.size() * 0.8; // 如果重复消息过多
+    }
+
+    /**
+     * 检查时间异常
+     */
+    private boolean checkTimingAnomalies(NodeHistory history) {
+        List<Long> timestamps = history.getTimestamps();
+        if (timestamps.size() < 3) return false;
+
+        // 检查是否有异常的时间间隔
+        for (int i = 1; i < timestamps.size(); i++) {
+            long interval = timestamps.get(i) - timestamps.get(i-1);
+            if (interval < 0 || interval > 10000) { // 10秒以上的间隔可能异常
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 检查投票模式
+     */
+    private boolean checkVotingPatterns(NodeHistory history) {
+        List<Integer> votes = history.getVotes();
+        if (votes.size() < 5) return false;
+
+        // 检查是否有异常的投票模式（例如总是投反对票）
+        long negativeVotes = votes.stream().mapToLong(vote -> vote < 0 ? 1 : 0).sum();
+        return (double) negativeVotes / votes.size() > 0.8; // 80%以上的反对票
+    }
+
+    public void setReputationThreshold(double threshold) {
+        this.reputationThreshold = threshold;
+    }
+}
 ```
 
 ## 总结
