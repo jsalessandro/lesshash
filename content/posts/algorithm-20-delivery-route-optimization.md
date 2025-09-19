@@ -170,6 +170,249 @@ dp[mask | (1 << j)][j] = min(dp[mask | (1 << j)][j], dp[mask][i] + dist[i][j])
 ```
 </div>
 
+## 🔍 动态规划实现逻辑详细解析
+
+### 📊 状态压缩技术深度解析
+
+<div class="state-compression-analysis">
+<div class="analysis-title">🎯 状态压缩的核心原理</div>
+
+**为什么使用状态压缩？**
+- 传统DP需要用集合表示访问状态，空间复杂度极高
+- 状态压缩用一个整数的二进制位表示集合
+- 节点数为n时，总状态数为2ⁿ，可接受范围内
+
+**二进制位状态表示法**：
+```
+例如：9个节点（餐厅+8个客户）
+状态101010001 表示：
+- 位0: 餐厅 ✅ 已访问
+- 位1: 客户A ❌ 未访问
+- 位2: 客户B ❌ 未访问
+- 位3: 客户C ✅ 已访问
+- 位4: 客户D ❌ 未访问
+- 位5: 客户E ✅ 已访问
+- 位6: 客户F ❌ 未访问
+- 位7: 客户G ✅ 已访问
+- 位8: 客户H ❌ 未访问
+```
+</div>
+
+### 🧮 位运算操作详解
+
+<div class="bitwise-operations">
+<div class="operation-title">⚙️ 关键位运算操作解析</div>
+
+<div class="bit-operation">
+<div class="op-name">🔍 检查节点是否已访问</div>
+<div class="op-code">
+```java
+// 检查节点i是否在状态mask中
+if ((mask & (1 << i)) != 0) {
+    // 节点i已被访问
+}
+```
+</div>
+<div class="op-explanation">
+**原理**：(1 << i) 创建只有第i位为1的掩码，与mask做AND运算
+**示例**：mask=13(1101), i=2
+- (1 << 2) = 4 (0100)
+- 13 & 4 = 4 ≠ 0，说明位2已设置
+</div>
+</div>
+
+<div class="bit-operation">
+<div class="op-name">➕ 添加节点到访问集合</div>
+<div class="op-code">
+```java
+// 将节点j添加到状态mask中
+int newMask = mask | (1 << j);
+```
+</div>
+<div class="op-explanation">
+**原理**：(1 << j) 创建只有第j位为1的掩码，与mask做OR运算
+**示例**：mask=13(1101), j=1
+- (1 << 1) = 2 (0010)
+- 13 | 2 = 15 (1111)，第1位被设置为1
+</div>
+</div>
+
+<div class="bit-operation">
+<div class="op-name">🔄 移除节点从访问集合</div>
+<div class="op-code">
+```java
+// 从状态mask中移除节点i（路径重构时使用）
+mask ^= (1 << i);  // XOR运算翻转第i位
+```
+</div>
+<div class="op-explanation">
+**原理**：XOR运算可以翻转指定位，已设置的位变为0
+**示例**：mask=15(1111), i=2
+- (1 << 2) = 4 (0100)
+- 15 ^ 4 = 11 (1011)，第2位被翻转为0
+</div>
+</div>
+</div>
+
+### 🚀 算法执行流程详细分析
+
+<div class="algorithm-flow-analysis">
+<div class="flow-title">📋 动态规划执行步骤深度解析</div>
+
+<div class="execution-step">
+<div class="step-header">步骤1️⃣ 初始化阶段</div>
+<div class="step-content">
+```java
+// 创建DP表和父节点追踪表
+double[][] dp = new double[1 << n][n];
+int[][] parent = new int[1 << n][n];
+
+// 初始化为无穷大
+for (int i = 0; i < (1 << n); i++) {
+    Arrays.fill(dp[i], Double.POSITIVE_INFINITY);
+    Arrays.fill(parent[i], -1);
+}
+
+// 起始状态：只访问餐厅(节点0)
+dp[1][0] = 0.0;  // 状态1 = 二进制0001，表示只访问节点0
+```
+
+**关键理解**：
+- `dp[1][0] = 0.0` 表示从餐厅出发，只访问餐厅，距离为0
+- 状态1的二进制表示为0001，只有第0位（餐厅）被设置
+- 所有其他状态初始化为无穷大，表示不可达
+</div>
+</div>
+
+<div class="execution-step">
+<div class="step-header">步骤2️⃣ 状态转移核心逻辑</div>
+<div class="step-content">
+```java
+// 遍历所有可能的状态
+for (int mask = 0; mask < (1 << n); mask++) {
+    for (int u = 0; u < n; u++) {
+        // 检查节点u是否在当前状态中，且状态可达
+        if ((mask & (1 << u)) == 0 || dp[mask][u] == Double.POSITIVE_INFINITY) {
+            continue;
+        }
+
+        // 尝试从u前往所有未访问的节点v
+        for (int v = 0; v < n; v++) {
+            if ((mask & (1 << v)) != 0) {  // v已访问，跳过
+                continue;
+            }
+
+            // 计算新状态和新距离
+            int newMask = mask | (1 << v);
+            double newDist = dp[mask][u] + distanceMatrix[u][v];
+
+            // 更新最优解
+            if (newDist < dp[newMask][v]) {
+                dp[newMask][v] = newDist;
+                parent[newMask][v] = u;  // 记录父节点用于路径重构
+            }
+        }
+    }
+}
+```
+
+**状态转移理解**：
+- 外层循环遍历所有2ⁿ个状态（从小到大确保依赖关系）
+- 中层循环枚举当前状态中的每个已访问节点u
+- 内层循环尝试从u扩展到每个未访问节点v
+- 松弛操作更新到达v的最短距离
+</div>
+</div>
+
+<div class="execution-step">
+<div class="step-header">步骤3️⃣ 寻找最优解</div>
+<div class="step-content">
+```java
+// 所有节点都被访问的完整状态
+int fullMask = (1 << n) - 1;  // 例：n=9时，fullMask=511(111111111)
+double minCost = Double.POSITIVE_INFINITY;
+int lastNode = -1;
+
+// 尝试从每个终点返回起点
+for (int i = 1; i < n; i++) {  // 排除起点本身
+    double cost = dp[fullMask][i] + distanceMatrix[i][0];
+    if (cost < minCost) {
+        minCost = cost;
+        lastNode = i;
+    }
+}
+```
+
+**最优解搜索理解**：
+- `fullMask = (1 << n) - 1` 表示所有节点都被访问的状态
+- 检查从每个可能的最后节点返回起点的总成本
+- 选择成本最小的路径作为最优解
+</div>
+</div>
+
+<div class="execution-step">
+<div class="step-header">步骤4️⃣ 路径重构算法</div>
+<div class="step-content">
+```java
+private static List<Integer> reconstructPath(int[][] parent, int mask, int current) {
+    List<Integer> path = new ArrayList<>();
+
+    // 从最后节点开始，逆向追踪路径
+    while (current != -1) {
+        path.add(current);
+        int nextNode = parent[mask][current];
+        mask ^= (1 << current);  // 从状态中移除当前节点
+        current = nextNode;
+    }
+
+    Collections.reverse(path);  // 反转得到正向路径
+    return path;
+}
+```
+
+**路径重构理解**：
+- 使用parent数组记录的父节点信息逆向追踪
+- `mask ^= (1 << current)` 从状态中移除当前节点
+- 最终反转路径得到从起点到终点的正确顺序
+</div>
+</div>
+</div>
+
+### 📈 复杂度分析与优化技巧
+
+<div class="complexity-analysis">
+<div class="complexity-title">⚡ 时间与空间复杂度深度分析</div>
+
+<div class="complexity-item">
+<div class="complexity-type">⏱️ 时间复杂度：O(n² × 2ⁿ)</div>
+<div class="complexity-explanation">
+- **外层循环**：遍历2ⁿ个状态
+- **中层循环**：每个状态最多n个已访问节点
+- **内层循环**：每个节点最多n个扩展选择
+- **总计算量**：2ⁿ × n × n = O(n² × 2ⁿ)
+
+**实际节点数的计算量**：
+- n=10: 10² × 2¹⁰ = 102,400 操作
+- n=15: 15² × 2¹⁵ = 7,372,800 操作
+- n=20: 20² × 2²⁰ = 419,430,400 操作
+</div>
+</div>
+
+<div class="complexity-item">
+<div class="complexity-type">💾 空间复杂度：O(n × 2ⁿ)</div>
+<div class="complexity-explanation">
+- **DP表**：dp[2ⁿ][n] 存储所有状态的最优值
+- **父节点表**：parent[2ⁿ][n] 用于路径重构
+- **总空间需求**：2 × n × 2ⁿ = O(n × 2ⁿ)
+
+**实际内存使用**：
+- n=10: 2 × 10 × 1024 = 20KB
+- n=15: 2 × 15 × 32768 = 960KB
+- n=20: 2 × 20 × 1048576 = 40MB
+</div>
+</div>
+</div>
+
 #### 📝 Java算法实现代码
 
 ```java
@@ -568,31 +811,547 @@ public class GreedyTSPSolver {
 
 ### 🔬 算法执行过程可视化
 
-<div class="execution-process">
-<div class="process-title">⚙️ 动态规划执行过程</div>
+<div class="dp-execution-visualization">
+<div class="visualization-title">🎬 动态规划执行过程实时演示</div>
 
-<div class="dp-steps">
-<div class="step">
-<div class="step-title">步骤1：初始化</div>
-<div class="step-content">
-设置起始状态：dp[1][0] = 0<br>
-表示从餐厅出发，只访问餐厅的距离为0
+<div class="execution-timeline">
+<div class="timeline-step">
+<div class="step-number">🏁</div>
+<div class="step-title">初始化阶段</div>
+<div class="step-detail">
+<div class="state-example">
+**状态表示**：`dp[1][0] = 0.0`
+<br>**二进制**：000000001 (只访问餐厅)
+<br>**含义**：从餐厅出发，当前在餐厅，距离为0
 </div>
-</div>
-
-<div class="step">
-<div class="step-title">步骤2：状态转移</div>
-<div class="step-content">
-依次考虑访问1个、2个、...、8个节点的所有可能状态<br>
-对每个状态，计算到达各节点的最短距离
 </div>
 </div>
 
-<div class="step">
-<div class="step-title">步骤3：寻找最优解</div>
-<div class="step-content">
-在访问了所有节点的状态中，找到回到起点的最短路径<br>
-通过parent数组重构完整路径
+<div class="timeline-step">
+<div class="step-number">1️⃣</div>
+<div class="step-title">第1轮状态扩展</div>
+<div class="step-detail">
+<div class="state-transitions">
+从状态1(000000001)扩展到:
+<br>• `dp[3][1] = 2.1` (000000011) - 餐厅→客户A
+<br>• `dp[5][2] = 1.8` (000000101) - 餐厅→客户B
+<br>• `dp[9][3] = 3.2` (000001001) - 餐厅→客户C
+<br>• ... (继续所有相邻节点)
+</div>
+</div>
+</div>
+
+<div class="timeline-step">
+<div class="step-number">2️⃣</div>
+<div class="step-title">第2轮状态扩展</div>
+<div class="step-detail">
+<div class="state-transitions">
+从状态3(000000011)扩展:
+<br>• `dp[7][2] = min(∞, 2.1+1.5) = 3.6` (000000111)
+<br>• `dp[11][3] = min(5.9, 2.1+2.8) = 4.9` (000001011)
+<br>状态5(000000101)扩展:
+<br>• `dp[7][1] = min(3.6, 1.8+1.5) = 3.3` (000000111)
+</div>
+</div>
+</div>
+
+<div class="timeline-step">
+<div class="step-number">⏰</div>
+<div class="step-title">迭代过程</div>
+<div class="step-detail">
+<div class="iteration-progress">
+**迭代轮数**：log₂(2ⁿ) ≈ n轮主要计算
+<br>**状态演进**：1 → 3,5,9,... → 7,11,13,... → ...
+<br>**收敛条件**：到达完整状态 111111111 (访问所有节点)
+</div>
+</div>
+</div>
+
+<div class="timeline-step">
+<div class="step-number">🎯</div>
+<div class="step-title">最优解确定</div>
+<div class="step-detail">
+<div class="final-solution">
+**完整状态**：`fullMask = 511` (111111111)
+<br>**候选终点**：检查 `dp[511][1]` 到 `dp[511][8]`
+<br>**最优选择**：`dp[511][7] + dist[7][0] = 18.7km`
+<br>**路径重构**：通过parent数组逆向追踪
+</div>
+</div>
+</div>
+</div>
+</div>
+
+### 🧠 状态转移表格详细展示
+
+<div class="state-transition-table">
+<div class="table-title">📊 关键状态转移详细记录</div>
+
+<div class="transition-example">
+<div class="example-title">🔍 具体转移示例分析</div>
+
+**场景**：从状态 `mask=5` (000000101, 已访问餐厅+客户B) 扩展到客户A
+
+```java
+// 当前状态分析
+int mask = 5;           // 二进制: 000000101
+int currentNode = 2;    // 当前在客户B (节点2)
+int targetNode = 1;     // 目标：客户A (节点1)
+
+// 检查目标节点是否已访问
+if ((mask & (1 << targetNode)) != 0) {
+    // (5 & 2) = (101 & 010) = 000 = 0
+    // 客户A未访问，可以扩展
+}
+
+// 计算新状态和距离
+int newMask = mask | (1 << targetNode);  // 5 | 2 = 7 (000000111)
+double newDist = dp[5][2] + distanceMatrix[2][1];  // 1.8 + 1.5 = 3.3
+
+// 更新最优解
+if (newDist < dp[7][1]) {
+    dp[7][1] = 3.3;        // 更新最短距离
+    parent[7][1] = 2;      // 记录从客户B到达客户A
+}
+```
+
+**状态含义解析**：
+- **状态5** (000000101)：已访问{餐厅, 客户B}，当前在客户B
+- **状态7** (000000111)：已访问{餐厅, 客户A, 客户B}，当前在客户A
+- **距离3.3**：餐厅→客户B→客户A的总距离
+
+</div>
+</div>
+</div>
+
+### 🎲 优化技巧与工程实践
+
+<div class="optimization-techniques">
+<div class="optimization-title">⚡ 动态规划优化技巧</div>
+
+<div class="technique">
+<div class="technique-name">🚀 内存优化技巧</div>
+<div class="technique-content">
+```java
+// 技巧1: 滚动数组优化 (适用于特定TSP变种)
+// 由于TSP需要保留所有状态用于路径重构，此技巧不适用
+
+// 技巧2: 稀疏状态存储
+Map<Integer, Map<Integer, Double>> sparseDp = new HashMap<>();
+Map<Integer, Map<Integer, Integer>> sparseParent = new HashMap<>();
+
+// 只存储可达状态，节省内存
+if (dp[mask][u] != Double.POSITIVE_INFINITY) {
+    sparseDp.computeIfAbsent(newMask, k -> new HashMap<>()).put(v, newDist);
+}
+```
+</div>
+</div>
+
+<div class="technique">
+<div class="technique-name">⏱️ 计算优化技巧</div>
+<div class="technique-content">
+```java
+// 技巧1: 预计算距离矩阵
+double[][] distCache = precomputeDistances(coordinates);
+
+// 技巧2: 位运算加速
+// 使用 Integer.bitCount() 快速计算已访问节点数
+int visitedCount = Integer.bitCount(mask);
+if (visitedCount < minVisitedThreshold) continue;
+
+// 技巧3: 剪枝优化
+if (dp[mask][u] > currentBestSolution) continue;  // 剪枝
+
+// 技巧4: 并行计算不同起始状态
+IntStream.range(0, (1 << n)).parallel()
+    .forEach(mask -> processState(mask, dp, parent));
+```
+</div>
+</div>
+
+<div class="technique">
+<div class="technique-name">🧮 数值稳定性技巧</div>
+<div class="technique-content">
+```java
+// 技巧1: 使用更高精度类型
+BigDecimal[][] precisionDp = new BigDecimal[1 << n][n];
+
+// 技巧2: 相对误差控制
+private static final double EPSILON = 1e-9;
+if (Math.abs(newDist - dp[newMask][v]) < EPSILON) {
+    // 距离相等时，选择字典序更小的路径
+}
+
+// 技巧3: 溢出检测
+if (newDist > MAX_REASONABLE_DISTANCE) {
+    continue;  // 跳过不合理的距离
+}
+```
+</div>
+</div>
+</div>
+
+### 🎬 动态规划算法执行过程详细可视化
+
+<div class="execution-visualization">
+<div class="viz-title">🔍 算法逐步执行过程分析</div>
+
+#### 📋 具体案例设置
+<div class="case-setup">
+<div class="setup-title">🎯 实际配送场景</div>
+<div class="setup-content">
+**配送点设置**：1个餐厅 + 3个客户 (简化演示)
+- 🏪 餐厅 (节点0)：坐标 (0, 0)
+- 🏠 客户A (节点1)：坐标 (3, 4)
+- 🏢 客户B (节点2)：坐标 (6, 0)
+- 🏫 客户C (节点3)：坐标 (2, 6)
+
+**距离矩阵** (单位：km)：
+```
+    餐厅  A   B   C
+餐厅  0   5.0 6.0 6.3
+A    5.0  0  5.0 4.5
+B    6.0 5.0  0  8.5
+C    6.3 4.5 8.5  0
+```
+</div>
+</div>
+
+#### 🧮 状态空间完整展示
+
+<div class="state-space">
+<div class="state-title">🔢 4节点TSP状态空间 (2⁴ = 16个状态)</div>
+
+<div class="state-grid">
+<div class="state-row">
+<div class="state-item">
+<div class="state-binary">0000</div>
+<div class="state-desc">空集合</div>
+<div class="state-meaning">无效状态</div>
+</div>
+<div class="state-item">
+<div class="state-binary">0001</div>
+<div class="state-desc">{餐厅}</div>
+<div class="state-meaning">起始状态</div>
+</div>
+<div class="state-item">
+<div class="state-binary">0010</div>
+<div class="state-desc">{A}</div>
+<div class="state-meaning">只访问A</div>
+</div>
+<div class="state-item">
+<div class="state-binary">0011</div>
+<div class="state-desc">{餐厅,A}</div>
+<div class="state-meaning">访问餐厅→A</div>
+</div>
+</div>
+
+<div class="state-row">
+<div class="state-item">
+<div class="state-binary">0100</div>
+<div class="state-desc">{B}</div>
+<div class="state-meaning">只访问B</div>
+</div>
+<div class="state-item">
+<div class="state-binary">0101</div>
+<div class="state-desc">{餐厅,B}</div>
+<div class="state-meaning">访问餐厅→B</div>
+</div>
+<div class="state-item">
+<div class="state-binary">0110</div>
+<div class="state-desc">{A,B}</div>
+<div class="state-meaning">访问A→B</div>
+</div>
+<div class="state-item">
+<div class="state-binary">0111</div>
+<div class="state-desc">{餐厅,A,B}</div>
+<div class="state-meaning">访问餐厅→A→B</div>
+</div>
+</div>
+
+<div class="state-row">
+<div class="state-item">
+<div class="state-binary">1000</div>
+<div class="state-desc">{C}</div>
+<div class="state-meaning">只访问C</div>
+</div>
+<div class="state-item">
+<div class="state-binary">1001</div>
+<div class="state-desc">{餐厅,C}</div>
+<div class="state-meaning">访问餐厅→C</div>
+</div>
+<div class="state-item">
+<div class="state-binary">1010</div>
+<div class="state-desc">{A,C}</div>
+<div class="state-meaning">访问A→C</div>
+</div>
+<div class="state-item">
+<div class="state-binary">1011</div>
+<div class="state-desc">{餐厅,A,C}</div>
+<div class="state-meaning">访问餐厅→A→C</div>
+</div>
+</div>
+
+<div class="state-row">
+<div class="state-item">
+<div class="state-binary">1100</div>
+<div class="state-desc">{B,C}</div>
+<div class="state-meaning">访问B→C</div>
+</div>
+<div class="state-item">
+<div class="state-binary">1101</div>
+<div class="state-desc">{餐厅,B,C}</div>
+<div class="state-meaning">访问餐厅→B→C</div>
+</div>
+<div class="state-item">
+<div class="state-binary">1110</div>
+<div class="state-desc">{A,B,C}</div>
+<div class="state-meaning">访问A→B→C</div>
+</div>
+<div class="state-item target-state">
+<div class="state-binary">1111</div>
+<div class="state-desc">{餐厅,A,B,C}</div>
+<div class="state-meaning">完整路径</div>
+</div>
+</div>
+</div>
+</div>
+
+#### ⏳ 算法执行时间线
+
+<div class="execution-timeline">
+<div class="timeline-title">🕐 算法逐轮执行过程</div>
+
+<div class="timeline-round">
+<div class="round-header">🔄 第0轮：初始化阶段</div>
+<div class="round-content">
+```java
+// 初始化DP表：dp[16][4]，全部设为无穷大
+double[][] dp = new double[16][4];
+Arrays.fill(dp, Double.POSITIVE_INFINITY);
+
+// 设置起始状态：从餐厅出发
+dp[1][0] = 0.0;  // 状态1(0001)，位置餐厅，距离0
+
+// 当前DP表状态：
+// dp[1][0] = 0.0    (从餐厅到餐厅，距离0)
+// 其他所有值 = ∞
+```
+</div>
+</div>
+
+<div class="timeline-round">
+<div class="round-header">🔄 第1轮：mask=1 (0001) - 当前在餐厅</div>
+<div class="round-content">
+```java
+// 当前状态：mask=1, u=0 (餐厅)
+// 尝试扩展到未访问的节点：A(1), B(2), C(3)
+
+// 扩展到A(节点1)：
+newMask = 1 | (1 << 1) = 1 | 2 = 3 (0011)
+newDist = dp[1][0] + dist[0][1] = 0.0 + 5.0 = 5.0
+dp[3][1] = min(∞, 5.0) = 5.0  ✅ 更新
+
+// 扩展到B(节点2)：
+newMask = 1 | (1 << 2) = 1 | 4 = 5 (0101)
+newDist = dp[1][0] + dist[0][2] = 0.0 + 6.0 = 6.0
+dp[5][2] = min(∞, 6.0) = 6.0  ✅ 更新
+
+// 扩展到C(节点3)：
+newMask = 1 | (1 << 3) = 1 | 8 = 9 (1001)
+newDist = dp[1][0] + dist[0][3] = 0.0 + 6.3 = 6.3
+dp[9][3] = min(∞, 6.3) = 6.3  ✅ 更新
+
+// 第1轮后DP表关键状态：
+// dp[3][1] = 5.0   (餐厅→A)
+// dp[5][2] = 6.0   (餐厅→B)
+// dp[9][3] = 6.3   (餐厅→C)
+```
+</div>
+</div>
+
+<div class="timeline-round">
+<div class="round-header">🔄 第2轮：mask=3 (0011) - 当前在A</div>
+<div class="round-content">
+```java
+// 当前状态：mask=3, u=1 (A)
+// 已访问：{餐厅, A}，可扩展到：B(2), C(3)
+
+// 扩展到B(节点2)：
+newMask = 3 | (1 << 2) = 3 | 4 = 7 (0111)
+newDist = dp[3][1] + dist[1][2] = 5.0 + 5.0 = 10.0
+dp[7][2] = min(∞, 10.0) = 10.0  ✅ 更新
+
+// 扩展到C(节点3)：
+newMask = 3 | (1 << 3) = 3 | 8 = 11 (1011)
+newDist = dp[3][1] + dist[1][3] = 5.0 + 4.5 = 9.5
+dp[11][3] = min(∞, 9.5) = 9.5  ✅ 更新
+
+// 第2轮后新增状态：
+// dp[7][2] = 10.0  (餐厅→A→B)
+// dp[11][3] = 9.5  (餐厅→A→C)
+```
+</div>
+</div>
+
+<div class="timeline-round">
+<div class="round-header">🔄 第3轮：mask=5 (0101) - 当前在B</div>
+<div class="round-content">
+```java
+// 当前状态：mask=5, u=2 (B)
+// 已访问：{餐厅, B}，可扩展到：A(1), C(3)
+
+// 扩展到A(节点1)：
+newMask = 5 | (1 << 1) = 5 | 2 = 7 (0111)
+newDist = dp[5][2] + dist[2][1] = 6.0 + 5.0 = 11.0
+dp[7][1] = min(∞, 11.0) = 11.0  ✅ 更新
+
+// 扩展到C(节点3)：
+newMask = 5 | (1 << 3) = 5 | 8 = 13 (1101)
+newDist = dp[5][2] + dist[2][3] = 6.0 + 8.5 = 14.5
+dp[13][3] = min(∞, 14.5) = 14.5  ✅ 更新
+
+// 第3轮后状态对比：
+// dp[7][1] = 11.0  (餐厅→B→A) vs dp[7][2] = 10.0 (餐厅→A→B)
+// 发现：餐厅→A→B 比 餐厅→B→A 更优！
+```
+</div>
+</div>
+
+<div class="timeline-round">
+<div class="round-header">🔄 最终轮：寻找完整路径 mask=15 (1111)</div>
+<div class="round-content">
+```java
+// 所有节点都访问完毕，现在要回到餐厅
+// 检查所有可能的最后一个节点：A(1), B(2), C(3)
+
+// 从A回到餐厅：
+cost = dp[15][1] + dist[1][0] = ? + 5.0
+
+// 从B回到餐厅：
+cost = dp[15][2] + dist[2][0] = ? + 6.0
+
+// 从C回到餐厅：
+cost = dp[15][3] + dist[3][0] = ? + 6.3
+
+// 找到dp[15][x]中的最小值，即为最优解
+```
+</div>
+</div>
+</div>
+
+#### 🎯 位运算操作详细分析
+
+<div class="bitwise-analysis">
+<div class="bit-title">🔧 核心位运算操作解析</div>
+
+<div class="bit-operation">
+<div class="op-header">🔍 检查节点访问状态</div>
+<div class="op-content">
+```java
+// 示例：检查状态mask=11(1011)中节点2是否被访问
+int mask = 11;          // 二进制：1011
+int node = 2;           // 要检查的节点
+
+// 位运算过程：
+// mask:        1011
+// (1 << 2):    0100  (1左移2位)
+// mask & (1<<2): 1011 & 0100 = 0000 = 0
+
+if ((mask & (1 << node)) != 0) {
+    System.out.println("节点" + node + "已访问");
+} else {
+    System.out.println("节点" + node + "未访问");  // ✅ 执行这里
+}
+```
+
+**详细步骤分析**：
+1. `(1 << 2)` = `0100` (1左移2位)
+2. `1011 & 0100` = `0000` (按位与运算)
+3. `0000 != 0` 为假，所以节点2未被访问 ✅
+</div>
+</div>
+
+<div class="bit-operation">
+<div class="op-header">➕ 添加节点到访问集合</div>
+<div class="op-content">
+```java
+// 示例：将节点2添加到状态mask=11(1011)中
+int mask = 11;          // 二进制：1011 (已访问：餐厅、A、C)
+int node = 2;           // 要添加的节点B
+
+// 位运算过程：
+// mask:        1011
+// (1 << 2):    0100
+// mask | (1<<2): 1011 | 0100 = 1111
+
+int newMask = mask | (1 << node);
+System.out.println("新状态：" + newMask);  // 输出：15 (二进制1111)
+```
+
+**状态变化**：
+- 原状态：`1011` → 已访问{餐厅, A, C}
+- 新状态：`1111` → 已访问{餐厅, A, B, C} ✅
+</div>
+</div>
+
+<div class="bit-operation">
+<div class="op-header">🔄 路径重构中的位操作</div>
+<div class="op-content">
+```java
+// 路径重构时移除节点（逆向追踪）
+int mask = 15;          // 二进制：1111 (完整路径)
+int node = 2;           // 要移除的节点B
+
+// XOR位运算过程：
+// mask:        1111
+// (1 << 2):    0100
+// mask ^ (1<<2): 1111 ^ 0100 = 1011
+
+mask ^= (1 << node);    // XOR运算，翻转第node位
+System.out.println("移除节点后：" + mask);  // 输出：11 (二进制1011)
+```
+
+**XOR运算特性**：
+- `1 ^ 1 = 0` (相同为0)
+- `0 ^ 1 = 1` (不同为1)
+- 用于翻转特定位的状态
+</div>
+</div>
+</div>
+
+#### 📊 内存使用情况分析
+
+<div class="memory-analysis">
+<div class="mem-title">💾 动态规划内存消耗详解</div>
+
+<div class="mem-calculation">
+<div class="calc-header">🧮 内存使用量计算</div>
+<div class="calc-content">
+**对于n个节点的TSP问题**：
+
+```java
+// 主要数据结构内存消耗：
+
+// 1. DP表：dp[2^n][n]
+double[][] dp = new double[1 << n][n];
+// 内存大小：2^n × n × 8字节
+
+// 2. 父节点表：parent[2^n][n]
+int[][] parent = new int[1 << n][n];
+// 内存大小：2^n × n × 4字节
+
+// 总内存 = 2^n × n × (8 + 4) = 2^n × n × 12字节
+```
+
+**具体案例计算**：
+- **4节点TSP**: 2⁴ × 4 × 12 = 768字节 ≈ 0.75KB
+- **8节点TSP**: 2⁸ × 8 × 12 = 24,576字节 ≈ 24KB
+- **16节点TSP**: 2¹⁶ × 16 × 12 = 12,582,912字节 ≈ 12MB
+- **20节点TSP**: 2²⁰ × 20 × 12 = 251,658,240字节 ≈ 240MB
+
+⚠️ **内存增长规律**：每增加1个节点，内存消耗翻倍！
 </div>
 </div>
 </div>
@@ -2029,5 +2788,244 @@ minimize: α×距离 + β×时间 + γ×延误惩罚 + δ×疲劳度
     .complexity-table {
         font-size: 0.8em;
     }
+}
+
+/* 算法执行过程可视化样式 */
+.execution-visualization {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    border-radius: 20px;
+    padding: 30px;
+    margin: 30px 0;
+    color: white;
+    box-shadow: 0 15px 35px rgba(240, 147, 251, 0.3);
+}
+
+.viz-title {
+    font-size: 1.4em;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+/* 案例设置样式 */
+.case-setup {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
+    padding: 25px;
+    margin: 20px 0;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.setup-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #ffffff;
+}
+
+.setup-content {
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+/* 状态空间样式 */
+.state-space {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 25px;
+    margin: 25px 0;
+    backdrop-filter: blur(5px);
+}
+
+.state-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+
+.state-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.state-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.state-item {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    min-width: 140px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.state-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
+}
+
+.state-item.target-state {
+    background: rgba(255, 215, 0, 0.3);
+    border: 2px solid rgba(255, 215, 0, 0.6);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+}
+
+.state-binary {
+    font-family: 'Courier New', monospace;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #ffeb3b;
+    margin-bottom: 8px;
+}
+
+.state-desc {
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 5px;
+}
+
+.state-meaning {
+    font-size: 0.8em;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+}
+
+/* 执行时间线样式 */
+.execution-timeline {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 25px;
+    margin: 25px 0;
+    backdrop-filter: blur(5px);
+}
+
+.timeline-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 25px;
+    color: #ffffff;
+}
+
+.timeline-round {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    margin: 20px 0;
+    border-left: 4px solid #ffeb3b;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.timeline-round:hover {
+    transform: translateX(5px);
+}
+
+.round-header {
+    background: rgba(255, 235, 59, 0.2);
+    padding: 15px 20px;
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #ffffff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.round-content {
+    padding: 20px;
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.6;
+}
+
+/* 位运算分析样式 */
+.bitwise-analysis {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 25px;
+    margin: 25px 0;
+    backdrop-filter: blur(5px);
+}
+
+.bit-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 25px;
+    color: #ffffff;
+}
+
+.bit-operation {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    margin: 20px 0;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.op-header {
+    background: rgba(76, 175, 80, 0.3);
+    padding: 15px 20px;
+    font-weight: bold;
+    color: #ffffff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.op-content {
+    padding: 20px;
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.7;
+}
+
+/* 内存分析样式 */
+.memory-analysis {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 25px;
+    margin: 25px 0;
+    backdrop-filter: blur(5px);
+}
+
+.mem-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 25px;
+    color: #ffffff;
+}
+
+.mem-calculation {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.calc-header {
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #ffffff;
+    text-align: center;
+}
+
+.calc-content {
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.7;
+}
+
+.calc-content code {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
 }
 </style>
