@@ -1681,74 +1681,393 @@ public class ThreePCExample {
 ```
 </div>
 
-## ⚖️ 3PC vs 2PC深度对比
+## ⚖️ 2PC vs 3PC 终极对决
 
-### 🔍 核心差异分析
+### 🥊 协议大比拼：谁是分布式事务之王？
 
-<div class="core-differences">
-<div class="diff-title">🎯 3PC与2PC核心差异对比</div>
+<div class="protocol-battle">
+<div class="battle-intro">
+<div class="intro-text">
+在分布式事务的世界里，2PC和3PC就像是两位武功高手，各有所长。让我们通过一场精彩的对决来深入了解它们的优势和劣势。
+</div>
+</div>
 
-<div class="comparison-matrix">
-<table class="detailed-comparison-table">
-<thead>
-<tr>
-<th>对比维度</th>
-<th>二阶段提交（2PC）</th>
-<th>三阶段提交（3PC）</th>
-<th>优势分析</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>阶段数量</strong></td>
-<td>2个阶段</td>
-<td>3个阶段</td>
-<td>3PC增加预提交阶段，提供更多控制点</td>
-</tr>
-<tr>
-<td><strong>消息复杂度</strong></td>
-<td>O(3n)</td>
-<td>O(4n)</td>
-<td>2PC消息数量更少，网络开销更小</td>
-</tr>
-<tr>
-<td><strong>阻塞性</strong></td>
-<td>存在阻塞问题</td>
-<td>非阻塞设计</td>
-<td>🏆 3PC显著优势</td>
-</tr>
-<tr>
-<td><strong>故障容忍</strong></td>
-<td>协调者故障时阻塞</td>
-<td>参与者可自主决策</td>
-<td>🏆 3PC显著优势</td>
-</tr>
-<tr>
-<td><strong>网络分区处理</strong></td>
-<td>可能导致不一致</td>
-<td>更好的分区容忍性</td>
-<td>🏆 3PC显著优势</td>
-</tr>
-<tr>
-<td><strong>性能开销</strong></td>
-<td>中等</td>
-<td>较高</td>
-<td>🏆 2PC性能优势</td>
-</tr>
-<tr>
-<td><strong>实现复杂度</strong></td>
-<td>相对简单</td>
-<td>较为复杂</td>
-<td>🏆 2PC实现简单</td>
-</tr>
-<tr>
-<td><strong>工业应用</strong></td>
-<td>广泛应用</td>
-<td>理论研究为主</td>
-<td>🏆 2PC应用成熟</td>
-</tr>
-</tbody>
-</table>
+<div class="battle-arena">
+<div class="fighter fighter-2pc">
+<div class="fighter-avatar">🥋</div>
+<div class="fighter-name">二阶段提交 (2PC)</div>
+<div class="fighter-title">"经典武者"</div>
+<div class="fighter-stats">
+<div class="stat-item">
+<span class="stat-label">经验值</span>
+<span class="stat-value">★★★★★</span>
+</div>
+<div class="stat-item">
+<span class="stat-label">速度</span>
+<span class="stat-value">★★★★☆</span>
+</div>
+<div class="stat-item">
+<span class="stat-label">复杂度</span>
+<span class="stat-value">★★☆☆☆</span>
+</div>
+</div>
+</div>
+
+<div class="vs-symbol">VS</div>
+
+<div class="fighter fighter-3pc">
+<div class="fighter-avatar">🥷</div>
+<div class="fighter-name">三阶段提交 (3PC)</div>
+<div class="fighter-title">"革新忍者"</div>
+<div class="fighter-stats">
+<div class="stat-item">
+<span class="stat-label">容错性</span>
+<span class="stat-value">★★★★★</span>
+</div>
+<div class="stat-item">
+<span class="stat-label">可用性</span>
+<span class="stat-value">★★★★★</span>
+</div>
+<div class="stat-item">
+<span class="stat-label">复杂度</span>
+<span class="stat-value">★★★★☆</span>
+</div>
+</div>
+</div>
+</div>
+
+<div class="battle-rounds">
+<div class="round-title">🏟️ 对战项目</div>
+
+<div class="battle-round">
+<div class="round-header">
+<div class="round-number">第一回合</div>
+<div class="round-name">⚡ 性能速度比拼</div>
+</div>
+<div class="round-content">
+<div class="round-description">
+在高并发事务处理中，哪个协议能够更快地完成事务？
+</div>
+<div class="round-battle">
+<div class="battle-side side-2pc">
+<div class="side-performance">
+<div class="performance-metric">
+<span class="metric-name">平均延迟</span>
+<span class="metric-value winner">111ms ✅</span>
+</div>
+<div class="performance-metric">
+<span class="metric-name">吞吐量</span>
+<span class="metric-value winner">450 TPS ✅</span>
+</div>
+<div class="performance-metric">
+<span class="metric-name">网络消息</span>
+<span class="metric-value winner">3n ✅</span>
+</div>
+</div>
+<div class="side-advantage">
+<strong>优势：</strong>阶段少，消息传递次数少，网络开销低
+</div>
+</div>
+
+<div class="battle-vs">⚔️</div>
+
+<div class="battle-side side-3pc">
+<div class="side-performance">
+<div class="performance-metric">
+<span class="metric-name">平均延迟</span>
+<span class="metric-value">167ms</span>
+</div>
+<div class="performance-metric">
+<span class="metric-name">吞吐量</span>
+<span class="metric-value">300 TPS</span>
+</div>
+<div class="performance-metric">
+<span class="metric-name">网络消息</span>
+<span class="metric-value">4n</span>
+</div>
+</div>
+<div class="side-advantage">
+<strong>特点：</strong>额外的阶段带来了更高的延迟和网络开销
+</div>
+</div>
+</div>
+<div class="round-result">
+<span class="result-icon">🏆</span>
+<span class="result-text">2PC 获胜！在性能方面具有明显优势</span>
+</div>
+</div>
+</div>
+
+<div class="battle-round">
+<div class="round-header">
+<div class="round-number">第二回合</div>
+<div class="round-name">🛡️ 容错能力对决</div>
+</div>
+<div class="round-content">
+<div class="round-description">
+当系统遇到故障时，哪个协议能够更好地处理和恢复？
+</div>
+<div class="round-battle">
+<div class="battle-side side-2pc">
+<div class="side-scenarios">
+<div class="scenario-item">
+<div class="scenario-name">协调者故障</div>
+<div class="scenario-result lose">❌ 参与者可能永久阻塞</div>
+</div>
+<div class="scenario-item">
+<div class="scenario-name">网络分区</div>
+<div class="scenario-result lose">❌ 可能导致数据不一致</div>
+</div>
+<div class="scenario-item">
+<div class="scenario-name">故障恢复</div>
+<div class="scenario-result lose">❌ 需要人工干预</div>
+</div>
+</div>
+<div class="side-weakness">
+<strong>弱点：</strong>在故障场景下容易出现阻塞和数据不一致
+</div>
+</div>
+
+<div class="battle-vs">⚔️</div>
+
+<div class="battle-side side-3pc">
+<div class="side-scenarios">
+<div class="scenario-item">
+<div class="scenario-name">协调者故障</div>
+<div class="scenario-result win">✅ 参与者可自主决策</div>
+</div>
+<div class="scenario-item">
+<div class="scenario-name">网络分区</div>
+<div class="scenario-result win">✅ 智能分区处理</div>
+</div>
+<div class="scenario-item">
+<div class="scenario-name">故障恢复</div>
+<div class="scenario-result win">✅ 自动恢复机制</div>
+</div>
+</div>
+<div class="side-advantage">
+<strong>优势：</strong>非阻塞设计，故障时系统仍可继续运行
+</div>
+</div>
+</div>
+<div class="round-result">
+<span class="result-icon">🏆</span>
+<span class="result-text">3PC 获胜！在容错方面表现卓越</span>
+</div>
+</div>
+</div>
+
+<div class="battle-round">
+<div class="round-header">
+<div class="round-number">第三回合</div>
+<div class="round-name">🔧 实施难度较量</div>
+</div>
+<div class="round-content">
+<div class="round-description">
+在实际工程项目中，哪个协议更容易实施和维护？
+</div>
+<div class="round-battle">
+<div class="battle-side side-2pc">
+<div class="side-implementation">
+<div class="impl-item">
+<div class="impl-aspect">开发复杂度</div>
+<div class="impl-rating winner">★★☆☆☆ ✅</div>
+</div>
+<div class="impl-item">
+<div class="impl-aspect">测试难度</div>
+<div class="impl-rating winner">★★☆☆☆ ✅</div>
+</div>
+<div class="impl-item">
+<div class="impl-aspect">运维复杂度</div>
+<div class="impl-rating winner">★★☆☆☆ ✅</div>
+</div>
+<div class="impl-item">
+<div class="impl-aspect">团队技能要求</div>
+<div class="impl-rating winner">★★★☆☆ ✅</div>
+</div>
+</div>
+<div class="side-advantage">
+<strong>优势：</strong>实现简单，生态成熟，团队容易掌握
+</div>
+</div>
+
+<div class="battle-vs">⚔️</div>
+
+<div class="battle-side side-3pc">
+<div class="side-implementation">
+<div class="impl-item">
+<div class="impl-aspect">开发复杂度</div>
+<div class="impl-rating">★★★★☆</div>
+</div>
+<div class="impl-item">
+<div class="impl-aspect">测试难度</div>
+<div class="impl-rating">★★★★★</div>
+</div>
+<div class="impl-item">
+<div class="impl-aspect">运维复杂度</div>
+<div class="impl-rating">★★★★☆</div>
+</div>
+<div class="impl-item">
+<div class="impl-aspect">团队技能要求</div>
+<div class="impl-rating">★★★★★</div>
+</div>
+</div>
+<div class="side-weakness">
+<strong>挑战：</strong>状态机复杂，需要高级技能和专业工具
+</div>
+</div>
+</div>
+<div class="round-result">
+<span class="result-icon">🏆</span>
+<span class="result-text">2PC 获胜！实施门槛更低，更适合大多数项目</span>
+</div>
+</div>
+</div>
+
+<div class="battle-round">
+<div class="round-header">
+<div class="round-number">第四回合</div>
+<div class="round-name">🌍 应用生态竞争</div>
+</div>
+<div class="round-content">
+<div class="round-description">
+在实际生产环境中，哪个协议有更广泛的应用和支持？
+</div>
+<div class="round-battle">
+<div class="battle-side side-2pc">
+<div class="side-ecosystem">
+<div class="eco-item">
+<div class="eco-name">工业应用</div>
+<div class="eco-examples">MySQL、PostgreSQL、Oracle等主流数据库</div>
+<div class="eco-status success">✅ 广泛支持</div>
+</div>
+<div class="eco-item">
+<div class="eco-name">标准协议</div>
+<div class="eco-examples">XA事务标准、JTA规范</div>
+<div class="eco-status success">✅ 标准化</div>
+</div>
+<div class="eco-item">
+<div class="eco-name">生态成熟度</div>
+<div class="eco-examples">丰富的工具链、监控方案、最佳实践</div>
+<div class="eco-status success">✅ 非常成熟</div>
+</div>
+</div>
+</div>
+
+<div class="battle-vs">⚔️</div>
+
+<div class="battle-side side-3pc">
+<div class="side-ecosystem">
+<div class="eco-item">
+<div class="eco-name">工业应用</div>
+<div class="eco-examples">主要用于研究领域和特殊场景</div>
+<div class="eco-status limited">⚠️ 应用有限</div>
+</div>
+<div class="eco-item">
+<div class="eco-name">标准协议</div>
+<div class="eco-examples">理论完善但缺乏统一标准</div>
+<div class="eco-status limited">⚠️ 标准化不足</div>
+</div>
+<div class="eco-item">
+<div class="eco-name">生态成熟度</div>
+<div class="eco-examples">工具链不完善，实践案例较少</div>
+<div class="eco-status limited">⚠️ 生态发展中</div>
+</div>
+</div>
+</div>
+</div>
+<div class="round-result">
+<span class="result-icon">🏆</span>
+<span class="result-text">2PC 获胜！在应用生态方面占据绝对优势</span>
+</div>
+</div>
+</div>
+</div>
+
+<div class="battle-summary">
+<div class="summary-title">📊 最终战况总结</div>
+<div class="summary-scoreboard">
+<div class="score-section">
+<div class="protocol-score score-2pc">
+<div class="score-name">2PC得分</div>
+<div class="score-value">3胜1负</div>
+<div class="score-wins">
+<span class="win-item">⚡ 性能速度</span>
+<span class="win-item">🔧 实施难度</span>
+<span class="win-item">🌍 应用生态</span>
+</div>
+</div>
+
+<div class="vs-divider">VS</div>
+
+<div class="protocol-score score-3pc">
+<div class="score-name">3PC得分</div>
+<div class="score-value">1胜3负</div>
+<div class="score-wins">
+<span class="win-item">🛡️ 容错能力</span>
+</div>
+</div>
+</div>
+</div>
+
+<div class="conclusion-analysis">
+<div class="conclusion-title">🎯 深度分析</div>
+<div class="conclusion-content">
+<div class="analysis-point">
+<div class="point-icon">📈</div>
+<div class="point-text">
+<strong>2PC的主导地位</strong>：在性能、实施复杂度和生态成熟度方面的优势，使其成为工业界的主流选择
+</div>
+</div>
+
+<div class="analysis-point">
+<div class="point-icon">🛡️</div>
+<div class="point-text">
+<strong>3PC的独特价值</strong>：在高可用性要求极高的关键系统中，其非阻塞特性具有不可替代的价值
+</div>
+</div>
+
+<div class="analysis-point">
+<div class="point-icon">⚖️</div>
+<div class="point-text">
+<strong>选择权衡</strong>：没有绝对的胜者，选择哪个协议取决于具体的业务需求和技术约束
+</div>
+</div>
+</div>
+</div>
+
+<div class="selection-recommendations">
+<div class="recommendation-title">💡 选择建议</div>
+<div class="recommendation-grid">
+<div class="recommend-2pc">
+<div class="recommend-header">
+<div class="recommend-icon">🥋</div>
+<div class="recommend-title">推荐使用 2PC</div>
+</div>
+<div class="recommend-scenarios">
+<div class="scenario-tag">🚀 性能优先项目</div>
+<div class="scenario-tag">👥 中小型团队</div>
+<div class="scenario-tag">💰 预算有限项目</div>
+<div class="scenario-tag">⏰ 快速交付需求</div>
+<div class="scenario-tag">🔧 运维资源有限</div>
+</div>
+</div>
+
+<div class="recommend-3pc">
+<div class="recommend-header">
+<div class="recommend-icon">🥷</div>
+<div class="recommend-title">推荐使用 3PC</div>
+</div>
+<div class="recommend-scenarios">
+<div class="scenario-tag">🏥 高可用性要求</div>
+<div class="scenario-tag">💰 金融交易系统</div>
+<div class="scenario-tag">🚀 航空航天系统</div>
+<div class="scenario-tag">👨‍💻 技术实力强团队</div>
+<div class="scenario-tag">🔬 技术创新项目</div>
+</div>
+</div>
+</div>
+</div>
 </div>
 </div>
 
@@ -1826,7 +2145,7 @@ public class ThreePCExample {
 </div>
 
 <div class="comparison-row">
-<div class="comparison-cell network-type">局域网(LAN)</div>
+<div class="comparison-cell network-type" data-label="网络环境">局域网(LAN)</div>
 <div class="comparison-cell">1ms</div>
 <div class="comparison-cell latency-2pc">50ms</div>
 <div class="comparison-cell latency-3pc">75ms</div>
@@ -1834,7 +2153,7 @@ public class ThreePCExample {
 </div>
 
 <div class="comparison-row">
-<div class="comparison-cell network-type">城域网(WAN)</div>
+<div class="comparison-cell network-type" data-label="网络环境">城域网(WAN)</div>
 <div class="comparison-cell">50ms</div>
 <div class="comparison-cell latency-2pc">200ms</div>
 <div class="comparison-cell latency-3pc">300ms</div>
@@ -1842,7 +2161,7 @@ public class ThreePCExample {
 </div>
 
 <div class="comparison-row">
-<div class="comparison-cell network-type">跨洲网络</div>
+<div class="comparison-cell network-type" data-label="网络环境">跨洲网络</div>
 <div class="comparison-cell">200ms</div>
 <div class="comparison-cell latency-2pc">600ms</div>
 <div class="comparison-cell latency-3pc">900ms</div>
@@ -4478,6 +4797,63 @@ public class ServiceMeshThreePC {
     overflow-x: auto;
 }
 
+.latency-comparison-table {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: #e8e8e8;
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 20px 0;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.comparison-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
+    gap: 1px;
+    background: white;
+}
+
+.comparison-row.header-row {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.comparison-cell {
+    padding: 12px 16px;
+    text-align: center;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.header-row .comparison-cell {
+    color: white;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.comparison-cell.network-type {
+    text-align: left;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.comparison-cell.latency-2pc {
+    color: #27ae60;
+    font-weight: 600;
+}
+
+.comparison-cell.latency-3pc {
+    color: #e74c3c;
+    font-weight: 600;
+}
+
+.comparison-cell.latency-diff {
+    color: #e67e22;
+    font-weight: 700;
+    background: rgba(230, 126, 34, 0.1);
+}
+
 .detailed-comparison-table {
     width: 100%;
     border-collapse: collapse;
@@ -5097,6 +5473,32 @@ public class ServiceMeshThreePC {
 
     .detailed-comparison-table {
         font-size: 0.8em;
+    }
+
+    .latency-comparison-table {
+        margin: 10px 0;
+    }
+
+    .comparison-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .comparison-cell {
+        padding: 8px 12px;
+        font-size: 12px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .comparison-cell:before {
+        content: attr(data-label) ': ';
+        font-weight: 600;
+        display: inline-block;
+        width: 100px;
+    }
+
+    .header-row {
+        display: none;
     }
 }
 
