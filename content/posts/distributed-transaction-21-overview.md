@@ -33,12 +33,10 @@ license: ""
 
 ### 📝 传统事务 vs 分布式事务
 
-<div class="transaction-comparison">
-<div class="comparison-title">🔄 事务类型对比</div>
+> ## 🔄 事务类型对比
 
-<div class="transaction-type">
-<div class="type-header local-transaction">🏠 本地事务（Local Transaction）</div>
-<div class="type-content">
+### 🏠 本地事务（Local Transaction）
+
 **定义**：在单个数据库系统内执行的事务
 
 **特点**：
@@ -53,12 +51,9 @@ UPDATE account SET balance = balance - 100 WHERE id = 1;
 UPDATE account SET balance = balance + 100 WHERE id = 2;
 COMMIT;
 ```
-</div>
-</div>
 
-<div class="transaction-type">
-<div class="type-header distributed-transaction">🌐 分布式事务（Distributed Transaction）</div>
-<div class="type-content">
+### 🌐 分布式事务（Distributed Transaction）
+
 **定义**：跨越多个数据库系统或服务的事务
 
 **特点**：
@@ -72,104 +67,64 @@ COMMIT;
 系统B：增加商户收入 +100元
 系统C：记录交易日志
 ```
-</div>
-</div>
-</div>
 
 ### 🏗️ 分布式事务的应用场景
 
-<div class="scenario-grid">
-<div class="scenario-card">
-<div class="scenario-title">💰 跨行转账</div>
-<div class="scenario-desc">
+#### 💰 跨行转账
 **场景**：用户从银行A向银行B转账
 - 银行A：扣减账户余额
 - 银行B：增加账户余额
 - 必须保证要么同时成功，要么同时失败
-</div>
-</div>
 
-<div class="scenario-card">
-<div class="scenario-title">🛒 电商下单</div>
-<div class="scenario-desc">
+#### 🛒 电商下单
 **场景**：用户在电商平台下单购买商品
 - 订单系统：创建订单记录
 - 库存系统：扣减商品库存
 - 支付系统：处理资金流转
 - 积分系统：赠送用户积分
-</div>
-</div>
 
-<div class="scenario-card">
-<div class="scenario-title">🎮 游戏充值</div>
-<div class="scenario-desc">
+#### 🎮 游戏充值
 **场景**：玩家充值游戏币
 - 支付系统：处理充值订单
 - 游戏系统：增加游戏币余额
 - 日志系统：记录充值流水
 - 营销系统：触发充值活动
-</div>
-</div>
-</div>
 
 ## 🔍 ACID特性在分布式环境中的挑战
 
 ### ⚛️ ACID特性回顾
 
-<div class="acid-properties">
-<div class="acid-title">🧬 ACID特性详解</div>
+> ## 🧬 ACID特性详解
 
-<div class="property-grid">
-<div class="property-item atomicity">
-<div class="property-name">🔗 原子性（Atomicity）</div>
-<div class="property-desc">
+#### 🔗 原子性（Atomicity）
 事务中的所有操作要么全部成功，要么全部失败。不存在部分成功的情况。
 
 **本地事务**：数据库通过回滚日志保证
 **分布式事务**：需要协调多个节点的提交/回滚
-</div>
-</div>
 
-<div class="property-item consistency">
-<div class="property-name">✅ 一致性（Consistency）</div>
-<div class="property-desc">
+#### ✅ 一致性（Consistency）
 事务执行前后，数据库从一个一致状态转换到另一个一致状态。
 
 **本地事务**：通过约束和触发器保证
 **分布式事务**：需要确保跨系统的业务规则一致性
-</div>
-</div>
 
-<div class="property-item isolation">
-<div class="property-name">🔒 隔离性（Isolation）</div>
-<div class="property-desc">
+#### 🔒 隔离性（Isolation）
 并发执行的事务之间不能相互干扰。
 
 **本地事务**：通过锁机制和多版本控制
 **分布式事务**：需要协调分布式锁和全局事务隔离
-</div>
-</div>
 
-<div class="property-item durability">
-<div class="property-name">💾 持久性（Durability）</div>
-<div class="property-desc">
+#### 💾 持久性（Durability）
 事务一旦提交，其结果就是永久性的，即使系统崩溃也不会丢失。
 
 **本地事务**：通过预写日志（WAL）保证
 **分布式事务**：需要确保所有节点都持久化数据
-</div>
-</div>
-</div>
-</div>
 
 ### 🌪️ 分布式环境的挑战
 
-<div class="challenges-section">
-<div class="challenges-title">⚡ 分布式事务面临的核心挑战</div>
+> ## ⚡ 分布式事务面临的核心挑战
 
-<div class="challenge-item">
-<div class="challenge-header">🌐 网络分区（Network Partition）</div>
-<div class="challenge-content">
+#### 🌐 网络分区（Network Partition）
 **问题**：网络故障导致节点间无法通信
 
 **影响**：
@@ -185,12 +140,8 @@ T2: 网络分区发生，A和B失去联系
 T3: 节点A等待B的响应超时
 T4: A应该提交还是回滚？B应该如何处理？
 ```
-</div>
-</div>
 
-<div class="challenge-item">
-<div class="challenge-header">💥 节点故障（Node Failure）</div>
-<div class="challenge-content">
+#### 💥 节点故障（Node Failure）
 **问题**：参与事务的节点发生崩溃
 
 **影响**：
@@ -202,12 +153,8 @@ T4: A应该提交还是回滚？B应该如何处理？
 - **Fail-Stop**：节点崩溃后停止工作
 - **Fail-Slow**：节点响应缓慢但未完全故障
 - **Byzantine**：节点出现任意错误行为
-</div>
-</div>
 
-<div class="challenge-item">
-<div class="challenge-header">⏱️ 时钟不同步（Clock Skew）</div>
-<div class="challenge-content">
+#### ⏱️ 时钟不同步（Clock Skew）
 **问题**：分布式系统中各节点时钟不完全同步
 
 **影响**：
@@ -219,129 +166,78 @@ T4: A应该提交还是回滚？B应该如何处理？
 - 使用逻辑时钟（Lamport时间戳）
 - 部署NTP时间同步服务
 - 设计容错的超时机制
-</div>
-</div>
-</div>
-</div>
 
 ## 🎭 CAP定理与分布式事务
 
 ### 📐 CAP定理详解
 
-<div class="cap-theorem">
-<div class="cap-title">🔺 CAP定理（Brewer's Theorem）</div>
+> ## 🔺 CAP定理（Brewer's Theorem）
 
-<div class="cap-description">
 在分布式系统中，**一致性（Consistency）**、**可用性（Availability）**、**分区容错性（Partition Tolerance）**三者最多只能同时满足两个。
-</div>
 
-<div class="cap-triangle">
-<div class="cap-node consistency-node">
-<div class="node-label">🎯 一致性（C）</div>
-<div class="node-desc">所有节点在同一时间看到相同的数据</div>
-</div>
+#### 🎯 一致性（C）
+所有节点在同一时间看到相同的数据
 
-<div class="cap-node availability-node">
-<div class="node-label">🔄 可用性（A）</div>
-<div class="node-desc">系统在有限时间内返回合理的响应</div>
-</div>
+#### 🔄 可用性（A）
+系统在有限时间内返回合理的响应
 
-<div class="cap-node partition-node">
-<div class="node-label">🛡️ 分区容错（P）</div>
-<div class="node-desc">系统能够容忍网络分区故障</div>
-</div>
-</div>
+#### 🛡️ 分区容错（P）
+系统能够容忍网络分区故障
 
-<div class="cap-combinations">
-<div class="combination-title">📊 CAP组合分析</div>
+### 📊 CAP组合分析
 
-<div class="combo-item ca-combo">
-<div class="combo-name">CA：一致性 + 可用性</div>
-<div class="combo-desc">
+#### CA：一致性 + 可用性
 **特点**：强一致性，高可用性，但无法容忍分区
 **适用**：单机系统或LAN环境
 **例子**：传统RDBMS（如MySQL单机版）
-</div>
-</div>
 
-<div class="combo-item cp-combo">
-<div class="combo-name">CP：一致性 + 分区容错</div>
-<div class="combo-desc">
+#### CP：一致性 + 分区容错
 **特点**：强一致性，分区容错，但可能不可用
 **适用**：对一致性要求极高的系统
 **例子**：HBase、MongoDB（强一致性模式）
-</div>
-</div>
 
-<div class="combo-item ap-combo">
-<div class="combo-name">AP：可用性 + 分区容错</div>
-<div class="combo-desc">
+#### AP：可用性 + 分区容错
 **特点**：高可用性，分区容错，但最终一致性
 **适用**：互联网大规模系统
 **例子**：Cassandra、DynamoDB
-</div>
-</div>
-</div>
-</div>
 
 ### 🤝 BASE理论
 
-<div class="base-theory">
-<div class="base-title">🏗️ BASE理论：CAP的实践指导</div>
+> ## 🏗️ BASE理论：CAP的实践指导
 
-<div class="base-description">
 BASE理论是对CAP定理的延伸，提出了在分布式系统中实现**最终一致性**的实用方法。
-</div>
 
-<div class="base-components">
-<div class="base-item">
-<div class="base-name">🔗 基本可用（Basically Available）</div>
-<div class="base-desc">
+#### 🔗 基本可用（Basically Available）
 系统能够基本运行，允许损失部分可用性，但核心功能依然可用。
 
 **实现方式**：
 - 响应时间稍有损失（如200ms → 1s）
 - 功能上有所损失（如只读模式）
 - 系统某些节点不可用时，其他节点继续服务
-</div>
-</div>
 
-<div class="base-item">
-<div class="base-name">🔄 软状态（Soft State）</div>
-<div class="base-desc">
+#### 🔄 软状态（Soft State）
 允许系统存在中间状态，而该中间状态不会影响系统整体可用性。
 
 **特点**：
 - 数据可能在不同节点间存在不一致
 - 这种不一致状态是临时的
 - 系统会自动趋向一致状态
-</div>
-</div>
 
-<div class="base-item">
-<div class="base-name">⏳ 最终一致性（Eventually Consistent）</div>
-<div class="base-desc">
+#### ⏳ 最终一致性（Eventually Consistent）
 系统不要求在任意时刻都保持强一致性，但保证在没有新更新的情况下，最终所有节点都会达到一致状态。
 
 **一致性级别**：
 - **强一致性**：读操作总是返回最新写入的值
 - **弱一致性**：读操作可能返回旧值
 - **最终一致性**：保证最终会一致，但不保证时间
-</div>
-</div>
-</div>
-</div>
 
 ## 🛠️ 分布式事务解决方案概览
 
 ### 🎛️ 解决方案分类
 
-<div class="solutions-overview">
-<div class="solutions-title">🔧 分布式事务解决方案全景图</div>
+> ## 🔧 分布式事务解决方案全景图
 
-<div class="solution-category">
-<div class="category-header consensus-based">🤝 基于共识的强一致性方案</div>
-<div class="category-content">
+### 🤝 基于共识的强一致性方案
 **核心思想**：通过协调者统一管理事务状态
 
 **优点**：
@@ -358,12 +254,8 @@ BASE理论是对CAP定理的延伸，提出了在分布式系统中实现**最�
 - **二阶段提交（2PC）**：经典的强一致性协议
 - **三阶段提交（3PC）**：改进版本，减少阻塞
 - **Raft/Paxos**：基于状态机复制的共识算法
-</div>
-</div>
 
-<div class="solution-category">
-<div class="category-header compensation-based">🔄 基于补偿的最终一致性方案</div>
-<div class="category-content">
+### 🔄 基于补偿的最终一致性方案
 **核心思想**：允许临时不一致，通过补偿机制达到最终一致
 
 **优点**：
@@ -380,85 +272,50 @@ BASE理论是对CAP定理的延伸，提出了在分布式系统中实现**最�
 - **Saga模式**：长时间运行的事务
 - **TCC模式**：Try-Confirm-Cancel
 - **消息事务**：基于消息队列的最终一致性
-</div>
-</div>
-</div>
 
 ### 📊 方案对比矩阵
 
-<div class="comparison-matrix">
-<div class="matrix-title">📈 分布式事务方案对比</div>
+### 📈 分布式事务方案对比
 
 | 方案类型 | 一致性保证 | 可用性 | 性能 | 实现复杂度 | 适用场景 |
 |:---------|:-----------|:-------|:-----|:-----------|:---------|
-| **2PC**<br>二阶段提交 | 🔒 强一致性 | 📉 低 | 🐌 低 | ⚖️ 中等 | 💼 小规模、高一致性要求 |
-| **3PC**<br>三阶段提交 | 🔒 强一致性 | 📊 中 | 🐌 低 | 🔧 较高 | 🌐 网络相对稳定环境 |
-| **Saga**<br>长事务模式 | 🔄 最终一致 | 📈 高 | 🚀 高 | 🔧 高 | 📋 长流程、可补偿业务 |
-| **TCC**<br>Try-Confirm-Cancel | 🔄 最终一致 | 📈 高 | ⚡ 中 | 🔧 高 | ⏱️ 短流程、资源预留型 |
-| **消息事务**<br>基于消息队列 | 🔄 最终一致 | 📈 高 | 🚀 高 | ⚖️ 中等 | 🔀 异步处理、解耦场景 |
-</div>
+| **2PC** (二阶段提交) | 🔒 强一致性 | 📉 低 | 🐌 低 | ⚖️ 中等 | 💼 小规模、高一致性要求 |
+| **3PC** (三阶段提交) | 🔒 强一致性 | 📊 中 | 🐌 低 | 🔧 较高 | 🌐 网络相对稳定环境 |
+| **Saga** (长事务模式) | 🔄 最终一致 | 📈 高 | 🚀 高 | 🔧 高 | 📋 长流程、可补偿业务 |
+| **TCC** (Try-Confirm-Cancel) | 🔄 最终一致 | 📈 高 | ⚡ 中 | 🔧 高 | ⏱️ 短流程、资源预留型 |
+| **消息事务** (基于消息队列) | 🔄 最终一致 | 📈 高 | 🚀 高 | ⚖️ 中等 | 🔀 异步处理、解耦场景 |
 
 ### 🎯 如何选择合适的方案？
 
-<div class="selection-guide">
-<div class="guide-title">🧭 分布式事务方案选择指南</div>
+> ## 🧭 分布式事务方案选择指南
 
-<div class="decision-tree">
-<div class="decision-node root-node">
-<div class="decision-question">对数据一致性的要求如何？</div>
-<div class="decision-options">
-<div class="option-branch strong-consistency">
-<div class="option-label">强一致性（金融、支付）</div>
-<div class="sub-decision">
-<div class="sub-question">系统规模和性能要求？</div>
-<div class="sub-options">
-<div class="sub-option">
-<div class="sub-label">小规模、简单场景</div>
-<div class="recommendation">✅ 推荐：**二阶段提交（2PC）**</div>
-</div>
-<div class="sub-option">
-<div class="sub-label">中等规模、网络稳定</div>
-<div class="recommendation">✅ 推荐：**三阶段提交（3PC）**</div>
-</div>
-</div>
-</div>
-</div>
+### 对数据一致性的要求如何？
 
-<div class="option-branch eventual-consistency">
-<div class="option-label">最终一致性（电商、社交）</div>
-<div class="sub-decision">
-<div class="sub-question">业务特性如何？</div>
-<div class="sub-options">
-<div class="sub-option">
-<div class="sub-label">长流程、可补偿</div>
-<div class="recommendation">✅ 推荐：**Saga模式**</div>
-</div>
-<div class="sub-option">
-<div class="sub-label">短流程、资源预留</div>
-<div class="recommendation">✅ 推荐：**TCC模式**</div>
-</div>
-<div class="sub-option">
-<div class="sub-label">异步处理、高吞吐</div>
-<div class="recommendation">✅ 推荐：**消息事务**</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
+#### 强一致性（金融、支付）
+**系统规模和性能要求？**
+
+- **小规模、简单场景**
+  - ✅ 推荐：**二阶段提交（2PC）**
+- **中等规模、网络稳定**
+  - ✅ 推荐：**三阶段提交（3PC）**
+
+#### 最终一致性（电商、社交）
+**业务特性如何？**
+
+- **长流程、可补偿**
+  - ✅ 推荐：**Saga模式**
+- **短流程、资源预留**
+  - ✅ 推荐：**TCC模式**
+- **异步处理、高吞吐**
+  - ✅ 推荐：**消息事务**
 
 ## 🎬 分布式事务典型使用场景
 
 ### 🏪 电商领域
 
-<div class="use-case-section">
-<div class="use-case-title">🛒 电商交易场景中的分布式事务</div>
+### 🛒 电商交易场景中的分布式事务
 
-<div class="use-case-item">
-<div class="case-header">📱 订单支付流程</div>
-<div class="case-content">
+#### 📱 订单支付流程
 **涉及系统**：
 - 订单服务：创建订单、更新订单状态
 - 库存服务：检查库存、锁定库存、扣减库存
@@ -472,12 +329,8 @@ BASE理论是对CAP定理的延伸，提出了在分布式系统中实现**最�
 - 优惠券核销必须与支付同步
 
 **推荐方案**：TCC模式 或 Saga模式
-</div>
-</div>
 
-<div class="use-case-item">
-<div class="case-header">🎁 秒杀抢购场景</div>
-<div class="case-content">
+#### 🎁 秒杀抢购场景
 **涉及系统**：
 - 秒杀服务：秒杀资格校验、生成秒杀订单
 - 库存服务：预扣库存、真实扣减
@@ -491,12 +344,8 @@ BASE理论是对CAP定理的延伸，提出了在分布式系统中实现**最�
 - 快速响应用户请求
 
 **推荐方案**：消息事务 + Redis分布式锁
-</div>
-</div>
 
-<div class="use-case-item">
-<div class="case-header">🚚 物流配送场景</div>
-<div class="case-content">
+#### 🚚 物流配送场景
 **涉及系统**：
 - 订单服务：订单状态更新
 - 仓储服务：出库管理、库位分配
@@ -510,18 +359,11 @@ BASE理论是对CAP定理的延伸，提出了在分布式系统中实现**最�
 - 异常情况的回滚处理
 
 **推荐方案**：Saga模式（补偿事务）
-</div>
-</div>
-</div>
 
 ### 🏦 金融领域
 
-<div class="use-case-section">
-<div class="use-case-title">💰 金融交易场景中的分布式事务</div>
-
-<div class="use-case-item">
-<div class="case-header">💳 转账汇款</div>
-<div class="case-content">
+### 💰 金融交易场景中的分布式事务
+#### 💳 转账汇款
 **涉及系统**：
 - 账户服务：账户余额管理
 - 交易服务：交易记录、流水管理
@@ -535,12 +377,8 @@ BASE理论是对CAP定理的延伸，提出了在分布式系统中实现**最�
 - 完整的审计追踪
 
 **推荐方案**：2PC（两阶段提交）
-</div>
-</div>
 
-<div class="use-case-item">
-<div class="case-header">📊 投资理财</div>
-<div class="case-content">
+#### 📊 投资理财
 **涉及系统**：
 - 产品服务：理财产品管理
 - 账户服务：资金账户、理财账户
@@ -554,12 +392,8 @@ BASE理论是对CAP定理的延伸，提出了在分布式系统中实现**最�
 - T+N结算的时效性
 
 **推荐方案**：TCC模式 + 最终一致性
-</div>
-</div>
 
-<div class="use-case-item">
-<div class="case-header">🏧 ATM取款</div>
-<div class="case-content">
+#### 🏧 ATM取款
 **涉及系统**：
 - ATM终端：现金管理、硬件控制
 - 核心银行系统：账户扣款
@@ -573,18 +407,11 @@ BASE理论是对CAP定理的延伸，提出了在分布式系统中实现**最�
 - 实时性要求高
 
 **推荐方案**：2PC + 补偿机制
-</div>
-</div>
-</div>
 
 ### 🎮 游戏领域
 
-<div class="use-case-section">
-<div class="use-case-title">🎯 游戏业务场景中的分布式事务</div>
-
-<div class="use-case-item">
-<div class="case-header">💎 游戏充值</div>
-<div class="case-content">
+### 🎯 游戏业务场景中的分布式事务
+#### 💎 游戏充值
 **涉及系统**：
 - 支付网关：第三方支付对接
 - 充值服务：充值订单管理
@@ -598,12 +425,8 @@ BASE理论是对CAP定理的延伸，提出了在分布式系统中实现**最�
 - 充值礼包的准确发放
 
 **推荐方案**：TCC模式
-</div>
-</div>
 
-<div class="use-case-item">
-<div class="case-header">⚔️ 装备交易</div>
-<div class="case-content">
+#### ⚔️ 装备交易
 **涉及系统**：
 - 背包服务：物品管理
 - 交易服务：交易撮合
@@ -617,12 +440,8 @@ BASE理论是对CAP定理的延伸，提出了在分布式系统中实现**最�
 - 交易的公平性
 
 **推荐方案**：2PC 或 TCC模式
-</div>
-</div>
 
-<div class="use-case-item">
-<div class="case-header">🏆 跨服战斗</div>
-<div class="case-content">
+#### 🏆 跨服战斗
 **涉及系统**：
 - 匹配服务：玩家匹配
 - 战斗服务：战斗逻辑处理
@@ -636,18 +455,11 @@ BASE理论是对CAP定理的延伸，提出了在分布式系统中实现**最�
 - 排名的实时更新
 
 **推荐方案**：Saga模式 + 最终一致性
-</div>
-</div>
-</div>
 
 ### 🚗 出行领域
 
-<div class="use-case-section">
-<div class="use-case-title">🚖 出行服务场景中的分布式事务</div>
-
-<div class="use-case-item">
-<div class="case-header">📍 网约车下单</div>
-<div class="case-content">
+### 🚖 出行服务场景中的分布式事务
+#### 📍 网约车下单
 **涉及系统**：
 - 订单服务：订单创建与管理
 - 派单服务：司机匹配与派单
@@ -661,12 +473,8 @@ BASE理论是对CAP定理的延伸，提出了在分布式系统中实现**最�
 - 支付与行程的同步
 
 **推荐方案**：Saga模式
-</div>
-</div>
 
-<div class="use-case-item">
-<div class="case-header">🎫 机票预订</div>
-<div class="case-content">
+#### 🎫 机票预订
 **涉及系统**：
 - 查询服务：航班查询
 - 库存服务：座位库存管理
@@ -680,12 +488,8 @@ BASE理论是对CAP定理的延伸，提出了在分布式系统中实现**最�
 - 退改签的一致性处理
 
 **推荐方案**：TCC模式
-</div>
-</div>
 
-<div class="use-case-item">
-<div class="case-header">🏨 酒店预订</div>
-<div class="case-content">
+#### 🏨 酒店预订
 **涉及系统**：
 - 库存服务：房间库存管理
 - 价格服务：动态定价
@@ -699,18 +503,11 @@ BASE理论是对CAP定理的延伸，提出了在分布式系统中实现**最�
 - 取消政策的正确执行
 
 **推荐方案**：TCC模式 + 补偿事务
-</div>
-</div>
-</div>
 
 ### 🏥 医疗领域
 
-<div class="use-case-section">
-<div class="use-case-title">⚕️ 医疗服务场景中的分布式事务</div>
-
-<div class="use-case-item">
-<div class="case-header">📋 在线挂号</div>
-<div class="case-content">
+### ⚕️ 医疗服务场景中的分布式事务
+#### 📋 在线挂号
 **涉及系统**：
 - 号源服务：号源管理与锁定
 - 患者服务：患者信息管理
@@ -724,12 +521,8 @@ BASE理论是对CAP定理的延伸，提出了在分布式系统中实现**最�
 - 退号的一致性处理
 
 **推荐方案**：TCC模式
-</div>
-</div>
 
-<div class="use-case-item">
-<div class="case-header">💊 处方流转</div>
-<div class="case-content">
+#### 💊 处方流转
 **涉及系统**：
 - 处方服务：处方开具与管理
 - 药房服务：药品库存与发放
@@ -743,18 +536,11 @@ BASE理论是对CAP定理的延伸，提出了在分布式系统中实现**最�
 - 全流程可追溯
 
 **推荐方案**：Saga模式 + 审计日志
-</div>
-</div>
-</div>
 
 ### 📡 物联网领域
 
-<div class="use-case-section">
-<div class="use-case-title">🌐 IoT场景中的分布式事务</div>
-
-<div class="use-case-item">
-<div class="case-header">🏠 智能家居控制</div>
-<div class="case-content">
+### 🌐 IoT场景中的分布式事务
+#### 🏠 智能家居控制
 **涉及系统**：
 - 设备服务：设备状态管理
 - 控制服务：指令下发
@@ -768,12 +554,8 @@ BASE理论是对CAP定理的延伸，提出了在分布式系统中实现**最�
 - 状态同步的实时性
 
 **推荐方案**：消息事务 + 最终一致性
-</div>
-</div>
 
-<div class="use-case-item">
-<div class="case-header">🏭 工业物联网</div>
-<div class="case-content">
+#### 🏭 工业物联网
 **涉及系统**：
 - 采集服务：数据采集
 - 控制服务：设备控制
@@ -787,20 +569,13 @@ BASE理论是对CAP定理的延伸，提出了在分布式系统中实现**最�
 - 告警的及时性
 
 **推荐方案**：消息事务 + 补偿机制
-</div>
-</div>
-</div>
 
 ## 🏭 分布式事务在实际业务中的应用
 
 ### 💼 真实案例分析
 
-<div class="case-studies">
-<div class="case-title">🔍 企业级分布式事务实战案例</div>
-
-<div class="case-item banking">
-<div class="case-header">🏦 案例一：银行核心系统</div>
-<div class="case-content">
+### 🔍 企业级分布式事务实战案例
+#### 🏦 案例一：银行核心系统
 **业务场景**：跨行转账业务
 
 **系统架构**：
@@ -828,12 +603,8 @@ BASE理论是对CAP定理的延伸，提出了在分布式系统中实现**最�
 3. TM收到所有确认后，发送Commit请求
 4. 参与者提交事务，返回结果
 ```
-</div>
-</div>
 
-<div class="case-item ecommerce">
-<div class="case-header">🛒 案例二：电商平台</div>
-<div class="case-content">
+#### 🛒 案例二：电商平台
 **业务场景**：用户下单购买商品
 
 **系统架构**：
@@ -862,12 +633,8 @@ Saga编排器：订单系统
 补偿流程：
 5. 回退积分 ← 4. 释放库存 ← 3. 退款 ← 2. 解锁库存 ← 1. 取消订单
 ```
-</div>
-</div>
 
-<div class="case-item gaming">
-<div class="case-header">🎮 案例三：游戏充值系统</div>
-<div class="case-content">
+#### 🎮 案例三：游戏充值系统
 **业务场景**：玩家充值游戏币
 
 **系统架构**：
@@ -907,18 +674,11 @@ Cancel阶段：回滚操作
 - 游戏：释放预留配额
 - 日志：记录操作失败
 ```
-</div>
-</div>
-</div>
 
 ### 📈 性能优化策略
 
-<div class="optimization-strategies">
-<div class="strategy-title">🚀 分布式事务性能优化实践</div>
-
-<div class="strategy-item">
-<div class="strategy-name">⚡ 减少参与者数量</div>
-<div class="strategy-content">
+### 🚀 分布式事务性能优化实践
+#### ⚡ 减少参与者数量
 **优化思路**：合并相关操作，减少跨系统调用
 
 **具体措施**：
@@ -927,12 +687,8 @@ Cancel阶段：回滚操作
 - 批量操作：多个小事务合并为大事务
 
 **效果**：减少网络开销，提高事务成功率
-</div>
-</div>
 
-<div class="strategy-item">
-<div class="strategy-name">⏰ 异步化处理</div>
-<div class="strategy-content">
+#### ⏰ 异步化处理
 **优化思路**：将同步强一致性改为异步最终一致性
 
 **具体措施**：
@@ -941,12 +697,8 @@ Cancel阶段：回滚操作
 - 定时补偿：定期检查和修复不一致数据
 
 **效果**：显著提升系统响应速度和吞吐量
-</div>
-</div>
 
-<div class="strategy-item">
-<div class="strategy-name">🎯 超时优化</div>
-<div class="strategy-content">
+#### 🎯 超时优化
 **优化思路**：合理设置超时时间，避免长时间阻塞
 
 **具体措施**：
@@ -955,85 +707,51 @@ Cancel阶段：回滚操作
 - 快速失败：发现异常及时中断
 
 **效果**：减少资源占用，提高系统稳定性
-</div>
-</div>
-</div>
 
 ## 🔮 未来发展趋势
 
 ### 🌟 新兴技术方向
 
-<div class="future-trends">
-<div class="trends-title">🚀 分布式事务技术发展趋势</div>
+### 🚀 分布式事务技术发展趋势
 
-<div class="trend-item">
-<div class="trend-name">🔗 区块链与分布式账本</div>
-<div class="trend-desc">
+#### 🔗 区块链与分布式账本
 利用区块链的不可篡改特性，为分布式事务提供新的一致性保证机制。
 
 **应用前景**：
 - 跨机构的可信事务
 - 供应链金融
 - 数字资产交易
-</div>
-</div>
 
-<div class="trend-item">
-<div class="trend-name">🤖 AI驱动的事务优化</div>
-<div class="trend-desc">
+#### 🤖 AI驱动的事务优化
 通过机器学习优化事务的执行策略、超时设置和故障恢复。
 
 **应用前景**：
 - 智能路由选择
 - 预测性故障处理
 - 自适应性能调优
-</div>
-</div>
 
-<div class="trend-item">
-<div class="trend-name">☁️ 云原生事务管理</div>
-<div class="trend-desc">
+#### ☁️ 云原生事务管理
 基于容器和微服务架构的轻量级事务管理方案。
 
 **应用前景**：
 - Serverless事务
 - 多云环境一致性
 - 弹性扩缩容支持
-</div>
-</div>
-</div>
 
 ## 📚 系列文章导航
 
 本文是分布式事务系列的第一篇，为您介绍了分布式事务的基础概念和整体框架。接下来的文章将深入讲解具体的实现协议：
 
-<div class="series-navigation">
-<div class="nav-title">📖 系列文章目录</div>
+### 📖 系列文章目录
 
-<div class="nav-item current">
-<div class="nav-number">1️⃣</div>
-<div class="nav-content">
-<div class="nav-title-text">分布式事务基础概念</div>
-<div class="nav-desc">概念、挑战、解决方案概览（当前文章）</div>
-</div>
-</div>
+#### 1️⃣ **分布式事务基础概念**
+*概念、挑战、解决方案概览（当前文章）*
 
-<div class="nav-item upcoming">
-<div class="nav-number">2️⃣</div>
-<div class="nav-content">
-<div class="nav-title-text">二阶段提交协议详解</div>
-<div class="nav-desc">2PC原理、实现、优缺点及实战案例</div>
-</div>
-</div>
+#### 2️⃣ **二阶段提交协议详解**
+*2PC原理、实现、优缺点及实战案例*
 
-<div class="nav-item upcoming">
-<div class="nav-number">3️⃣</div>
-<div class="nav-content">
-<div class="nav-title-text">三阶段提交协议深入</div>
-<div class="nav-desc">3PC改进、对比分析及工程实践</div>
-</div>
-</div>
-</div>
+#### 3️⃣ **三阶段提交协议深入**
+*3PC改进、对比分析及工程实践*
 
 ## 🎯 总结
 
@@ -1060,1167 +778,3 @@ Cancel阶段：回滚操作
 
 *👨‍💻 如果您觉得这篇文章对您有帮助，欢迎分享给更多的开发者朋友。让我们一起在分布式系统的海洋中探索前行！*
 
-<style>
-/* 事务对比样式 */
-.transaction-comparison {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-    color: white;
-}
-
-.comparison-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.transaction-type {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    margin: 15px 0;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.type-header {
-    padding: 15px 20px;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-.local-transaction {
-    background: rgba(76, 175, 80, 0.3);
-}
-
-.distributed-transaction {
-    background: rgba(233, 30, 99, 0.3);
-}
-
-.type-content {
-    padding: 20px;
-    line-height: 1.6;
-}
-
-/* 场景卡片样式 */
-.scenario-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    margin: 20px 0;
-}
-
-.scenario-card {
-    background: #f8f9fa;
-    border-radius: 12px;
-    padding: 20px;
-    border-left: 4px solid #007bff;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.scenario-title {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #2c3e50;
-    margin-bottom: 10px;
-}
-
-.scenario-desc {
-    color: #555;
-    line-height: 1.6;
-}
-
-/* ACID特性样式 */
-.acid-properties {
-    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-}
-
-.acid-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #2c3e50;
-}
-
-.property-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 15px;
-}
-
-.property-item {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.property-name {
-    font-size: 1.1em;
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: #2c3e50;
-}
-
-.property-desc {
-    color: #555;
-    line-height: 1.6;
-    font-size: 0.95em;
-}
-
-/* 挑战样式 */
-.challenges-section {
-    background: #f8f9fa;
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-}
-
-.challenges-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #2c3e50;
-}
-
-.challenge-item {
-    background: white;
-    border-radius: 12px;
-    margin: 15px 0;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.challenge-header {
-    background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
-    color: white;
-    padding: 15px 20px;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-.challenge-content {
-    padding: 20px;
-    line-height: 1.6;
-    color: #555;
-}
-
-/* CAP定理样式 */
-.cap-theorem {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-    color: white;
-}
-
-.cap-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 15px;
-}
-
-.cap-description {
-    text-align: center;
-    font-size: 1.1em;
-    margin-bottom: 25px;
-    font-style: italic;
-}
-
-.cap-triangle {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    margin: 25px 0;
-    flex-wrap: wrap;
-}
-
-.cap-node {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    min-width: 200px;
-    margin: 10px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-}
-
-.node-label {
-    font-size: 1.1em;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.node-desc {
-    font-size: 0.9em;
-    opacity: 0.9;
-}
-
-/* CAP组合样式 */
-.cap-combinations {
-    margin-top: 20px;
-}
-
-.combination-title {
-    font-size: 1.2em;
-    font-weight: bold;
-    margin-bottom: 15px;
-    text-align: center;
-}
-
-.combo-item {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    padding: 15px;
-    margin: 10px 0;
-    border-left: 4px solid rgba(255, 255, 255, 0.5);
-}
-
-.combo-name {
-    font-weight: bold;
-    font-size: 1.05em;
-    margin-bottom: 8px;
-}
-
-.combo-desc {
-    font-size: 0.95em;
-    line-height: 1.5;
-    opacity: 0.95;
-}
-
-/* BASE理论样式 */
-.base-theory {
-    background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-}
-
-.base-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 15px;
-    color: #2c3e50;
-}
-
-.base-description {
-    text-align: center;
-    font-size: 1.05em;
-    margin-bottom: 20px;
-    color: #555;
-}
-
-.base-components {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.base-item {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.base-name {
-    font-size: 1.1em;
-    font-weight: bold;
-    color: #2c3e50;
-    margin-bottom: 10px;
-}
-
-.base-desc {
-    color: #555;
-    line-height: 1.6;
-}
-
-/* 解决方案概览样式 */
-.solutions-overview {
-    background: #f8f9fa;
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-}
-
-.solutions-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #2c3e50;
-}
-
-.solution-category {
-    background: white;
-    border-radius: 12px;
-    margin: 20px 0;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.category-header {
-    padding: 15px 20px;
-    font-weight: bold;
-    font-size: 1.1em;
-    color: white;
-}
-
-.consensus-based {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.compensation-based {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-}
-
-.category-content {
-    padding: 20px;
-    line-height: 1.6;
-    color: #555;
-}
-
-/* 对比矩阵样式 */
-.comparison-matrix {
-    background: white;
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.matrix-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #2c3e50;
-}
-
-/* 增强的对比表格样式 */
-.enhanced-comparison-table {
-    overflow-x: auto;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.solution-comparison-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.95em;
-}
-
-.solution-comparison-table th {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 15px 12px;
-    font-weight: bold;
-    text-align: center;
-    font-size: 0.9em;
-}
-
-.solution-comparison-table td {
-    padding: 15px 12px;
-    text-align: center;
-    border-bottom: 1px solid #e9ecef;
-    transition: all 0.3s ease;
-}
-
-.solution-comparison-table tr:hover {
-    background: #f8f9fa;
-    transform: scale(1.01);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-/* 方案名称列样式 */
-.solution-name {
-    text-align: left !important;
-    font-weight: bold;
-    color: #2c3e50;
-    min-width: 120px;
-}
-
-.solution-name small {
-    display: block;
-    color: #6c757d;
-    font-weight: normal;
-    font-size: 0.8em;
-    margin-top: 2px;
-}
-
-/* 一致性保证样式 */
-.consistency-strong {
-    color: #667eea;
-    font-weight: 600;
-}
-
-.consistency-eventual {
-    color: #28a745;
-    font-weight: 600;
-}
-
-/* 可用性样式 */
-.availability-low {
-    color: #dc3545;
-    font-weight: 600;
-}
-
-.availability-medium {
-    color: #ffc107;
-    font-weight: 600;
-}
-
-.availability-high {
-    color: #28a745;
-    font-weight: 600;
-}
-
-/* 性能样式 */
-.performance-low {
-    color: #dc3545;
-    font-weight: 600;
-}
-
-.performance-medium {
-    color: #ffc107;
-    font-weight: 600;
-}
-
-.performance-high {
-    color: #28a745;
-    font-weight: 600;
-}
-
-/* 复杂度样式 */
-.complexity-medium {
-    color: #ffc107;
-    font-weight: 600;
-}
-
-.complexity-high {
-    color: #fd7e14;
-    font-weight: 600;
-}
-
-/* 适用场景样式 */
-.scenario {
-    text-align: left !important;
-    color: #495057;
-    font-size: 0.9em;
-    line-height: 1.4;
-}
-
-/* 行级样式 */
-.row-2pc {
-    border-left: 4px solid #667eea;
-}
-
-.row-3pc {
-    border-left: 4px solid #764ba2;
-}
-
-.row-saga {
-    border-left: 4px solid #28a745;
-}
-
-.row-tcc {
-    border-left: 4px solid #ffc107;
-}
-
-.row-message {
-    border-left: 4px solid #17a2b8;
-}
-
-/* 响应式表格 */
-@media (max-width: 768px) {
-    .solution-comparison-table {
-        font-size: 0.8em;
-    }
-
-    .solution-comparison-table th,
-    .solution-comparison-table td {
-        padding: 10px 8px;
-    }
-
-    .solution-name {
-        min-width: 100px;
-    }
-}
-
-/* 选择指南样式 */
-.selection-guide {
-    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-}
-
-.guide-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #2c3e50;
-}
-
-.decision-tree {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.decision-node {
-    margin: 15px 0;
-}
-
-.decision-question {
-    font-size: 1.1em;
-    font-weight: bold;
-    color: #2c3e50;
-    margin-bottom: 15px;
-    text-align: center;
-}
-
-.decision-options {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-
-.option-branch {
-    flex: 1;
-    min-width: 300px;
-    background: #f8f9fa;
-    border-radius: 10px;
-    padding: 15px;
-    border-left: 4px solid #007bff;
-}
-
-.option-label {
-    font-weight: bold;
-    color: #007bff;
-    margin-bottom: 10px;
-}
-
-.sub-decision {
-    margin-top: 15px;
-}
-
-.sub-question {
-    font-weight: bold;
-    color: #555;
-    margin-bottom: 10px;
-}
-
-.sub-options {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.sub-option {
-    background: white;
-    border-radius: 8px;
-    padding: 10px;
-    border-left: 3px solid #28a745;
-}
-
-.sub-label {
-    font-size: 0.9em;
-    color: #666;
-    margin-bottom: 5px;
-}
-
-.recommendation {
-    font-weight: bold;
-    color: #28a745;
-    font-size: 0.9em;
-}
-
-/* 使用场景样式 */
-.use-case-section {
-    background: white;
-    border-radius: 15px;
-    padding: 25px;
-    margin: 25px 0;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.use-case-title {
-    font-size: 1.2em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 25px;
-    color: #2c3e50;
-    padding: 15px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 10px;
-}
-
-.use-case-item {
-    background: #f8f9fa;
-    border-radius: 12px;
-    margin: 20px 0;
-    overflow: hidden;
-    border-left: 4px solid #667eea;
-    transition: all 0.3s ease;
-}
-
-.use-case-item:hover {
-    transform: translateX(5px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-}
-
-.use-case-item .case-header {
-    background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
-    padding: 15px 20px;
-    font-weight: bold;
-    font-size: 1.1em;
-    color: #2c3e50;
-    border-bottom: 1px solid #e9ecef;
-}
-
-.use-case-item .case-content {
-    padding: 20px;
-    line-height: 1.6;
-    color: #555;
-}
-
-.use-case-item .case-content strong {
-    color: #2c3e50;
-    font-size: 1.05em;
-    display: block;
-    margin-top: 15px;
-    margin-bottom: 8px;
-}
-
-.use-case-item .case-content ul {
-    margin-left: 20px;
-    list-style: none;
-}
-
-.use-case-item .case-content ul li::before {
-    content: "▸";
-    color: #667eea;
-    font-weight: bold;
-    display: inline-block;
-    width: 1em;
-    margin-left: -1em;
-}
-
-/* 案例研究样式 */
-.case-studies {
-    background: #f8f9fa;
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-}
-
-.case-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #2c3e50;
-}
-
-.case-item {
-    background: white;
-    border-radius: 12px;
-    margin: 20px 0;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.case-header {
-    padding: 15px 20px;
-    font-weight: bold;
-    font-size: 1.1em;
-    color: white;
-}
-
-.banking .case-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.ecommerce .case-header {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-}
-
-.gaming .case-header {
-    background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
-}
-
-.case-content {
-    padding: 20px;
-    line-height: 1.6;
-    color: #555;
-}
-
-/* 优化策略样式 */
-.optimization-strategies {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-    color: white;
-}
-
-.strategy-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.strategy-item {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    margin: 15px 0;
-    padding: 20px;
-    border-left: 4px solid rgba(255, 255, 255, 0.5);
-}
-
-.strategy-name {
-    font-size: 1.1em;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.strategy-content {
-    line-height: 1.6;
-    font-size: 0.95em;
-}
-
-/* 未来趋势样式 */
-.future-trends {
-    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-}
-
-.trends-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #2c3e50;
-}
-
-.trend-item {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    margin: 15px 0;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    border-left: 4px solid #007bff;
-}
-
-.trend-name {
-    font-size: 1.1em;
-    font-weight: bold;
-    color: #2c3e50;
-    margin-bottom: 10px;
-}
-
-.trend-desc {
-    color: #555;
-    line-height: 1.6;
-}
-
-/* 系列导航样式 */
-.series-navigation {
-    background: #f8f9fa;
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-}
-
-.nav-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #2c3e50;
-}
-
-.nav-item {
-    display: flex;
-    align-items: center;
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    margin: 15px 0;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease;
-}
-
-.nav-item:hover {
-    transform: translateY(-2px);
-}
-
-.nav-item.current {
-    border-left: 4px solid #28a745;
-}
-
-.nav-item.upcoming {
-    border-left: 4px solid #007bff;
-}
-
-.nav-number {
-    font-size: 2em;
-    font-weight: bold;
-    margin-right: 20px;
-    color: #007bff;
-}
-
-.nav-content {
-    flex: 1;
-}
-
-.nav-title-text {
-    font-size: 1.1em;
-    font-weight: bold;
-    color: #2c3e50;
-    margin-bottom: 5px;
-}
-
-.nav-desc {
-    color: #666;
-    font-size: 0.9em;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-    .decision-options {
-        flex-direction: column;
-    }
-
-    .option-branch {
-        min-width: auto;
-    }
-
-    .cap-triangle {
-        flex-direction: column;
-    }
-
-    .cap-node {
-        min-width: auto;
-        width: 100%;
-    }
-
-    .scenario-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .property-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* 动画和交互效果增强 */
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
-@keyframes slideInFromLeft {
-    from { opacity: 0; transform: translateX(-50px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes slideInFromRight {
-    from { opacity: 0; transform: translateX(50px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes rotateIcon {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-@keyframes progressBar {
-    from { width: 0%; }
-    to { width: 100%; }
-}
-
-/* 增强的悬停效果 */
-.transaction-type:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    transition: all 0.3s ease;
-}
-
-.scenario-card:hover {
-    transform: scale(1.02);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-    transition: all 0.3s ease;
-}
-
-.property-item:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    transition: all 0.3s ease;
-}
-
-.challenge-item:hover {
-    transform: scale(1.01);
-    transition: all 0.3s ease;
-}
-
-.cap-node:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 20px rgba(255,255,255,0.3);
-    transition: all 0.3s ease;
-}
-
-.base-item:hover {
-    transform: translateX(5px);
-    transition: all 0.3s ease;
-}
-
-.case-item:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 35px rgba(0,0,0,0.15);
-    transition: all 0.3s ease;
-}
-
-/* 进度指示器 */
-.progress-indicator {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: rgba(255,255,255,0.2);
-    z-index: 1000;
-}
-
-.progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-    width: 0%;
-    transition: width 0.1s ease;
-}
-
-/* 动画元素 */
-.animated-icon {
-    display: inline-block;
-    animation: rotateIcon 3s linear infinite;
-}
-
-.fade-in-element {
-    animation: fadeInUp 0.8s ease-out;
-}
-
-.slide-in-left {
-    animation: slideInFromLeft 0.8s ease-out;
-}
-
-.slide-in-right {
-    animation: slideInFromRight 0.8s ease-out;
-}
-
-.pulse-element {
-    animation: pulse 2s ease-in-out infinite;
-}
-
-/* 互动式流程图 */
-.interactive-flow {
-    background: white;
-    border-radius: 15px;
-    padding: 30px;
-    margin: 25px 0;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-    position: relative;
-    overflow: hidden;
-}
-
-.flow-step {
-    display: flex;
-    align-items: center;
-    margin: 20px 0;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 12px;
-    position: relative;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.flow-step:hover {
-    background: #e9ecef;
-    transform: translateX(10px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
-
-.flow-step-number {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    margin-right: 20px;
-    flex-shrink: 0;
-}
-
-.flow-step-content {
-    flex: 1;
-    color: #2c3e50;
-}
-
-.flow-arrow {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #667eea;
-    font-size: 1.5em;
-    transition: transform 0.3s ease;
-}
-
-.flow-step:hover .flow-arrow {
-    transform: translateY(-50%) translateX(5px);
-}
-
-/* 高亮代码块增强 */
-.code-block-enhanced {
-    position: relative;
-    background: #1e1e1e;
-    border-radius: 12px;
-    padding: 20px;
-    margin: 20px 0;
-    color: #d4d4d4;
-    font-family: 'Consolas', 'Monaco', monospace;
-    overflow-x: auto;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-}
-
-.code-block-enhanced::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-    border-radius: 12px 12px 0 0;
-}
-
-.code-block-enhanced .code-title {
-    color: #569cd6;
-    font-weight: bold;
-    margin-bottom: 10px;
-    font-size: 0.9em;
-}
-
-/* 信息提示框 */
-.info-tip {
-    background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
-    border-left: 4px solid #667eea;
-    border-radius: 8px;
-    padding: 15px 20px;
-    margin: 20px 0;
-    position: relative;
-    overflow: hidden;
-}
-
-.info-tip::before {
-    content: "💡";
-    position: absolute;
-    left: 15px;
-    top: 15px;
-    font-size: 1.2em;
-}
-
-.info-tip-content {
-    margin-left: 30px;
-    color: #2c3e50;
-    line-height: 1.6;
-}
-
-/* 响应式增强 */
-@media (max-width: 768px) {
-    .flow-step {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .flow-step-number {
-        margin-right: 0;
-        margin-bottom: 10px;
-    }
-
-    .flow-arrow {
-        position: static;
-        transform: none;
-        margin-top: 10px;
-    }
-
-    .info-tip-content {
-        margin-left: 0;
-        margin-top: 10px;
-    }
-}
-
-/* 加载动画 */
-.loading-spinner {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid #667eea;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* 主题切换支持 */
-@media (prefers-color-scheme: dark) {
-    .transaction-comparison,
-    .cap-theorem,
-    .optimization-strategies {
-        background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-    }
-
-    .scenario-card,
-    .property-item,
-    .base-item,
-    .case-item {
-        background: #34495e;
-        color: #ecf0f1;
-    }
-
-    .code-block-enhanced {
-        background: #2c3e50;
-        color: #ecf0f1;
-    }
-}
-</style>

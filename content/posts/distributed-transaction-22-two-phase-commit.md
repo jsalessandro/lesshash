@@ -33,17 +33,12 @@ license: ""
 
 ### 📝 基本概念
 
-<div class="protocol-overview">
-<div class="overview-title">🔄 二阶段提交协议核心思想</div>
+#### 🔄 二阶段提交协议核心思想
 
-<div class="core-idea">
-**核心思想**：通过一个**协调者（Coordinator）**统一管理多个**参与者（Participant）**的事务提交过程，将提交过程分为**准备阶段**和**提交阶段**两个阶段，确保所有参与者要么全部提交，要么全部回滚。
-</div>
+> **核心思想**：通过一个**协调者（Coordinator）**统一管理多个**参与者（Participant）**的事务提交过程，将提交过程分为**准备阶段**和**提交阶段**两个阶段，确保所有参与者要么全部提交，要么全部回滚。
 
-<div class="roles-section">
-<div class="role-item coordinator-role">
-<div class="role-title">🎯 协调者（Coordinator/TM）</div>
-<div class="role-desc">
+##### 🎯 协调者（Coordinator/TM）
+
 **职责**：
 - 发起事务并控制整个提交流程
 - 收集所有参与者的投票结果
@@ -54,12 +49,9 @@ license: ""
 - 全局唯一，单点管理
 - 掌握完整的事务状态信息
 - 承担事务成功与失败的决策责任
-</div>
-</div>
 
-<div class="role-item participant-role">
-<div class="role-title">🎲 参与者（Participant/RM）</div>
-<div class="role-desc">
+##### 🎲 参与者（Participant/RM）
+
 **职责**：
 - 执行具体的事务操作
 - 响应协调者的准备请求
@@ -70,20 +62,13 @@ license: ""
 - 可能有多个参与者
 - 只了解本地事务状态
 - 必须严格遵循协调者的指令
-</div>
-</div>
-</div>
-</div>
 
 ### 🔄 协议流程概览
 
-<div class="protocol-flow">
-<div class="flow-title">📋 2PC协议完整流程</div>
+#### 📋 2PC协议完整流程
 
-<div class="phase-overview">
-<div class="phase-item phase1">
-<div class="phase-header">第一阶段：准备阶段（Prepare Phase）</div>
-<div class="phase-content">
+##### 第一阶段：准备阶段（Prepare Phase）
+
 **协调者行为**：
 1. 向所有参与者发送 `Prepare` 消息
 2. 等待所有参与者的响应
@@ -93,12 +78,9 @@ license: ""
 1. 执行事务操作但不提交
 2. 将事务状态写入日志
 3. 向协调者返回投票结果（Yes/No）
-</div>
-</div>
 
-<div class="phase-item phase2">
-<div class="phase-header">第二阶段：提交阶段（Commit Phase）</div>
-<div class="phase-content">
+##### 第二阶段：提交阶段（Commit Phase）
+
 **如果所有参与者都投票Yes**：
 - 协调者发送 `Commit` 消息
 - 参与者执行提交操作
@@ -108,52 +90,31 @@ license: ""
 - 协调者发送 `Abort` 消息
 - 参与者执行回滚操作
 - 参与者返回确认消息
-</div>
-</div>
-</div>
-</div>
 
 ## 🔬 协议详细执行过程
 
 ### 🎬 成功场景：所有参与者同意提交
 
-<div class="success-scenario">
-<div class="scenario-title">✅ 场景一：事务成功提交流程</div>
+#### ✅ 场景一：事务成功提交流程
 
-<div class="timeline-container">
-<div class="timeline-item">
-<div class="timeline-step">T1</div>
-<div class="timeline-content">
-<div class="step-title">📤 协调者：发送Prepare请求</div>
-<div class="step-details">
+**T1. 📤 协调者：发送Prepare请求**
+
 协调者向所有参与者发送准备请求：
 ```
 Message: PREPARE
 TransactionID: TXN_001
 Participants: [DB1, DB2, DB3]
 ```
-</div>
-</div>
-</div>
 
-<div class="timeline-item">
-<div class="timeline-step">T2</div>
-<div class="timeline-content">
-<div class="step-title">🔄 参与者：执行准备操作</div>
-<div class="step-details">
+**T2. 🔄 参与者：执行准备操作**
+
 各参与者并行执行：
 - **DB1**: 执行SQL，写undo/redo日志，锁定资源 → 返回 `YES`
 - **DB2**: 执行SQL，写undo/redo日志，锁定资源 → 返回 `YES`
 - **DB3**: 执行SQL，写undo/redo日志，锁定资源 → 返回 `YES`
-</div>
-</div>
-</div>
 
-<div class="timeline-item">
-<div class="timeline-step">T3</div>
-<div class="timeline-content">
-<div class="step-title">🗳️ 协调者：收集投票结果</div>
-<div class="step-details">
+**T3. 🗳️ 协调者：收集投票结果**
+
 协调者收到所有投票：
 ```
 DB1: YES (准备完成)
@@ -161,94 +122,54 @@ DB2: YES (准备完成)
 DB3: YES (准备完成)
 Result: 全票通过 → 决定COMMIT
 ```
-</div>
-</div>
-</div>
 
-<div class="timeline-item">
-<div class="timeline-step">T4</div>
-<div class="timeline-content">
-<div class="step-title">📤 协调者：发送Commit指令</div>
-<div class="step-details">
+**T4. 📤 协调者：发送Commit指令**
+
 协调者向所有参与者发送提交指令：
 ```
 Message: COMMIT
 TransactionID: TXN_001
 Decision: COMMIT
 ```
-</div>
-</div>
-</div>
 
-<div class="timeline-item">
-<div class="timeline-step">T5</div>
-<div class="timeline-content">
-<div class="step-title">✅ 参与者：执行提交操作</div>
-<div class="step-details">
+**T5. ✅ 参与者：执行提交操作**
+
 各参与者执行最终提交：
 - **DB1**: 提交事务，释放锁，返回 `ACK`
 - **DB2**: 提交事务，释放锁，返回 `ACK`
 - **DB3**: 提交事务，释放锁，返回 `ACK`
-</div>
-</div>
-</div>
 
-<div class="timeline-item">
-<div class="timeline-step">T6</div>
-<div class="timeline-content">
-<div class="step-title">🎉 协调者：事务完成</div>
-<div class="step-details">
+**T6. 🎉 协调者：事务完成**
+
 协调者收到所有确认：
 ```
 状态: 事务TXN_001成功提交
 结果: 所有数据变更已持久化
 资源: 所有锁已释放
 ```
-</div>
-</div>
-</div>
-</div>
-</div>
 
 ### ❌ 失败场景：参与者无法提交
 
-<div class="failure-scenario">
-<div class="scenario-title">❌ 场景二：事务回滚流程</div>
+#### ❌ 场景二：事务回滚流程
 
-<div class="timeline-container">
-<div class="timeline-item">
-<div class="timeline-step">T1</div>
-<div class="timeline-content">
-<div class="step-title">📤 协调者：发送Prepare请求</div>
-<div class="step-details">
+**T1. 📤 协调者：发送Prepare请求**
+
 协调者发起事务准备：
 ```
 Message: PREPARE
 TransactionID: TXN_002
 Participants: [DB1, DB2, DB3]
 ```
-</div>
-</div>
-</div>
 
-<div class="timeline-item">
-<div class="timeline-step">T2</div>
-<div class="timeline-content">
-<div class="step-title">⚠️ 参与者：准备过程出现问题</div>
-<div class="step-details">
+**T2. ⚠️ 参与者：准备过程出现问题**
+
 参与者执行结果：
 - **DB1**: 准备成功 → 返回 `YES`
 - **DB2**: 检测到约束冲突 → 返回 `NO`
 - **DB3**: 准备成功 → 返回 `YES`
-</div>
-</div>
-</div>
 
-<div class="timeline-item">
-<div class="timeline-step">T3</div>
-<div class="timeline-content">
-<div class="step-title">🚫 协调者：决定回滚</div>
-<div class="step-details">
+**T3. 🚫 协调者：决定回滚**
+
 协调者分析投票结果：
 ```
 DB1: YES
@@ -256,69 +177,42 @@ DB2: NO ← 存在反对票
 DB3: YES
 Result: 投票失败 → 决定ABORT
 ```
-</div>
-</div>
-</div>
 
-<div class="timeline-item">
-<div class="timeline-step">T4</div>
-<div class="timeline-content">
-<div class="step-title">📤 协调者：发送Abort指令</div>
-<div class="step-details">
+**T4. 📤 协调者：发送Abort指令**
+
 协调者通知所有参与者回滚：
 ```
 Message: ABORT
 TransactionID: TXN_002
 Decision: ROLLBACK
 ```
-</div>
-</div>
-</div>
 
-<div class="timeline-item">
-<div class="timeline-step">T5</div>
-<div class="timeline-content">
-<div class="step-title">🔄 参与者：执行回滚操作</div>
-<div class="step-details">
+**T5. 🔄 参与者：执行回滚操作**
+
 各参与者回滚事务：
 - **DB1**: 回滚事务，释放锁，返回 `ACK`
 - **DB2**: 回滚事务，释放锁，返回 `ACK`
 - **DB3**: 回滚事务，释放锁，返回 `ACK`
-</div>
-</div>
-</div>
 
-<div class="timeline-item">
-<div class="timeline-step">T6</div>
-<div class="timeline-content">
-<div class="step-title">🔚 协调者：事务终止</div>
-<div class="step-details">
+**T6. 🔚 协调者：事务终止**
+
 协调者确认回滚完成：
 ```
 状态: 事务TXN_002已回滚
 结果: 所有数据变更已撤销
 资源: 所有锁已释放
 ```
-</div>
-</div>
-</div>
-</div>
-</div>
 
 ## ⚠️ 故障处理机制
 
 ### 💥 协调者故障处理
 
-<div class="coordinator-failure">
-<div class="failure-title">🎯 协调者故障场景分析</div>
+#### 🎯 协调者故障场景分析
 
-<div class="failure-case">
-<div class="case-header">📊 故障时间点分析</div>
+##### 📊 故障时间点分析
 
-<div class="timing-analysis">
-<div class="timing-item prepare-phase-failure">
-<div class="timing-title">⏱️ 第一阶段故障：发送Prepare后崩溃</div>
-<div class="timing-content">
+##### ⏱️ 第一阶段故障：发送Prepare后崩溃
+
 **场景描述**：协调者发送Prepare请求后，在收集投票期间崩溃
 
 **影响分析**：
@@ -348,12 +242,9 @@ public void recoverFromPreparePhase(String txnId) {
     }
 }
 ```
-</div>
-</div>
 
-<div class="timing-item commit-phase-failure">
-<div class="timing-title">⏱️ 第二阶段故障：发送Commit/Abort后崩溃</div>
-<div class="timing-content">
+##### ⏱️ 第二阶段故障：发送Commit/Abort后崩溃
+
 **场景描述**：协调者已做出决策并开始发送Commit/Abort，但在完成前崩溃
 
 **影响分析**：
@@ -379,21 +270,13 @@ public void recoverFromCommitPhase(String txnId) {
     }
 }
 ```
-</div>
-</div>
-</div>
-</div>
-</div>
 
 ### 🎲 参与者故障处理
 
-<div class="participant-failure">
-<div class="failure-title">🎲 参与者故障场景分析</div>
+#### 🎲 参与者故障场景分析
 
-<div class="participant-failure-cases">
-<div class="failure-case">
-<div class="case-header">💥 准备阶段参与者故障</div>
-<div class="case-content">
+##### 💥 准备阶段参与者故障
+
 **故障场景**：参与者在准备阶段崩溃，无法响应Prepare请求
 
 **协调者处理**：
@@ -444,12 +327,9 @@ public class Coordinator {
     }
 }
 ```
-</div>
-</div>
 
-<div class="failure-case">
-<div class="case-header">💥 提交阶段参与者故障</div>
-<div class="case-content">
+##### 💥 提交阶段参与者故障
+
 **故障场景**：参与者在提交阶段崩溃，无法执行最终的Commit/Abort
 
 **协调者处理**：
@@ -482,23 +362,15 @@ public class Participant {
     }
 }
 ```
-</div>
-</div>
-</div>
-</div>
 
 ### 🌐 网络分区处理
 
-<div class="network-partition">
-<div class="partition-title">🌐 网络分区场景处理</div>
+#### 🌐 网络分区场景处理
 
-<div class="partition-scenario">
-<div class="scenario-header">📡 网络分区对2PC的影响</div>
+##### 📡 网络分区对2PC的影响
 
-<div class="partition-effects">
-<div class="effect-item">
-<div class="effect-title">🚫 阻塞问题（Blocking Problem）</div>
-<div class="effect-content">
+##### 🚫 阻塞问题（Blocking Problem）
+
 **问题描述**：网络分区导致协调者与部分参与者失联
 
 **具体场景**：
@@ -518,12 +390,9 @@ public class Participant {
 - 设置合理的超时时间
 - 实现参与者间的协商机制
 - 使用租约（Lease）机制限制锁定时间
-</div>
-</div>
 
-<div class="effect-item">
-<div class="effect-title">🔄 脑裂问题（Split-Brain）</div>
-<div class="effect-content">
+##### 🔄 脑裂问题（Split-Brain）
+
 **问题描述**：网络分区导致系统分成多个独立运行的部分
 
 **解决方案**：
@@ -553,20 +422,13 @@ public class CoordinatorElection {
     }
 }
 ```
-</div>
-</div>
-</div>
-</div>
-</div>
 
 ## 💻 2PC实战代码实现
 
 ### 🏗️ 核心架构设计
 
-<div class="implementation-architecture">
-<div class="arch-title">🏛️ 2PC实现架构图</div>
+#### 🏛️ 2PC实现架构图
 
-<div class="architecture-diagram">
 ```
                     📋 事务管理器 (TM)
                      Coordinator
@@ -578,21 +440,16 @@ public class CoordinatorElection {
         |                 |                 |
      📊 Database A     📊 Database B     📊 Database C
 ```
-</div>
 
-<div class="component-description">
 **组件说明**：
 - **事务管理器（TM）**：协调全局事务，管理2PC协议流程
 - **资源管理器（RM）**：管理本地资源（数据库、消息队列等）
 - **通信层**：处理TM与RM之间的消息传递
 - **日志系统**：记录事务状态，支持故障恢复
-</div>
-</div>
 
 ### 📝 Java实现示例
 
-<div class="java-implementation">
-<div class="impl-title">☕ 完整Java代码实现</div>
+#### ☕ 完整Java代码实现
 
 #### 1️⃣ 基础接口定义
 
@@ -1133,18 +990,15 @@ enum TransactionResult {
     COMMIT_FAILED_NEED_RETRY     // 提交失败需重试
 }
 ```
-</div>
 
 ## ⚖️ 2PC的优缺点分析
 
 ### ✅ 优点
 
-<div class="advantages">
-<div class="adv-title">🌟 二阶段提交协议的优势</div>
+#### 🌟 二阶段提交协议的优势
 
-<div class="advantage-item">
-<div class="adv-header">🎯 强一致性保证</div>
-<div class="adv-content">
+#### 🎯 强一致性保证
+
 **核心优势**：确保所有参与者的数据状态完全一致
 
 **具体体现**：
@@ -1153,12 +1007,9 @@ enum TransactionResult {
 - **持久性**：一旦提交，数据变更永久生效
 
 **适用场景**：金融交易、订单处理等对一致性要求极高的业务
-</div>
-</div>
 
-<div class="advantage-item">
-<div class="adv-header">🛠️ 实现相对简单</div>
-<div class="adv-content">
+🛠️ 实现相对简单
+
 **设计简洁**：协议流程清晰，只有两个阶段
 
 **开发成本**：
@@ -1170,12 +1021,9 @@ enum TransactionResult {
 - 大多数数据库原生支持
 - Java EE、.NET等平台有标准实现
 - 开源框架如Atomikos、Bitronix等
-</div>
-</div>
 
-<div class="advantage-item">
-<div class="adv-header">🔧 成熟的工具支持</div>
-<div class="adv-content">
+##### 🔧 成熟的工具支持
+
 **工业级实现**：有大量成熟的实现和工具
 
 **主流支持**：
@@ -1187,18 +1035,13 @@ enum TransactionResult {
 - 事务状态监控
 - 性能指标统计
 - 故障诊断工具
-</div>
-</div>
-</div>
 
 ### ❌ 缺点
 
-<div class="disadvantages">
-<div class="disadv-title">⚠️ 二阶段提交协议的局限性</div>
+#### ⚠️ 二阶段提交协议的局限性
 
-<div class="disadvantage-item">
-<div class="disadv-header">🐌 性能开销大</div>
-<div class="disadv-content">
+##### 🐌 性能开销大
+
 **同步阻塞**：参与者在事务期间需要锁定资源
 
 **性能影响**：
@@ -1213,12 +1056,9 @@ TPS: 1000   vs    100-500
 - **网络开销**：需要多轮消息交互
 - **锁竞争**：资源锁定时间增加
 - **连接占用**：长时间占用数据库连接
-</div>
-</div>
 
-<div class="disadvantage-item">
-<div class="disadv-header">🎯 单点故障风险</div>
-<div class="disadv-content">
+#### 🎯 单点故障风险
+
 **协调者依赖**：整个系统依赖协调者的可用性
 
 **风险分析**：
@@ -1246,12 +1086,9 @@ public class SinglePointOfFailureAnalysis {
 - 协调者热备份
 - 心跳检测机制
 - 自动故障转移
-</div>
-</div>
 
-<div class="disadvantage-item">
-<div class="disadv-header">🔒 阻塞问题严重</div>
-<div class="disadv-content">
+##### 🔒 阻塞问题严重
+
 **阻塞场景**：网络分区或节点故障时，系统可能无法继续处理
 
 **具体问题**：
@@ -1271,12 +1108,9 @@ public class SinglePointOfFailureAnalysis {
 提交阶段: 30ms + 重试 = 300ms
 总耗时: 800ms (10倍延迟)
 ```
-</div>
-</div>
 
-<div class="disadvantage-item">
-<div class="disadv-header">📈 扩展性限制</div>
-<div class="disadv-content">
+#### 📈 扩展性限制
+
 **参与者数量限制**：随着参与者增加，协调复杂度指数增长
 
 **扩展性分析**：
@@ -1292,20 +1126,15 @@ public class SinglePointOfFailureAnalysis {
 - 需要等待最慢的参与者
 - 故障概率随参与者数量增加
 - 协调者成为性能瓶颈
-</div>
-</div>
-</div>
 
 ## 🏢 2PC在企业中的实际应用
 
 ### 💼 经典应用场景
 
-<div class="enterprise-applications">
-<div class="app-title">🏭 企业级2PC应用实践</div>
+#### 🏭 企业级2PC应用实践
 
-<div class="application-case">
-<div class="case-header banking-system">🏦 银行核心系统：跨行转账</div>
-<div class="case-content">
+##### 🏦 银行核心系统：跨行转账
+
 **业务场景**：客户从银行A向银行B转账1000元
 
 **系统架构**：
@@ -1357,12 +1186,9 @@ public class InterbankTransferService {
 - **强一致性要求**：资金绝对不能出现差错
 - **监管合规**：需要完整的审计日志
 - **高可靠性**：系统可用性要求99.99%以上
-</div>
-</div>
 
-<div class="application-case">
-<div class="case-header erp-system">🏭 企业ERP系统：订单处理</div>
-<div class="case-content">
+#### 🏭 企业ERP系统：订单处理
+
 **业务场景**：制造企业处理客户订单，涉及多个业务模块
 
 **系统模块**：
@@ -1429,18 +1255,13 @@ class OrderTransactionOperation implements TransactionOperation {
 - **数据一致性**：确保订单、库存、生产、财务数据同步
 - **业务完整性**：避免订单创建成功但库存未扣减的情况
 - **流程可靠性**：任何环节失败都能完整回滚
-</div>
-</div>
-</div>
 
 ### 📊 性能优化实践
 
-<div class="performance-optimization">
-<div class="perf-title">🚀 2PC性能优化最佳实践</div>
+#### 🚀 2PC性能优化最佳实践
 
-<div class="optimization-strategy">
-<div class="strategy-header">⚡ 策略一：减少参与者数量</div>
-<div class="strategy-content">
+##### ⚡ 策略一：减少参与者数量
+
 **优化思路**：合并相关操作，减少协调复杂度
 
 **具体实施**：
@@ -1469,12 +1290,9 @@ public class AfterOptimization {
 - 消息数量：从20个减少到8个
 - 协调时间：从200ms减少到80ms
 - 故障概率：从25%降低到9%
-</div>
-</div>
 
-<div class="optimization-strategy">
-<div class="strategy-header">⏰ 策略二：超时时间优化</div>
-<div class="strategy-content">
+##### ⏰ 策略二：超时时间优化
+
 **优化思路**：根据系统特点设置合理的超时时间
 
 **分层超时设计**：
@@ -1519,12 +1337,9 @@ public class AdaptiveTimeoutManager {
     }
 }
 ```
-</div>
-</div>
 
-<div class="optimization-strategy">
-<div class="strategy-header">🔄 策略三：异步化改造</div>
-<div class="strategy-content">
+#### 🔄 策略三：异步化改造
+
 **优化思路**：将非关键操作异步化，减少同步等待时间
 
 **改造示例**：
@@ -1572,20 +1387,15 @@ public class AsynchronousTwoPC {
 - 响应时间：从300ms降低到100ms
 - 吞吐量：提升200%
 - 用户体验：显著改善
-</div>
-</div>
-</div>
 
 ## 🔧 2PC的工程实现考虑
 
 ### 🛠️ 技术选型指南
 
-<div class="technology-selection">
-<div class="tech-title">🎯 2PC技术栈选择指南</div>
+#### 🎯 2PC技术栈选择指南
 
-<div class="tech-category">
-<div class="category-header java-stack">☕ Java技术栈</div>
-<div class="category-content">
+#### ☕ Java技术栈
+
 **JTA/XA标准实现**：
 ```java
 // 使用JTA实现2PC
@@ -1627,12 +1437,9 @@ public class TransferService {
 | **Bitronix** | 高性能 | 高并发场景 | 中 |
 | **JBoss TS** | 企业级 | 大型企业应用 | 高 |
 | **Spring Boot Starter** | 简单易用 | Spring生态 | 低 |
-</div>
-</div>
 
-<div class="tech-category">
-<div class="category-header dotnet-stack">🔷 .NET技术栈</div>
-<div class="category-content">
+#### 🔷 .NET技术栈
+
 **DTC分布式事务**：
 ```csharp
 // 使用.NET DTC实现2PC
@@ -1671,12 +1478,9 @@ public class TransferService
     }
 }
 ```
-</div>
-</div>
 
-<div class="tech-category">
-<div class="category-header database-support">🗄️ 数据库支持</div>
-<div class="category-content">
+#### 🗄️ 数据库支持
+
 **XA协议支持情况**：
 
 | 数据库 | XA支持 | 性能影响 | 配置复杂度 | 推荐度 |
@@ -1687,18 +1491,13 @@ public class TransferService
 | **SQL Server** | ✅ 完整支持 | 中等 | 简单 | ⭐⭐⭐⭐ |
 | **Redis** | ❌ 不支持 | - | - | - |
 | **MongoDB** | ⚠️ 有限支持 | 较大 | 复杂 | ⭐⭐ |
-</div>
-</div>
-</div>
 
 ### 🔍 监控和调试
 
-<div class="monitoring-debugging">
-<div class="monitor-title">📊 2PC系统监控与调试</div>
+#### 📊 2PC系统监控与调试
 
-<div class="monitoring-aspect">
-<div class="aspect-header">📈 关键指标监控</div>
-<div class="aspect-content">
+#### 📈 关键指标监控
+
 **核心指标定义**：
 ```java
 public class TwoPCMetrics {
@@ -1767,12 +1566,9 @@ dashboard:
           - query: "avg_transaction_duration_ms"
             threshold: 1000
 ```
-</div>
-</div>
 
-<div class="monitoring-aspect">
-<div class="aspect-header">🔍 分布式链路追踪</div>
-<div class="aspect-content">
+#### 🔍 分布式链路追踪
+
 **链路追踪实现**：
 ```java
 @Component
@@ -1856,12 +1652,9 @@ public class TracingTwoPCCoordinator {
     }
 }
 ```
-</div>
-</div>
 
-<div class="monitoring-aspect">
-<div class="aspect-header">🐛 故障诊断工具</div>
-<div class="aspect-content">
+#### 🐛 故障诊断工具
+
 **事务状态检查工具**：
 ```java
 @RestController
@@ -1945,18 +1738,13 @@ awk '{print $5}' | \
 sort | uniq -c | \
 sort -nr
 ```
-</div>
-</div>
-</div>
 
 ## 📚 与其他协议的对比
 
 ### 🆚 2PC vs 3PC
 
-<div class="protocol-comparison">
-<div class="comparison-title">🔄 二阶段提交 vs 三阶段提交</div>
+#### 🔄 二阶段提交 vs 三阶段提交
 
-<div class="comparison-table">
 | 对比维度 | 二阶段提交（2PC） | 三阶段提交（3PC） |
 |----------|-------------------|-------------------|
 | **阶段数** | 2个阶段 | 3个阶段 |
@@ -1967,12 +1755,9 @@ sort -nr
 | **实现复杂度** | 相对简单 | 较为复杂 |
 | **性能开销** | 中等 | 较高 |
 | **工业应用** | 广泛应用 | 应用较少 |
-</div>
 
-<div class="detailed-comparison">
-<div class="comparison-aspect">
-<div class="aspect-title">🕐 时间复杂度对比</div>
-<div class="aspect-content">
+##### 🕐 时间复杂度对比
+
 **2PC时间线**：
 ```
 T1: Coordinator → Prepare → All Participants
@@ -1994,12 +1779,9 @@ T6: All Participants → Ack → Coordinator
 
 总耗时 = 6 * 网络延迟 + 处理时间
 ```
-</div>
-</div>
 
-<div class="comparison-aspect">
-<div class="aspect-title">🛡️ 故障容忍性对比</div>
-<div class="aspect-content">
+##### 🛡️ 故障容忍性对比
+
 **协调者故障处理**：
 
 *2PC处理方式*：
@@ -2014,23 +1796,15 @@ T6: All Participants → Ack → Coordinator
 
 *2PC*：可能导致数据不一致
 *3PC*：通过额外的协商阶段提高一致性保证
-</div>
-</div>
-</div>
-</div>
 
 ### 🆚 2PC vs Saga
 
-<div class="saga-comparison">
-<div class="comparison-title">🔄 二阶段提交 vs Saga模式</div>
+#### 🔄 二阶段提交 vs Saga模式
 
-<div class="fundamental-difference">
-<div class="diff-title">🎯 根本设计理念差异</div>
+#### 🎯 根本设计理念差异
 
-<div class="approach-comparison">
-<div class="approach-item">
-<div class="approach-header pessimistic">🔒 2PC：悲观锁方式</div>
-<div class="approach-content">
+##### 🔒 2PC：悲观锁方式
+
 **核心思想**：预先锁定所有资源，确保事务原子性
 
 **执行模式**：
@@ -2054,12 +1828,9 @@ public void transferMoney() {
 - ❌ 资源长时间锁定
 - ❌ 性能开销大
 - ❌ 扩展性有限
-</div>
-</div>
 
-<div class="approach-item">
-<div class="approach-header optimistic">🚀 Saga：乐观补偿方式</div>
-<div class="approach-content">
+#### 🚀 Saga：乐观补偿方式
+
 **核心思想**：先执行操作，出错时通过补偿恢复
 
 **执行模式**：
@@ -2090,15 +1861,9 @@ public void transferMoney() {
 - ✅ 优秀的扩展性
 - ❌ 最终一致性
 - ❌ 补偿逻辑复杂
-</div>
-</div>
-</div>
-</div>
 
-<div class="scenario-comparison">
-<div class="scenario-title">📊 适用场景对比</div>
+#### 📊 适用场景对比
 
-<div class="scenario-matrix">
 | 场景特征 | 推荐2PC | 推荐Saga | 原因分析 |
 |----------|---------|----------|----------|
 | **金融支付** | ✅ | ❌ | 绝对不能容忍数据不一致 |
@@ -2107,21 +1872,15 @@ public void transferMoney() {
 | **用户注册** | ❌ | ✅ | 涉及多个系统，补偿容易 |
 | **积分系统** | ❌ | ✅ | 对一致性要求不高 |
 | **审计日志** | ✅ | ❌ | 必须与业务操作同步 |
-</div>
-</div>
-</div>
 
 ## 🎯 总结与最佳实践
 
 ### ✅ 核心要点回顾
 
-<div class="key-points">
-<div class="points-title">🎯 2PC核心知识点总结</div>
+#### 🎯 2PC核心知识点总结
 
-<div class="knowledge-grid">
-<div class="knowledge-item protocol-understanding">
-<div class="item-header">🧠 协议理解</div>
-<div class="item-content">
+##### 🧠 协议理解
+
 **核心机制**：
 - 两阶段执行：Prepare → Commit/Abort
 - 协调者统一管理事务状态
@@ -2131,12 +1890,9 @@ public void transferMoney() {
 - 强一致性保证
 - 原子性操作
 - 同步阻塞模式
-</div>
-</div>
 
-<div class="knowledge-item implementation-skills">
-<div class="item-header">💻 实现技巧</div>
-<div class="item-content">
+##### 💻 实现技巧
+
 **技术要点**：
 - 状态日志持久化
 - 超时机制设计
@@ -2147,12 +1903,9 @@ public void transferMoney() {
 - 使用成熟的XA实现
 - 合理设置超时时间
 - 监控关键指标
-</div>
-</div>
 
-<div class="knowledge-item application-scenarios">
-<div class="item-header">🎯 应用场景</div>
-<div class="item-content">
+#### 🎯 应用场景
+
 **适用场景**：
 - 金融交易系统
 - 核心业务数据
@@ -2164,89 +1917,60 @@ public void transferMoney() {
 - 长流程事务
 - 网络不稳定环境
 - 大规模分布式系统
-</div>
-</div>
-</div>
-</div>
 
 ### 📋 最佳实践指南
 
-<div class="best-practices">
-<div class="practices-title">🏆 2PC实施最佳实践</div>
+#### 🏆 2PC实施最佳实践
 
-<div class="practice-category">
-<div class="category-header">🏗️ 架构设计</div>
-<div class="practice-list">
+##### 🏗️ 架构设计
+
 1. **最小化参与者**：合并相关操作，减少分布式事务范围
 2. **协调者高可用**：实现协调者的热备份和故障转移
 3. **资源隔离**：为分布式事务分配专门的资源池
 4. **链路优化**：减少网络跳数，优化通信路径
-</div>
-</div>
 
-<div class="practice-category">
-<div class="category-header">⚡ 性能优化</div>
-<div class="practice-list">
+##### ⚡ 性能优化
+
 1. **超时设置**：根据业务特点设置合理的超时时间
 2. **连接池**：复用数据库连接，减少连接开销
 3. **批量处理**：合并小事务为大事务，减少协调次数
 4. **异步化**：将非关键操作移出分布式事务
-</div>
-</div>
 
-<div class="practice-category">
-<div class="category-header">🛡️ 可靠性保障</div>
-<div class="practice-list">
+##### 🛡️ 可靠性保障
+
 1. **日志记录**：完整记录事务状态变化
 2. **幂等设计**：确保重试操作的安全性
 3. **监控告警**：实时监控事务状态和性能指标
 4. **恢复机制**：实现自动和手动的故障恢复
-</div>
-</div>
 
-<div class="practice-category">
-<div class="category-header">🔧 运维管理</div>
-<div class="practice-list">
+##### 🔧 运维管理
+
 1. **容量规划**：根据业务增长预估资源需求
 2. **版本管理**：谨慎处理分布式事务的版本升级
 3. **故障演练**：定期进行故障恢复演练
 4. **文档维护**：保持技术文档和运维手册的更新
-</div>
-</div>
-</div>
 
 ### 🔮 技术发展方向
 
-<div class="future-direction">
-<div class="direction-title">🚀 2PC技术演进趋势</div>
+#### 🚀 2PC技术演进趋势
 
-<div class="trend-item">
-<div class="trend-header">🤖 智能化优化</div>
-<div class="trend-content">
+##### 🤖 智能化优化
+
 - **AI辅助调优**：基于机器学习优化超时参数
 - **智能故障预测**：提前识别可能的故障点
 - **自适应负载均衡**：动态调整协调者分配策略
-</div>
-</div>
 
-<div class="trend-item">
-<div class="trend-header">☁️ 云原生适配</div>
-<div class="trend-content">
+##### ☁️ 云原生适配
+
 - **容器化部署**：支持Kubernetes等容器编排平台
 - **微服务集成**：与Service Mesh深度集成
 - **弹性扩缩容**：支持动态的参与者管理
-</div>
-</div>
 
-<div class="trend-item">
-<div class="trend-header">🔗 新兴技术融合</div>
-<div class="trend-content">
+##### 🔗 新兴技术融合
+
 - **区块链集成**：利用区块链增强信任机制
 - **边缘计算**：支持边缘节点的分布式事务
 - **量子通信**：探索量子安全的事务协议
-</div>
-</div>
-</div>
 
 ---
 
@@ -2256,1189 +1980,3 @@ public void transferMoney() {
 
 *💡 希望本文能够帮助您深入理解二阶段提交协议的原理和实践。如果您有任何问题或建议，欢迎在评论区讨论交流！*
 
-<style>
-/* 协议概览样式 */
-.protocol-overview {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-    color: white;
-}
-
-.overview-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.core-idea {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-    font-size: 1.05em;
-    line-height: 1.6;
-    text-align: center;
-}
-
-.roles-section {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 15px;
-}
-
-.role-item {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.role-title {
-    font-size: 1.1em;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.role-desc {
-    line-height: 1.6;
-    font-size: 0.95em;
-}
-
-/* 协议流程样式 */
-.protocol-flow {
-    background: #f8f9fa;
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-}
-
-.flow-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #2c3e50;
-}
-
-.phase-overview {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 20px;
-}
-
-.phase-item {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.phase-header {
-    padding: 15px 20px;
-    font-weight: bold;
-    font-size: 1.1em;
-    color: white;
-}
-
-.phase1 .phase-header {
-    background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
-}
-
-.phase2 .phase-header {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-}
-
-.phase-content {
-    padding: 20px;
-    line-height: 1.6;
-    color: #555;
-}
-
-/* 场景时间线样式 */
-.success-scenario, .failure-scenario {
-    background: white;
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.scenario-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 25px;
-    color: #2c3e50;
-}
-
-.success-scenario .scenario-title {
-    color: #28a745;
-}
-
-.failure-scenario .scenario-title {
-    color: #dc3545;
-}
-
-.timeline-container {
-    position: relative;
-    margin: 20px 0;
-}
-
-.timeline-container::before {
-    content: '';
-    position: absolute;
-    left: 30px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: #007bff;
-}
-
-.timeline-item {
-    display: flex;
-    margin: 20px 0;
-    position: relative;
-}
-
-.timeline-step {
-    background: #007bff;
-    color: white;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 1.1em;
-    flex-shrink: 0;
-    position: relative;
-    z-index: 1;
-}
-
-.timeline-content {
-    margin-left: 20px;
-    background: #f8f9fa;
-    border-radius: 12px;
-    padding: 20px;
-    flex: 1;
-    border-left: 4px solid #007bff;
-}
-
-.step-title {
-    font-size: 1.1em;
-    font-weight: bold;
-    color: #2c3e50;
-    margin-bottom: 10px;
-}
-
-.step-details {
-    color: #555;
-    line-height: 1.6;
-}
-
-/* 故障处理样式 */
-.coordinator-failure, .participant-failure, .network-partition {
-    background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-}
-
-.failure-title, .partition-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #2c3e50;
-}
-
-.failure-case, .timing-analysis, .partition-scenario {
-    background: white;
-    border-radius: 12px;
-    margin: 15px 0;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.case-header, .scenario-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 15px 20px;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-.case-content, .timing-content, .partition-effects {
-    padding: 20px;
-    line-height: 1.6;
-    color: #555;
-}
-
-.timing-item, .effect-item {
-    background: #f8f9fa;
-    border-radius: 10px;
-    margin: 15px 0;
-    overflow: hidden;
-    border-left: 4px solid #007bff;
-}
-
-.timing-title, .effect-title {
-    background: rgba(0, 123, 255, 0.1);
-    padding: 12px 15px;
-    font-weight: bold;
-    color: #2c3e50;
-}
-
-.timing-content, .effect-content {
-    padding: 15px;
-    color: #555;
-}
-
-/* Java实现样式 */
-.java-implementation {
-    background: #f8f9fa;
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-}
-
-.impl-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #2c3e50;
-}
-
-.architecture-diagram {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    margin: 15px 0;
-    font-family: 'Courier New', monospace;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.component-description {
-    background: rgba(0, 123, 255, 0.1);
-    border-radius: 10px;
-    padding: 15px;
-    margin: 10px 0;
-    color: #555;
-    line-height: 1.6;
-}
-
-/* 优缺点样式 */
-.advantages, .disadvantages {
-    background: #f8f9fa;
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-}
-
-.adv-title, .disadv-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #2c3e50;
-}
-
-.advantage-item, .disadvantage-item {
-    background: white;
-    border-radius: 12px;
-    margin: 15px 0;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.adv-header {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    color: white;
-    padding: 15px 20px;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-.disadv-header {
-    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
-    color: white;
-    padding: 15px 20px;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-.adv-content, .disadv-content {
-    padding: 20px;
-    line-height: 1.6;
-    color: #555;
-}
-
-/* 企业应用样式 */
-.enterprise-applications {
-    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-}
-
-.app-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #2c3e50;
-}
-
-.application-case {
-    background: white;
-    border-radius: 12px;
-    margin: 20px 0;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.case-header.banking-system {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 15px 20px;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-.case-header.erp-system {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    color: white;
-    padding: 15px 20px;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-/* 性能优化样式 */
-.performance-optimization {
-    background: #f8f9fa;
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-}
-
-.perf-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #2c3e50;
-}
-
-.optimization-strategy {
-    background: white;
-    border-radius: 12px;
-    margin: 15px 0;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.strategy-header {
-    background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
-    color: white;
-    padding: 15px 20px;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-.strategy-content {
-    padding: 20px;
-    line-height: 1.6;
-    color: #555;
-}
-
-/* 技术选型样式 */
-.technology-selection {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-    color: white;
-}
-
-.tech-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.tech-category {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    margin: 15px 0;
-    overflow: hidden;
-}
-
-.category-header {
-    padding: 15px 20px;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-.java-stack {
-    background: rgba(255, 165, 0, 0.3);
-}
-
-.dotnet-stack {
-    background: rgba(0, 120, 215, 0.3);
-}
-
-.database-support {
-    background: rgba(40, 167, 69, 0.3);
-}
-
-.category-content {
-    padding: 20px;
-    line-height: 1.6;
-}
-
-.category-content table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 10px 0;
-}
-
-.category-content th,
-.category-content td {
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 8px;
-    text-align: center;
-}
-
-.category-content th {
-    background: rgba(255, 255, 255, 0.2);
-    font-weight: bold;
-}
-
-/* 监控调试样式 */
-.monitoring-debugging {
-    background: #f8f9fa;
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-}
-
-.monitor-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #2c3e50;
-}
-
-.monitoring-aspect {
-    background: white;
-    border-radius: 12px;
-    margin: 15px 0;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.aspect-header {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    color: white;
-    padding: 15px 20px;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-.aspect-content {
-    padding: 20px;
-    line-height: 1.6;
-    color: #555;
-}
-
-/* 协议对比样式 */
-.protocol-comparison, .saga-comparison {
-    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-}
-
-.comparison-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #2c3e50;
-}
-
-.comparison-table {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    margin: 15px 0;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    overflow-x: auto;
-}
-
-.comparison-table table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.comparison-table th,
-.comparison-table td {
-    border: 1px solid #ddd;
-    padding: 12px;
-    text-align: center;
-}
-
-.comparison-table th {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    font-weight: bold;
-}
-
-.comparison-table tr:nth-child(even) {
-    background: #f9f9f9;
-}
-
-/* 根本差异样式 */
-.fundamental-difference {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    margin: 15px 0;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.diff-title {
-    font-size: 1.2em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #2c3e50;
-}
-
-.approach-comparison {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-}
-
-.approach-item {
-    border-radius: 10px;
-    overflow: hidden;
-    border: 1px solid #ddd;
-}
-
-.approach-header {
-    padding: 15px;
-    font-weight: bold;
-    color: white;
-    text-align: center;
-}
-
-.pessimistic {
-    background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
-}
-
-.optimistic {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-}
-
-.approach-content {
-    padding: 15px;
-    background: white;
-    line-height: 1.6;
-    color: #555;
-}
-
-/* 总结样式 */
-.key-points {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-    color: white;
-}
-
-.points-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.knowledge-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 15px;
-}
-
-.knowledge-item {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.item-header {
-    font-size: 1.1em;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.item-content {
-    line-height: 1.6;
-    font-size: 0.95em;
-}
-
-/* 最佳实践样式 */
-.best-practices {
-    background: #f8f9fa;
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-}
-
-.practices-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #2c3e50;
-}
-
-.practice-category {
-    background: white;
-    border-radius: 12px;
-    margin: 15px 0;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.category-header {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    color: white;
-    padding: 15px 20px;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-.practice-list {
-    padding: 20px;
-    line-height: 1.8;
-    color: #555;
-}
-
-.practice-list ol {
-    margin: 0;
-    padding-left: 20px;
-}
-
-/* 未来方向样式 */
-.future-direction {
-    background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-}
-
-.direction-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #2c3e50;
-}
-
-.trend-item {
-    background: white;
-    border-radius: 12px;
-    margin: 15px 0;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.trend-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 15px 20px;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-.trend-content {
-    padding: 20px;
-    line-height: 1.6;
-    color: #555;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-    .phase-overview {
-        grid-template-columns: 1fr;
-    }
-
-    .roles-section {
-        grid-template-columns: 1fr;
-    }
-
-    .knowledge-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .approach-comparison {
-        grid-template-columns: 1fr;
-    }
-
-    .timeline-container::before {
-        left: 20px;
-    }
-
-    .timeline-step {
-        width: 40px;
-        height: 40px;
-        font-size: 0.9em;
-    }
-
-    .timeline-content {
-        margin-left: 15px;
-    }
-}
-
-/* 动画和交互效果增强 */
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
-@keyframes slideInFromLeft {
-    from { opacity: 0; transform: translateX(-50px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes slideInFromRight {
-    from { opacity: 0; transform: translateX(50px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes rotateIcon {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-@keyframes progressFlow {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
-
-/* 增强的悬停效果 */
-.protocol-overview:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
-    transition: all 0.3s ease;
-}
-
-.phase-section:hover {
-    transform: scale(1.01);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-    transition: all 0.3s ease;
-}
-
-.phase-step:hover {
-    transform: translateX(10px);
-    background: #e8f4fd;
-    transition: all 0.3s ease;
-}
-
-.implementation-container:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 35px rgba(0,0,0,0.15);
-    transition: all 0.3s ease;
-}
-
-.optimization-strategy:hover {
-    transform: scale(1.02);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    transition: all 0.3s ease;
-}
-
-.timeline-step:hover {
-    transform: scale(1.2);
-    box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
-    transition: all 0.3s ease;
-}
-
-/* 互动式2PC流程图 */
-.interactive-2pc-flow {
-    background: white;
-    border-radius: 15px;
-    padding: 30px;
-    margin: 25px 0;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-    position: relative;
-    overflow: hidden;
-}
-
-.flow-phase {
-    background: #f8f9fa;
-    border-radius: 12px;
-    margin: 20px 0;
-    padding: 25px;
-    position: relative;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    border-left: 5px solid #667eea;
-}
-
-.flow-phase:hover {
-    background: #e9ecef;
-    transform: translateX(10px);
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-}
-
-.flow-phase-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.flow-phase-number {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 1.2em;
-    margin-right: 20px;
-}
-
-.flow-phase-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    color: #2c3e50;
-}
-
-.flow-phase-content {
-    color: #555;
-    line-height: 1.6;
-}
-
-/* 协调者-参与者通信动画 */
-.communication-animation {
-    position: relative;
-    background: white;
-    border-radius: 15px;
-    padding: 30px;
-    margin: 25px 0;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-}
-
-.communication-nodes {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 30px 0;
-}
-
-.node {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    color: white;
-    font-size: 0.9em;
-    text-align: center;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.coordinator-node {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.participant-node {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-}
-
-.node:hover {
-    transform: scale(1.1);
-    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-}
-
-.communication-arrow {
-    position: relative;
-    height: 3px;
-    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-    margin: 0 10px;
-    flex: 1;
-    border-radius: 3px;
-    overflow: hidden;
-}
-
-.communication-arrow::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 30px;
-    height: 100%;
-    background: rgba(255,255,255,0.7);
-    animation: progressFlow 2s linear infinite;
-}
-
-/* 状态机可视化 */
-.state-machine {
-    background: white;
-    border-radius: 15px;
-    padding: 30px;
-    margin: 25px 0;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-}
-
-.state-node {
-    display: inline-block;
-    padding: 15px 25px;
-    margin: 10px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 25px;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    position: relative;
-}
-
-.state-node:hover {
-    transform: scale(1.05);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-}
-
-.state-node.active {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    animation: pulse 2s ease-in-out infinite;
-}
-
-.state-transition {
-    display: inline-block;
-    margin: 0 10px;
-    font-size: 1.5em;
-    color: #667eea;
-    animation: slideInFromRight 0.5s ease-out;
-}
-
-/* 错误处理可视化 */
-.error-scenario {
-    background: linear-gradient(135deg, #ff7e5f20 0%, #feb47b20 100%);
-    border-left: 4px solid #ff7e5f;
-    border-radius: 8px;
-    padding: 20px;
-    margin: 20px 0;
-    position: relative;
-    overflow: hidden;
-}
-
-.error-scenario::before {
-    content: "⚠️";
-    position: absolute;
-    left: 20px;
-    top: 20px;
-    font-size: 1.5em;
-}
-
-.error-content {
-    margin-left: 50px;
-    color: #2c3e50;
-    line-height: 1.6;
-}
-
-/* 性能指标仪表盘 */
-.performance-dashboard {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin: 25px 0;
-}
-
-.metric-card {
-    background: white;
-    border-radius: 12px;
-    padding: 25px;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.metric-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-}
-
-.metric-value {
-    font-size: 2.5em;
-    font-weight: bold;
-    color: #667eea;
-    margin-bottom: 10px;
-}
-
-.metric-label {
-    color: #555;
-    font-size: 0.9em;
-    font-weight: 500;
-}
-
-.metric-trend {
-    margin-top: 10px;
-    font-size: 0.8em;
-}
-
-.trend-up {
-    color: #28a745;
-}
-
-.trend-down {
-    color: #dc3545;
-}
-
-/* 代码执行动画 */
-.code-execution {
-    position: relative;
-    background: #1e1e1e;
-    border-radius: 12px;
-    padding: 20px;
-    margin: 20px 0;
-    color: #d4d4d4;
-    font-family: 'Consolas', 'Monaco', monospace;
-    overflow: hidden;
-}
-
-.code-execution::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-    border-radius: 12px 12px 0 0;
-}
-
-.execution-line {
-    padding: 2px 0;
-    transition: all 0.3s ease;
-    border-radius: 4px;
-}
-
-.execution-line:hover {
-    background: rgba(102, 126, 234, 0.2);
-    transform: translateX(10px);
-}
-
-.execution-line.executing {
-    background: rgba(40, 167, 69, 0.3);
-    animation: pulse 1s ease-in-out;
-}
-
-/* 优化建议高亮 */
-.optimization-tip {
-    background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
-    border-radius: 12px;
-    padding: 20px;
-    margin: 20px 0;
-    position: relative;
-    overflow: hidden;
-}
-
-.optimization-tip::before {
-    content: "🚀";
-    position: absolute;
-    left: 20px;
-    top: 20px;
-    font-size: 1.5em;
-}
-
-.optimization-content {
-    margin-left: 50px;
-    color: #2c3e50;
-    line-height: 1.6;
-}
-
-/* 响应式增强 */
-@media (max-width: 768px) {
-    .communication-nodes {
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .communication-arrow {
-        width: 3px;
-        height: 50px;
-        margin: 10px 0;
-    }
-
-    .communication-arrow::before {
-        width: 100%;
-        height: 20px;
-        animation: progressFlow 2s linear infinite;
-        animation-direction: alternate;
-    }
-
-    .performance-dashboard {
-        grid-template-columns: 1fr;
-    }
-
-    .node {
-        width: 60px;
-        height: 60px;
-        font-size: 0.8em;
-    }
-}
-
-/* 主题切换支持 */
-@media (prefers-color-scheme: dark) {
-    .interactive-2pc-flow,
-    .communication-animation,
-    .state-machine {
-        background: #2c3e50;
-        color: #ecf0f1;
-    }
-
-    .flow-phase {
-        background: #34495e;
-        color: #ecf0f1;
-    }
-
-    .flow-phase:hover {
-        background: #455a64;
-    }
-
-    .metric-card {
-        background: #34495e;
-        color: #ecf0f1;
-    }
-
-    .code-execution {
-        background: #2c3e50;
-        color: #ecf0f1;
-    }
-}
-</style>
