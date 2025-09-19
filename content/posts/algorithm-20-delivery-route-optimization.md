@@ -186,232 +186,52 @@ dp[mask | (1 << j)][j] = min(dp[mask | (1 << j)][j], dp[mask][i] + dist[i][j])
 ```
 例如：9个节点（餐厅+8个客户）
 状态101010001 表示：
-- 位0: 餐厅 ✅ 已访问
+- 位0: 餐厅 ✅ 已访问 (最右位)
 - 位1: 客户A ❌ 未访问
 - 位2: 客户B ❌ 未访问
-- 位3: 客户C ✅ 已访问
-- 位4: 客户D ❌ 未访问
-- 位5: 客户E ✅ 已访问
-- 位6: 客户F ❌ 未访问
-- 位7: 客户G ✅ 已访问
-- 位8: 客户H ❌ 未访问
+- 位3: 客户C ❌ 未访问
+- 位4: 客户D ✅ 已访问
+- 位5: 客户E ❌ 未访问
+- 位6: 客户F ✅ 已访问
+- 位7: 客户G ❌ 未访问
+- 位8: 客户H ✅ 已访问 (最左位)
 ```
 </div>
 
 ### 🧮 位运算操作详解
 
-<div class="bitwise-operations">
-<div class="operation-title">⚙️ 关键位运算操作解析</div>
-
-<div class="bit-operation">
-<div class="op-name">🔍 检查节点是否已访问</div>
-<div class="op-code">
+#### 🔍 检查节点是否已访问
 ```java
-// 检查节点i是否在状态mask中
 if ((mask & (1 << i)) != 0) {
     // 节点i已被访问
 }
 ```
-</div>
-<div class="op-explanation">
 **原理**：(1 << i) 创建只有第i位为1的掩码，与mask做AND运算
+
 **示例**：mask=13(1101), i=2
 - (1 << 2) = 4 (0100)
 - 13 & 4 = 4 ≠ 0，说明位2已设置
-</div>
-</div>
 
-<div class="bit-operation">
-<div class="op-name">➕ 添加节点到访问集合</div>
-<div class="op-code">
+#### ➕ 添加节点到访问集合
 ```java
-// 将节点j添加到状态mask中
 int newMask = mask | (1 << j);
 ```
-</div>
-<div class="op-explanation">
 **原理**：(1 << j) 创建只有第j位为1的掩码，与mask做OR运算
+
 **示例**：mask=13(1101), j=1
 - (1 << 1) = 2 (0010)
 - 13 | 2 = 15 (1111)，第1位被设置为1
-</div>
-</div>
 
-<div class="bit-operation">
-<div class="op-name">🔄 移除节点从访问集合</div>
-<div class="op-code">
+#### 🔄 移除节点从访问集合
 ```java
-// 从状态mask中移除节点i（路径重构时使用）
 mask ^= (1 << i);  // XOR运算翻转第i位
 ```
-</div>
-<div class="op-explanation">
 **原理**：XOR运算可以翻转指定位，已设置的位变为0
+
 **示例**：mask=15(1111), i=2
 - (1 << 2) = 4 (0100)
 - 15 ^ 4 = 11 (1011)，第2位被翻转为0
-</div>
-</div>
-</div>
 
-### 🚀 算法执行流程详细分析
-
-<div class="algorithm-flow-analysis">
-<div class="flow-title">📋 动态规划执行步骤深度解析</div>
-
-<div class="execution-step">
-<div class="step-header">步骤1️⃣ 初始化阶段</div>
-<div class="step-content">
-```java
-// 创建DP表和父节点追踪表
-double[][] dp = new double[1 << n][n];
-int[][] parent = new int[1 << n][n];
-
-// 初始化为无穷大
-for (int i = 0; i < (1 << n); i++) {
-    Arrays.fill(dp[i], Double.POSITIVE_INFINITY);
-    Arrays.fill(parent[i], -1);
-}
-
-// 起始状态：只访问餐厅(节点0)
-dp[1][0] = 0.0;  // 状态1 = 二进制0001，表示只访问节点0
-```
-
-**关键理解**：
-- `dp[1][0] = 0.0` 表示从餐厅出发，只访问餐厅，距离为0
-- 状态1的二进制表示为0001，只有第0位（餐厅）被设置
-- 所有其他状态初始化为无穷大，表示不可达
-</div>
-</div>
-
-<div class="execution-step">
-<div class="step-header">步骤2️⃣ 状态转移核心逻辑</div>
-<div class="step-content">
-```java
-// 遍历所有可能的状态
-for (int mask = 0; mask < (1 << n); mask++) {
-    for (int u = 0; u < n; u++) {
-        // 检查节点u是否在当前状态中，且状态可达
-        if ((mask & (1 << u)) == 0 || dp[mask][u] == Double.POSITIVE_INFINITY) {
-            continue;
-        }
-
-        // 尝试从u前往所有未访问的节点v
-        for (int v = 0; v < n; v++) {
-            if ((mask & (1 << v)) != 0) {  // v已访问，跳过
-                continue;
-            }
-
-            // 计算新状态和新距离
-            int newMask = mask | (1 << v);
-            double newDist = dp[mask][u] + distanceMatrix[u][v];
-
-            // 更新最优解
-            if (newDist < dp[newMask][v]) {
-                dp[newMask][v] = newDist;
-                parent[newMask][v] = u;  // 记录父节点用于路径重构
-            }
-        }
-    }
-}
-```
-
-**状态转移理解**：
-- 外层循环遍历所有2ⁿ个状态（从小到大确保依赖关系）
-- 中层循环枚举当前状态中的每个已访问节点u
-- 内层循环尝试从u扩展到每个未访问节点v
-- 松弛操作更新到达v的最短距离
-</div>
-</div>
-
-<div class="execution-step">
-<div class="step-header">步骤3️⃣ 寻找最优解</div>
-<div class="step-content">
-```java
-// 所有节点都被访问的完整状态
-int fullMask = (1 << n) - 1;  // 例：n=9时，fullMask=511(111111111)
-double minCost = Double.POSITIVE_INFINITY;
-int lastNode = -1;
-
-// 尝试从每个终点返回起点
-for (int i = 1; i < n; i++) {  // 排除起点本身
-    double cost = dp[fullMask][i] + distanceMatrix[i][0];
-    if (cost < minCost) {
-        minCost = cost;
-        lastNode = i;
-    }
-}
-```
-
-**最优解搜索理解**：
-- `fullMask = (1 << n) - 1` 表示所有节点都被访问的状态
-- 检查从每个可能的最后节点返回起点的总成本
-- 选择成本最小的路径作为最优解
-</div>
-</div>
-
-<div class="execution-step">
-<div class="step-header">步骤4️⃣ 路径重构算法</div>
-<div class="step-content">
-```java
-private static List<Integer> reconstructPath(int[][] parent, int mask, int current) {
-    List<Integer> path = new ArrayList<>();
-
-    // 从最后节点开始，逆向追踪路径
-    while (current != -1) {
-        path.add(current);
-        int nextNode = parent[mask][current];
-        mask ^= (1 << current);  // 从状态中移除当前节点
-        current = nextNode;
-    }
-
-    Collections.reverse(path);  // 反转得到正向路径
-    return path;
-}
-```
-
-**路径重构理解**：
-- 使用parent数组记录的父节点信息逆向追踪
-- `mask ^= (1 << current)` 从状态中移除当前节点
-- 最终反转路径得到从起点到终点的正确顺序
-</div>
-</div>
-</div>
-
-### 📈 复杂度分析与优化技巧
-
-<div class="complexity-analysis">
-<div class="complexity-title">⚡ 时间与空间复杂度深度分析</div>
-
-<div class="complexity-item">
-<div class="complexity-type">⏱️ 时间复杂度：O(n² × 2ⁿ)</div>
-<div class="complexity-explanation">
-- **外层循环**：遍历2ⁿ个状态
-- **中层循环**：每个状态最多n个已访问节点
-- **内层循环**：每个节点最多n个扩展选择
-- **总计算量**：2ⁿ × n × n = O(n² × 2ⁿ)
-
-**实际节点数的计算量**：
-- n=10: 10² × 2¹⁰ = 102,400 操作
-- n=15: 15² × 2¹⁵ = 7,372,800 操作
-- n=20: 20² × 2²⁰ = 419,430,400 操作
-</div>
-</div>
-
-<div class="complexity-item">
-<div class="complexity-type">💾 空间复杂度：O(n × 2ⁿ)</div>
-<div class="complexity-explanation">
-- **DP表**：dp[2ⁿ][n] 存储所有状态的最优值
-- **父节点表**：parent[2ⁿ][n] 用于路径重构
-- **总空间需求**：2 × n × 2ⁿ = O(n × 2ⁿ)
-
-**实际内存使用**：
-- n=10: 2 × 10 × 1024 = 20KB
-- n=15: 2 × 15 × 32768 = 960KB
-- n=20: 2 × 20 × 1048576 = 40MB
-</div>
-</div>
-</div>
 
 #### 📝 Java算法实现代码
 
