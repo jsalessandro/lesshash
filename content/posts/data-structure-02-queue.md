@@ -15,7 +15,7 @@ description: "深入理解队列数据结构，包含普通队列、循环队列
 **队列（Queue）**是一种线性数据结构，只允许在一端（队尾rear）插入元素，在另一端（队头front）删除元素。这种特性使得队列成为处理按序服务场景的完美工具。
 
 ```mermaid
-graph LR
+flowchart LR
     A[队尾 rear] -->|入队 enqueue| B[队列内部] -->|出队 dequeue| C[队头 front]
 
     subgraph "队列示例"

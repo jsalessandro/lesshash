@@ -361,7 +361,7 @@ public class LinkedQueue<T> {
 循环队列是一种优化的数组队列实现，通过将数组的末尾连接到开头来形成一个环形结构。
 
 ```mermaid
-graph LR
+flowchart LR
     A[0] --> B[1]
     B --> C[2]
     C --> D[3]

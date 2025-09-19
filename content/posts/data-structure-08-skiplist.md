@@ -15,7 +15,7 @@ description: "深入理解跳表数据结构，掌握其设计原理、实现细
 **跳表**是一种随机化数据结构，通过在链表上建立多层索引，将链表的查找时间复杂度从 O(n) 降低到 O(log n)。它比平衡二叉树更容易实现，在并发环境下表现更好，是 Redis 等系统的核心数据结构之一。
 
 ```mermaid
-graph LR
+flowchart LR
     subgraph "Level 3"
         A3["1"] --> B3["7"]
     end

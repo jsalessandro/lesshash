@@ -45,7 +45,7 @@ graph TD
 在无向图中，边没有方向，表示双向关系。
 
 ```mermaid
-graph LR
+flowchart LR
     A((A)) --- B((B))
     B --- C((C))
     C --- A
@@ -55,7 +55,7 @@ graph LR
 在有向图中，边有方向，用箭头表示。
 
 ```mermaid
-graph LR
+flowchart LR
     A((A)) --> B((B))
     B --> C((C))
     C --> A
@@ -70,7 +70,7 @@ graph LR
 每条边都有权重值，表示连接的成本、距离等。
 
 ```mermaid
-graph LR
+flowchart LR
     A((A)) ---|5| B((B))
     B ---|3| C((C))
     A ---|8| C
@@ -85,7 +85,7 @@ graph LR
 存在某些顶点之间没有路径连接。
 
 ```mermaid
-graph LR
+flowchart LR
     A((A)) --- B((B))
     B --- C((C))
 

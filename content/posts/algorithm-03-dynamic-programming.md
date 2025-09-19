@@ -111,7 +111,7 @@ public class ClimbingStairs {
 状态转移图：
 
 ```mermaid
-graph LR
+flowchart LR
     A[f(1)=1] --> C[f(3)=3]
     B[f(2)=2] --> C
     C --> E[f(5)=8]

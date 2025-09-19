@@ -723,7 +723,7 @@ public class DoubleArrayTrie {
 ### Trie树与其他数据结构对比
 
 ```mermaid
-graph TB
+flowchart TD
     A[字符串查找数据结构对比] --> B[哈希表 HashMap]
     A --> C[Trie树]
     A --> D[平衡搜索树 TreeMap]

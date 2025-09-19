@@ -17,7 +17,7 @@ Hashicorp Raft是一个高度优化的Raft算法实现，被广泛应用于Consu
 ### 1. 增强的快照机制
 
 ```mermaid
-graph TB
+flowchart TD
     A[状态机] --> B[快照触发器]
     B --> C[增量快照]
     B --> D[全量快照]
@@ -49,7 +49,7 @@ sequenceDiagram
 ### 3. 网络传输优化
 
 ```mermaid
-graph LR
+flowchart LR
     A[批量处理] --> B[管道化]
     B --> C[压缩传输]
     C --> D[连接复用]

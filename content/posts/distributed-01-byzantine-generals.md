@@ -28,7 +28,7 @@ description: "深入理解拜占庭将军问题：分布式系统容错的经典
 公元1000年，拜占庭帝国的将军们围攻一座敌方城市。他们面临一个生死攸关的决策：
 
 ```mermaid
-graph TB
+flowchart TD
     subgraph "围攻态势"
         城市[🏰 敌方城市]
         将军A[👨‍💼 将军A<br/>忠诚]
@@ -128,7 +128,7 @@ flowchart TD
 **定理内容**：在异步网络中，即使只有一个节点可能故障，也不存在既保证安全性又保证活性的确定性共识算法。
 
 ```mermaid
-graph LR
+flowchart LR
     subgraph "网络模型"
         A[同步网络<br/>🟢 可解决]
         B[异步网络<br/>🔴 不可解决]

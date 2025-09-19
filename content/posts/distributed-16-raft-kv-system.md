@@ -17,7 +17,7 @@ categories: ["分布式系统"]
 ### 1. 整体架构图
 
 ```mermaid
-graph TB
+flowchart TD
     Client[客户端应用] --> SDK[RaftKV SDK]
     SDK --> LB[负载均衡]
     LB --> Node1[Raft节点1]
@@ -46,7 +46,7 @@ graph TB
 ### 2. 分层架构
 
 ```mermaid
-graph TB
+flowchart TD
     subgraph "应用层"
         App[应用程序]
         SDK[RaftKV SDK]

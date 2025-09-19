@@ -36,7 +36,7 @@ Gossip模式：
 节点主动向其他节点推送信息：
 
 ```mermaid
-graph LR
+flowchart LR
     A[节点A] -->|推送| B[节点B]
     A -->|推送| C[节点C]
     B -->|推送| D[节点D]
@@ -48,7 +48,7 @@ graph LR
 节点主动从其他节点拉取信息：
 
 ```mermaid
-graph LR
+flowchart LR
     B[节点B] -->|请求| A[节点A]
     C[节点C] -->|请求| A[节点A]
     D[节点D] -->|请求| B[节点B]
@@ -60,7 +60,7 @@ graph LR
 结合推送和拉取两种模式：
 
 ```mermaid
-graph LR
+flowchart LR
     A[节点A] <-->|推拉结合| B[节点B]
     B <-->|推拉结合| C[节点C]
     C <-->|推拉结合| D[节点D]

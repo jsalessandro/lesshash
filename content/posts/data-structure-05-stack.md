@@ -120,7 +120,7 @@ Pop() → 返回30
 
 ### 内存布局
 ```mermaid
-graph LR
+flowchart LR
     A[栈顶指针 Top] --> B[索引2]
     C[数组] --> D[索引0: 10]
     C --> E[索引1: 20]
