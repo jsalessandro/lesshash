@@ -35,9 +35,9 @@ CAP理论是分布式系统设计中最重要的理论基础，它揭示了一�
 ```mermaid
 flowchart TD
     subgraph "🏦 銀行系统类比"
-        A["🔒 Consistency<br/>一致性<br/><br/>就像銀行账户：<br/>你在北京和上海查询<br/>余额必须完全一样"]
-        B["🚀 Availability<br/>可用性<br/><br/>就像ATM机：<br/>24小时随时可以<br/>取钱和查询"]
-        C["🌐 Partition Tolerance<br/>分区容错<br/><br/>就像网点间通信：<br/>即使电缆断了，<br/>仍能部分服务"]
+        A["Consistency<br/>一致性<br/><br/>就像銀行账户：<br/>你在北京和上海查询<br/>余额必须完全一样"]
+        B["Availability<br/>可用性<br/><br/>就像ATM机：<br/>24小时随时可以<br/>取钱和查询"]
+        C["Partition Tolerance<br/>分区容错<br/><br/>就像网点间通信：<br/>即使电缆断了，<br/>仍能部分服务"]
     end
 
     A -.->|"不能同时满足"| B
@@ -87,11 +87,11 @@ flowchart LR
 #### 🎲 三角关系与权衡选择
 
 ```mermaid
-graph TD
+flowchart TD
     subgraph "📊 三角权衡图"
-        A["🔒 Consistency<br/>一致性<br/>100% 准确数据"]
-        B["🚀 Availability<br/>可用性<br/>100% 响应率"]
-        C["🌐 Partition Tolerance<br/>分区容错<br/>100% 网络容错"]
+        A["Consistency<br/>一致性<br/>100% 准确数据"]
+        B["Availability<br/>可用性<br/>100% 响应率"]
+        C["Partition Tolerance<br/>分区容错<br/>100% 网络容错"]
     end
 
     A -.->|"不能同时存在"| B
@@ -102,9 +102,9 @@ graph TD
     B --> AP["🌈 AP系统<br/>可用 + 容错<br/>(牺牲一致性)"]
     C --> CA["💭 CA系统<br/>一致 + 可用<br/>(理论模型)"]
 
-    CP --> CP_SYSTEMS["🏦 金融交易<br/>🗺️ Zookeeper<br/>🌿 MongoDB<br/>🔴 Redis Cluster"]
-    AP --> AP_SYSTEMS["📱 社交应用<br/>🔍 Cassandra<br/>☁️ DynamoDB<br/>📋 CouchDB"]
-    CA --> CA_SYSTEMS["💾 单机数据库<br/>🏢 传统 RDBMS<br/>(现实中不存在)"]
+    CP --> CP_SYSTEMS["金融交易<br/>Zookeeper<br/>MongoDB<br/>Redis Cluster"]
+    AP --> AP_SYSTEMS["社交应用<br/>Cassandra<br/>DynamoDB<br/>CouchDB"]
+    CA --> CA_SYSTEMS["单机数据库<br/>传统 RDBMS<br/>(现实中不存在)"]
 ```
 
 #### 🤔 为什么CA系统不存在？
@@ -128,16 +128,16 @@ graph TD
 ```mermaid
 flowchart TD
     subgraph "🔥 强一致性 Strong Consistency"
-        SC["线性一致性<br/>Linearizability<br/><br/>📊 数据库转账<br/>一定是原子性的"]
+        SC["线性一致性<br/>Linearizability<br/><br/>数据库转账<br/>一定是原子性的"]
     end
 
     subgraph "🔶 中等一致性 Medium Consistency"
-        MC1["顺序一致性<br/>Sequential Consistency<br/><br/>📋 群聊消息<br/>所有人看到的顺序相同"]
-        MC2["因果一致性<br/>Causal Consistency<br/><br/>👶 朋友圈点赞<br/>先发帖再点赞"]
+        MC1["顺序一致性<br/>Sequential Consistency<br/><br/>群聊消息<br/>所有人看到的顺序相同"]
+        MC2["因果一致性<br/>Causal Consistency<br/><br/>朋友圈点赞<br/>先发帖再点赞"]
     end
 
     subgraph "🔷 弱一致性 Weak Consistency"
-        WC["最终一致性<br/>Eventual Consistency<br/><br/>📱 社交媒体<br/>点赞数延迟更新OK"]
+        WC["最终一致性<br/>Eventual Consistency<br/><br/>社交媒体<br/>点赞数延迟更新OK"]
     end
 
     SC --> MC1
