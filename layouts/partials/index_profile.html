@@ -112,12 +112,8 @@
     {{- end}}
 </div>
 
-<!-- 不蒜子访问统计脚本 (仅生产环境) -->
-{{- if hugo.IsProduction }}
+<!-- 不蒜子访问统计脚本 -->
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-{{- else }}
-<!-- 开发环境：不蒜子脚本已禁用，使用模拟数据 -->
-{{- end }}
 
 <!-- 统计数据增强脚本 -->
 <script>
@@ -162,30 +158,41 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 数据管理器
     const StatManager = {
-        // 获取真实的不蒜子数据或使用一致的备用数据
+        // 获取真实的不蒜子数据
         getRealData: function() {
-            // 检查不蒜子是否已加载
-            if (window.busuanzi && window.busuanzi.site_uv) {
+            // 优先使用不蒜子真实数据
+            if (window.busuanzi && window.busuanzi.site_uv && window.busuanzi.site_uv > 0) {
+                console.log('✅ 获取到不蒜子真实数据:', window.busuanzi);
                 return {
                     uv: window.busuanzi.site_uv,
-                    pv: window.busuanzi.site_pv || window.busuanzi.site_uv * 4
+                    pv: window.busuanzi.site_pv || window.busuanzi.site_uv * 3
                 };
             }
 
-            // 尝试从DOM获取已更新的数据
-            const uvFromDOM = uvElement ? parseInt(uvElement.textContent.replace(/[^\d]/g, '')) : 0;
-            const pvFromDOM = pvElement ? parseInt(pvElement.textContent.replace(/[^\d]/g, '')) : 0;
+            // 尝试从DOM获取已有数据
+            const uvFromDOM = uvElement ? parseInt(uvElement.textContent.replace(/[^\d,]/g, '').replace(/,/g, '')) : 0;
+            const pvFromDOM = pvElement ? parseInt(pvElement.textContent.replace(/[^\d,]/g, '').replace(/,/g, '')) : 0;
 
-            if (uvFromDOM > 0 && pvFromDOM > 0) {
+            if (uvFromDOM > 100 && pvFromDOM > 100) {
+                console.log('📊 使用DOM中的数据:', { uv: uvFromDOM, pv: pvFromDOM });
                 return { uv: uvFromDOM, pv: pvFromDOM };
             }
 
-            // 使用一致的基础数据（所有设备相同）
-            return { uv: 1435, pv: 6247 };
+            // 如果还没有数据，显示加载状态
+            console.log('⏳ 等待真实数据加载...');
+            return null;
         },
 
         // 设置统一数据到所有元素
         setUnifiedData: function(data) {
+            if (!data) {
+                // 如果没有数据，显示加载状态
+                if (uvElement) uvElement.textContent = '加载中...';
+                if (pvElement) pvElement.textContent = '加载中...';
+                if (uvDuplicateElement) uvDuplicateElement.textContent = '加载中...';
+                return;
+            }
+
             console.log('📊 设置统一数据:', data);
 
             if (uvElement) {
@@ -222,34 +229,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // 立即设置数据
+    // 显示加载状态
     StatManager.setUnifiedData(StatManager.getRealData());
 
-    // 检查是否为生产环境
-    const isProduction = window.location.hostname !== 'localhost' &&
-                        window.location.hostname !== '127.0.0.1' &&
-                        !window.location.hostname.includes('gitpod') &&
-                        !window.location.hostname.includes('codespace');
+    // 等待不蒜子加载
+    console.log('🚀 开始监听不蒜子数据...');
+    let checkCount = 0;
+    const checkInterval = setInterval(() => {
+        checkCount++;
 
-    if (isProduction) {
-        console.log('🌍 生产环境：尝试获取真实不蒜子数据');
-
-        // 等待不蒜子加载
-        let checkCount = 0;
-        const checkInterval = setInterval(() => {
-            checkCount++;
-
-            if (window.busuanzi && window.busuanzi.site_uv) {
-                console.log('✅ 不蒜子数据已获取:', window.busuanzi);
-                StatManager.setUnifiedData(StatManager.getRealData());
-                clearInterval(checkInterval);
-            } else if (checkCount >= 20) {
-                console.log('⏰ 不蒜子加载超时，使用备用数据');
-                StatManager.setUnifiedData(StatManager.getRealData());
-                clearInterval(checkInterval);
-            }
-        }, 500);
-    }
+        if (window.busuanzi && window.busuanzi.site_uv && window.busuanzi.site_uv > 0) {
+            console.log('✅ 不蒜子数据已加载:', window.busuanzi);
+            StatManager.setUnifiedData(StatManager.getRealData());
+            clearInterval(checkInterval);
+        } else if (checkCount >= 30) {
+            console.log('⏰ 不蒜子加载超时，可能网络问题或服务不可用');
+            // 超时后显示错误信息
+            if (uvElement) uvElement.textContent = '数据加载失败';
+            if (pvElement) pvElement.textContent = '数据加载失败';
+            if (uvDuplicateElement) uvDuplicateElement.textContent = '数据加载失败';
+            clearInterval(checkInterval);
+        }
+    }, 1000); // 增加检查间隔到1秒
 
     // 跨设备数据一致性保障
     const ensureConsistency = () => {
@@ -295,37 +296,48 @@ document.addEventListener('DOMContentLoaded', function() {
     ensureConsistency();
 });
 
-// 页面完全加载后的最终同步
+// 页面完全加载后的最终检查
 window.addEventListener('load', function() {
     setTimeout(() => {
+        console.log('🔍 页面加载完成，进行最终数据检查...');
+
         const uvElement = document.getElementById('busuanzi_value_site_uv');
         const pvElement = document.getElementById('busuanzi_value_site_pv');
         const uvDuplicateElement = document.getElementById('busuanzi_value_site_uv_duplicate');
 
-        // 获取当前应该显示的数据
-        let realData = { uv: 1435, pv: 6247 };
-
         // 检查是否有真实的不蒜子数据
-        if (window.busuanzi && window.busuanzi.site_uv > 0) {
-            realData = {
+        if (window.busuanzi && window.busuanzi.site_uv && window.busuanzi.site_uv > 0) {
+            const realData = {
                 uv: window.busuanzi.site_uv,
-                pv: window.busuanzi.site_pv || window.busuanzi.site_uv * 4
+                pv: window.busuanzi.site_pv || window.busuanzi.site_uv * 3
             };
-            console.log('🌍 使用真实不蒜子数据:', realData);
+
+            console.log('🌍 最终确认使用真实不蒜子数据:', realData);
+
+            // 确保所有元素显示相同的真实数据
+            const uvText = realData.uv.toLocaleString();
+            const pvText = realData.pv.toLocaleString();
+
+            if (uvElement) uvElement.textContent = uvText;
+            if (pvElement) pvElement.textContent = pvText;
+            if (uvDuplicateElement) uvDuplicateElement.textContent = uvText;
+
+            console.log('✅ 真实数据同步完成');
         } else {
-            console.log('🛠️ 使用一致性备用数据:', realData);
+            console.log('❌ 无法获取真实数据，不蒜子服务可能不可用');
+
+            // 显示服务不可用状态
+            if (uvElement && uvElement.textContent === '加载中...') {
+                uvElement.textContent = '统计服务暂不可用';
+            }
+            if (pvElement && pvElement.textContent === '加载中...') {
+                pvElement.textContent = '统计服务暂不可用';
+            }
+            if (uvDuplicateElement && uvDuplicateElement.textContent === '加载中...') {
+                uvDuplicateElement.textContent = '统计服务暂不可用';
+            }
         }
-
-        // 确保所有元素显示相同数据
-        const uvText = realData.uv.toLocaleString();
-        const pvText = realData.pv.toLocaleString();
-
-        if (uvElement) uvElement.textContent = uvText;
-        if (pvElement) pvElement.textContent = pvText;
-        if (uvDuplicateElement) uvDuplicateElement.textContent = uvText;
-
-        console.log('✅ 最终数据同步完成，所有设备将显示一致数据');
-    }, 5000);
+    }, 8000); // 增加等待时间到8秒
 });
 </script>
 
