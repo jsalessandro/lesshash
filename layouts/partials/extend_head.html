@@ -622,7 +622,7 @@ console.log('水印和防复制功能已暂时禁用');
 
 <!-- Mermaid 图表支持 -->
 {{ if .Site.Params.mermaid }}
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js?v=20250919"></script>
 <script>
     // 初始化 Mermaid
     mermaid.initialize({
@@ -671,6 +671,8 @@ console.log('水印和防复制功能已暂时禁用');
                 mermaidCode = mermaidCode.trim();
 
                 console.log('Processing Mermaid code:', mermaidCode.substring(0, 50) + '...');
+                console.log('Element class:', element.className);
+                console.log('Parent element:', preElement.tagName);
 
                 mermaidDiv.textContent = mermaidCode;
 
