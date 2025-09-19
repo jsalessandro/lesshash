@@ -34,7 +34,7 @@ CAP理论是分布式系统设计中最重要的理论基础，它揭示了一�
 
 ```mermaid
 flowchart TD
-    subgraph "🏦 銀行系统类比"
+    subgraph BankSystem ["銀行系统类比"]
         A["Consistency<br/>一致性<br/><br/>就像銀行账户：<br/>你在北京和上海查询<br/>余额必须完全一样"]
         B["Availability<br/>可用性<br/><br/>就像ATM机：<br/>24小时随时可以<br/>取钱和查询"]
         C["Partition Tolerance<br/>分区容错<br/><br/>就像网点间通信：<br/>即使电缆断了，<br/>仍能部分服务"]
@@ -58,21 +58,21 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    subgraph "🔒 Consistency 一致性类型"
+    subgraph ConsistencyTypes ["Consistency 一致性类型"]
         C1[Linear Consistency<br/>线性一致性]
         C2[Sequential Consistency<br/>顺序一致性]
         C3[Causal Consistency<br/>因果一致性]
         C4[Eventual Consistency<br/>最终一致性]
     end
 
-    subgraph "🚀 Availability 可用性指标"
+    subgraph AvailabilityMetrics ["Availability 可用性指标"]
         A1[99.9% = 8.77小时/年]
         A2[99.99% = 52.6分钟/年]
         A3[99.999% = 5.26分钟/年]
         A4[99.9999% = 31.6秒/年]
     end
 
-    subgraph "🌐 Partition Tolerance 容错类型"
+    subgraph PartitionTypes ["Partition Tolerance 容错类型"]
         P1[网络分区]
         P2[节点故障]
         P3[消息丢失]
@@ -88,7 +88,7 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    subgraph "📊 三角权衡图"
+    subgraph TriangleChart ["三角权衡图"]
         A["Consistency<br/>一致性<br/>100% 准确数据"]
         B["Availability<br/>可用性<br/>100% 响应率"]
         C["Partition Tolerance<br/>分区容错<br/>100% 网络容错"]
@@ -127,16 +127,16 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    subgraph "🔥 强一致性 Strong Consistency"
+    subgraph StrongConsistency ["强一致性 Strong Consistency"]
         SC["线性一致性<br/>Linearizability<br/><br/>数据库转账<br/>一定是原子性的"]
     end
 
-    subgraph "🔶 中等一致性 Medium Consistency"
+    subgraph MediumConsistency ["中等一致性 Medium Consistency"]
         MC1["顺序一致性<br/>Sequential Consistency<br/><br/>群聊消息<br/>所有人看到的顺序相同"]
         MC2["因果一致性<br/>Causal Consistency<br/><br/>朋友圈点赞<br/>先发帖再点赞"]
     end
 
-    subgraph "🔷 弱一致性 Weak Consistency"
+    subgraph WeakConsistency ["弱一致性 Weak Consistency"]
         WC["最终一致性<br/>Eventual Consistency<br/><br/>社交媒体<br/>点赞数延迟更新OK"]
     end
 

@@ -29,20 +29,23 @@ description: "深入理解拜占庭将军问题：分布式系统容错的经典
 
 ```mermaid
 flowchart TD
-    subgraph SiegeScene ["围攻态势"]
-        City["敌方城市"]
-        GeneralA["将军A<br/>忠诚"]
-        GeneralB["将军B<br/>叛徒"]
-        GeneralC["将军C<br/>忠诚"]
-        GeneralD["将军D<br/>忠诚"]
+    City["敌方城市"]
+    GeneralA["将军A - 忠诚"]
+    GeneralB["将军B - 叛徒"]
+    GeneralC["将军C - 忠诚"]
+    GeneralD["将军D - 忠诚"]
 
-        GeneralA -.->|信使| GeneralB
-        GeneralB -.->|信使| GeneralC
-        GeneralC -.->|信使| GeneralD
-        GeneralD -.->|信使| GeneralA
-        GeneralA -.->|信使| GeneralC
-        GeneralB -.->|信使| GeneralD
-    end
+    GeneralA -.->|信使| GeneralB
+    GeneralB -.->|信使| GeneralC
+    GeneralC -.->|信使| GeneralD
+    GeneralD -.->|信使| GeneralA
+    GeneralA -.->|信使| GeneralC
+    GeneralB -.->|信使| GeneralD
+
+    style GeneralB fill:#ffcccb
+    style GeneralA fill:#90EE90
+    style GeneralC fill:#90EE90
+    style GeneralD fill:#90EE90
 ```
 
 ### 🎯 核心挑战
