@@ -391,82 +391,129 @@ keywords: ["简历", "系统分析师", "后端开发", "Java", "C++", "架构�
 
 <style>
 .resume-container {
-    max-width: 900px;
+    max-width: 800px;
     margin: 0 auto;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     line-height: 1.6;
     color: #333;
+    background: #fff;
+    padding: 40px;
+    border: 1px solid #e5e5e5;
 }
 
 .contact-info {
     text-align: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 20px;
-    border-radius: 10px;
-    margin-bottom: 20px;
+    padding: 20px 0;
+    border-bottom: 2px solid #333;
+    margin-bottom: 30px;
+}
+
+.contact-info strong {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    display: block;
 }
 
 .profile-summary {
-    background: #f8f9fa;
-    padding: 20px;
-    border-left: 4px solid #007bff;
-    margin-bottom: 20px;
-    border-radius: 5px;
+    margin-bottom: 30px;
+    padding: 0;
+}
+
+.tech-stack, .work-experience, .project-experience,
+.education, .achievements, .personal-links, .self-evaluation {
+    margin-bottom: 30px;
 }
 
 .tech-stack .tech-category {
-    margin-bottom: 25px;
-    padding: 15px;
-    background: #f8f9fa;
-    border-radius: 8px;
+    margin-bottom: 20px;
 }
 
-.work-experience .job-period,
-.project-experience .project-period,
-.education .edu-period {
+.tech-category h3 {
+    font-size: 1.1em;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.work-experience h3, .project-experience h3 {
+    font-size: 1.2em;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.job-period, .project-period {
     color: #666;
     font-style: italic;
     font-size: 0.9em;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
 .job-description, .project-description {
-    margin-left: 20px;
-    padding: 15px;
-    background: #fff;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
+    margin-bottom: 25px;
 }
 
-.achievements, .personal-links, .self-evaluation {
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
+.resume-container h1 {
+    font-size: 2.5em;
+    margin: 0;
+    color: #333;
+}
+
+.resume-container h2 {
+    font-size: 1.4em;
+    margin: 30px 0 15px 0;
+    color: #333;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
 }
 
 .resume-footer {
     text-align: center;
-    padding: 20px;
-    background: #343a40;
-    color: white;
-    border-radius: 8px;
+    padding: 20px 0;
+    border-top: 1px solid #ddd;
     margin-top: 30px;
+    color: #666;
+    font-size: 0.9em;
 }
 
+/* 简约列表样式 */
+.resume-container ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.resume-container li {
+    margin-bottom: 5px;
+}
+
+/* 移动端优化 */
 @media (max-width: 768px) {
     .resume-container {
-        padding: 10px;
+        padding: 20px;
+        margin: 10px;
+    }
+
+    .resume-container h1 {
+        font-size: 2em;
     }
 
     .contact-info {
-        padding: 15px;
+        padding: 15px 0;
+    }
+}
+
+/* 打印样式 */
+@media print {
+    .resume-container {
+        border: none;
+        padding: 0;
+        max-width: none;
     }
 
-    .job-description, .project-description {
-        margin-left: 10px;
-        padding: 10px;
+    .contact-info {
+        border-bottom: 2px solid #000;
+    }
+
+    .resume-container h2 {
+        border-bottom: 1px solid #000;
     }
 }
 </style>
