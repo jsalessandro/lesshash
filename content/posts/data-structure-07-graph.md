@@ -19,14 +19,9 @@ author: "lesshash"
 
 图是由顶点集合V和边集合E组成的数据结构，通常记作G(V,E)。顶点表示实体，边表示实体之间的关系。
 
-```mermaid
-graph TD
-    A((A)) --- B((B))
-    A --- C((C))
-    B --- D((D))
-    C --- D
-    D --- E((E))
-```
+#### 流程图表
+
+
 
 ### 图的基本术语
 
@@ -44,21 +39,21 @@ graph TD
 #### 无向图
 在无向图中，边没有方向，表示双向关系。
 
-```mermaid
-flowchart LR
-    A((A)) --- B((B))
-    B --- C((C))
-    C --- A
-```
+#### 流程图表
+
+
 
 #### 有向图
 在有向图中，边有方向，用箭头表示。
 
-```mermaid
-flowchart LR
-    A((A)) --> B((B))
-    B --> C((C))
-    C --> A
+#### 流程图表
+
+
+**关系流向：**
+```
+A((A)) → B((B))
+B → C((C))
+C → A
 ```
 
 ### 2. 加权图与无权图
@@ -69,12 +64,9 @@ flowchart LR
 #### 加权图
 每条边都有权重值，表示连接的成本、距离等。
 
-```mermaid
-flowchart LR
-    A((A)) ---|5| B((B))
-    B ---|3| C((C))
-    A ---|8| C
-```
+#### 流程图表
+
+
 
 ### 3. 连通图与非连通图
 
@@ -84,13 +76,9 @@ flowchart LR
 #### 非连通图
 存在某些顶点之间没有路径连接。
 
-```mermaid
-flowchart LR
-    A((A)) --- B((B))
-    B --- C((C))
+#### 流程图表
 
-    D((D)) --- E((E))
-```
+
 
 ## 现实生活中的图应用
 
@@ -346,20 +334,9 @@ public class GraphList {
 
 DFS从一个顶点开始，尽可能深地搜索图的分支，然后回溯到前一个顶点继续搜索。
 
-```mermaid
-graph TD
-    A((A)) --- B((B))
-    A --- C((C))
-    B --- D((D))
-    B --- E((E))
-    C --- F((F))
-    D --- G((G))
+#### 流程图表
 
-    style A fill:#ff9999
-    style B fill:#ffcc99
-    style D fill:#ffff99
-    style G fill:#ccff99
-```
+
 
 #### DFS实现
 
@@ -487,22 +464,9 @@ public class GraphDFS {
 
 BFS从起始顶点开始，先访问所有相邻的顶点，然后再访问这些顶点的相邻顶点。
 
-```mermaid
-graph TD
-    A((A)) --- B((B))
-    A --- C((C))
-    B --- D((D))
-    B --- E((E))
-    C --- F((F))
-    D --- G((G))
+#### 流程图表
 
-    style A fill:#ff9999
-    style B fill:#ffcc99
-    style C fill:#ffcc99
-    style D fill:#ffff99
-    style E fill:#ffff99
-    style F fill:#ffff99
-```
+
 
 #### BFS实现
 

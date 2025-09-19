@@ -16,68 +16,51 @@ categories: ["分布式系统"]
 
 ### 1. 整体架构图
 
-```mermaid
-flowchart TD
-    Client[客户端应用] --> SDK[RaftKV SDK]
-    SDK --> LB[负载均衡]
-    LB --> Node1[Raft节点1]
-    LB --> Node2[Raft节点2]
-    LB --> Node3[Raft节点3]
+#### 流程图表
 
-    Node1 --> Storage1[本地存储1]
-    Node2 --> Storage2[本地存储2]
-    Node3 --> Storage3[本地存储3]
+**节点说明：**
 
-    Node1 <--> Node2
-    Node2 <--> Node3
-    Node3 <--> Node1
+| 节点 | 描述 |
+|------|------|
+| Monitor | 监控服务 |
+| Metrics | 指标收集 |
+| Alert | 告警系统 |
 
-    subgraph "监控系统"
-        Monitor[监控服务]
-        Metrics[指标收集]
-        Alert[告警系统]
-    end
-
-    Node1 --> Monitor
-    Node2 --> Monitor
-    Node3 --> Monitor
+**关系流向：**
+```
+Client[客户端应用] → SDK[RaftKV SDK]
+SDK → LB[负载均衡]
+LB → Node1[Raft节点1]
+LB → Node2[Raft节点2]
+LB → Node3[Raft节点3]
 ```
 
 ### 2. 分层架构
 
-```mermaid
-flowchart TD
-    subgraph "应用层"
-        App[应用程序]
-        SDK[RaftKV SDK]
-    end
+#### 流程图表
 
-    subgraph "服务层"
-        API[API网关]
-        RPC[RPC服务]
-    end
+**节点说明：**
 
-    subgraph "一致性层"
-        Raft[Raft算法层]
-        Log[日志复制]
-        SM[状态机]
-    end
+| 节点 | 描述 |
+|------|------|
+| App | 应用程序 |
+| SDK | RaftKV SDK |
+| API | API网关 |
+| RPC | RPC服务 |
+| Raft | Raft算法层 |
+| Log | 日志复制 |
+| SM | 状态机 |
+| Engine | 存储引擎 |
+| Index | 索引管理 |
+| WAL | 预写日志 |
 
-    subgraph "存储层"
-        Engine[存储引擎]
-        Index[索引管理]
-        WAL[预写日志]
-    end
-
-    App --> SDK
-    SDK --> API
-    API --> RPC
-    RPC --> Raft
-    Raft --> Log
-    Log --> SM
-    SM --> Engine
-    Engine --> Index
-    Engine --> WAL
+**关系流向：**
+```
+App → SDK
+SDK → API
+API → RPC
+RPC → Raft
+Raft → Log
 ```
 
 ## 核心组件实现

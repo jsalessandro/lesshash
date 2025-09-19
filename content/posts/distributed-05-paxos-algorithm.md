@@ -31,19 +31,16 @@ Paxos算法是分布式系统中最重要的共识算法之一，由图灵奖获
 
 ### 算法角色
 
-```mermaid
-graph TD
-    A[Paxos算法角色] --> B[Proposer 提议者]
-    A --> C[Acceptor 接受者]
-    A --> D[Learner 学习者]
+#### 流程图表
 
-    B --> E[发起提案<br/>选择提案编号<br/>向Acceptor发送请求]
-    C --> F[接受或拒绝提案<br/>记住承诺的提案<br/>响应Proposer请求]
-    D --> G[学习已达成共识的值<br/>不参与决策过程<br/>获取最终结果]
 
-    style B fill:#e3f2fd
-    style C fill:#f3e5f5
-    style D fill:#e8f5e8
+**关系流向：**
+```
+A[Paxos算法角色] → B[Proposer 提议者]
+A → C[Acceptor 接受者]
+A → D[Learner 学习者]
+B → E[发起提案<br/>选择提案编号<br/>向Acceptor发送请求]
+C → F[接受或拒绝提案<br/>记住承诺的提案<br/>响应Proposer请求]
 ```
 
 ## 基础Paxos算法

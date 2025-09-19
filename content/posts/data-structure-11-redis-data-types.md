@@ -56,35 +56,16 @@ Redis(Remote Dictionary Server)是一个开源的内存数据结构存储系统�
 
 ### Redis的核心设计哲学
 
-```mermaid
-graph TD
-    A[Redis核心设计] --> B[内存存储]
-    A --> C[多数据结构]
-    A --> D[高性能算法]
-    A --> E[空间优化]
+#### 流程图表
 
-    B --> B1[纳秒级访问]
-    B --> B2[无磁盘IO]
 
-    C --> C1[String字符串]
-    C --> C2[List列表]
-    C --> C3[Hash散列]
-    C --> C4[Set集合]
-    C --> C5[ZSet有序集合]
-
-    D --> D1[O1时间复杂度]
-    D --> D2[跳表算法]
-    D --> D3[渐进式rehash]
-
-    E --> E1[压缩列表]
-    E --> E2[整数集合]
-    E --> E3[动态字符串]
-
-    style A fill:#e1f5fe
-    style B fill:#f3e5f5
-    style C fill:#fff3e0
-    style D fill:#e8f5e8
-    style E fill:#fce4ec
+**关系流向：**
+```
+A[Redis核心设计] → B[内存存储]
+A → C[多数据结构]
+A → D[高性能算法]
+A → E[空间优化]
+B → B1[纳秒级访问]
 ```
 
 ## Redis数据类型与底层数据结构映射

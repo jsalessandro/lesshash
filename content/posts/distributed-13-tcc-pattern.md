@@ -39,56 +39,41 @@ TCC模式特点：
 
 ### 2.1 三阶段协议流程
 
-```mermaid
-sequenceDiagram
-    participant TM as 事务管理器
-    participant PA as 参与者A
-    participant PB as 参与者B
-    participant PC as 参与者C
+#### 序列图
 
-    Note over TM: 开始全局事务
-    TM->>PA: Try
-    PA->>TM: Try成功
-    TM->>PB: Try
-    PB->>TM: Try成功
-    TM->>PC: Try
-    PC->>TM: Try成功
+| 步骤 | 参与者 | 动作 | 目标 | 说明 |
+|------|--------|------|------|------|
+| 1 | TM | 发送 | PA | Try |
+| 2 | PA | 发送 | TM | Try成功 |
+| 3 | TM | 发送 | PB | Try |
+| 4 | PB | 发送 | TM | Try成功 |
+| 5 | TM | 发送 | PC | Try |
+| 6 | PC | 发送 | TM | Try成功 |
+| 7 | TM | 发送 | PA | Confirm |
+| 8 | PA | 发送 | TM | Confirm成功 |
+| 9 | TM | 发送 | PB | Confirm |
+| 10 | PB | 发送 | TM | Confirm成功 |
+| 11 | TM | 发送 | PC | Confirm |
+| 12 | PC | 发送 | TM | Confirm成功 |
 
-    Note over TM: 所有Try成功，进入Confirm阶段
-    TM->>PA: Confirm
-    PA->>TM: Confirm成功
-    TM->>PB: Confirm
-    PB->>TM: Confirm成功
-    TM->>PC: Confirm
-    PC->>TM: Confirm成功
-
-    Note over TM: 全局事务成功
-```
 
 ### 2.2 异常情况处理
 
-```mermaid
-sequenceDiagram
-    participant TM as 事务管理器
-    participant PA as 参与者A
-    participant PB as 参与者B
-    participant PC as 参与者C
+#### 序列图
 
-    TM->>PA: Try
-    PA->>TM: Try成功
-    TM->>PB: Try
-    PB->>TM: Try成功
-    TM->>PC: Try
-    PC->>TM: Try失败
+| 步骤 | 参与者 | 动作 | 目标 | 说明 |
+|------|--------|------|------|------|
+| 1 | TM | 发送 | PA | Try |
+| 2 | PA | 发送 | TM | Try成功 |
+| 3 | TM | 发送 | PB | Try |
+| 4 | PB | 发送 | TM | Try成功 |
+| 5 | TM | 发送 | PC | Try |
+| 6 | PC | 发送 | TM | Try失败 |
+| 7 | TM | 发送 | PA | Cancel |
+| 8 | PA | 发送 | TM | Cancel成功 |
+| 9 | TM | 发送 | PB | Cancel |
+| 10 | PB | 发送 | TM | Cancel成功 |
 
-    Note over TM: 存在Try失败，进入Cancel阶段
-    TM->>PA: Cancel
-    PA->>TM: Cancel成功
-    TM->>PB: Cancel
-    PB->>TM: Cancel成功
-
-    Note over TM: 全局事务回滚
-```
 
 ## 3. TCC框架核心实现
 

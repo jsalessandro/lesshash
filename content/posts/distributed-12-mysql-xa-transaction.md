@@ -21,47 +21,39 @@ XA（eXtended Architecture）是由X/Open组织提出的分布式事务处理标
 
 ### 1.2 XA事务模型
 
-```mermaid
-graph TD
-    A[应用程序] --> B[事务管理器 TM]
-    B --> C[资源管理器 RM1]
-    B --> D[资源管理器 RM2]
-    B --> E[资源管理器 RM3]
-    C --> F[MySQL数据库1]
-    D --> G[MySQL数据库2]
-    E --> H[MySQL数据库3]
+#### 流程图表
+
+
+**关系流向：**
+```
+A[应用程序] → B[事务管理器 TM]
+B → C[资源管理器 RM1]
+B → D[资源管理器 RM2]
+B → E[资源管理器 RM3]
+C → F[MySQL数据库1]
 ```
 
 ## 2. XA事务的两阶段提交协议
 
 ### 2.1 协议流程
 
-```mermaid
-sequenceDiagram
-    participant App as 应用程序
-    participant TM as 事务管理器
-    participant RM1 as 资源管理器1
-    participant RM2 as 资源管理器2
+#### 序列图
 
-    App->>TM: 开始全局事务
-    TM->>RM1: XA START
-    TM->>RM2: XA START
+| 步骤 | 参与者 | 动作 | 目标 | 说明 |
+|------|--------|------|------|------|
+| 1 | App | 发送 | TM | 开始全局事务 |
+| 2 | TM | 发送 | RM1 | XA START |
+| 3 | TM | 发送 | RM2 | XA START |
+| 4 | App | 发送 | RM1 | 执行SQL操作 |
+| 5 | App | 发送 | RM2 | 执行SQL操作 |
+| 6 | App | 发送 | TM | 提交全局事务 |
+| 7 | TM | 发送 | RM1 | XA PREPARE |
+| 8 | RM1 | 发送 | TM | OK/ABORT |
+| 9 | TM | 发送 | RM2 | XA PREPARE |
+| 10 | RM2 | 发送 | TM | OK/ABORT |
+| 11 | TM | 发送 | RM1 | XA COMMIT |
+| 12 | TM | 发送 | RM2 | XA COMMIT |
 
-    App->>RM1: 执行SQL操作
-    App->>RM2: 执行SQL操作
-
-    App->>TM: 提交全局事务
-
-    Note over TM: 第一阶段：准备阶段
-    TM->>RM1: XA PREPARE
-    RM1->>TM: OK/ABORT
-    TM->>RM2: XA PREPARE
-    RM2->>TM: OK/ABORT
-
-    Note over TM: 第二阶段：提交阶段
-    TM->>RM1: XA COMMIT
-    TM->>RM2: XA COMMIT
-```
 
 ### 2.2 XA事务状态
 

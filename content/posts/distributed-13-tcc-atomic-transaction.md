@@ -28,33 +28,23 @@ TCC模式：
 
 ### 1.2 三阶段流程
 
-```mermaid
-sequenceDiagram
-    participant TM as 事务管理器
-    participant A as 服务A
-    participant B as 服务B
-    participant C as 服务C
+#### 序列图
 
-    Note over TM: 第一阶段：Try
-    TM->>A: Try操作
-    A->>TM: 成功/失败
-    TM->>B: Try操作
-    B->>TM: 成功/失败
-    TM->>C: Try操作
-    C->>TM: 成功/失败
+| 步骤 | 参与者 | 动作 | 目标 | 说明 |
+|------|--------|------|------|------|
+| 1 | TM | 发送 | A | Try操作 |
+| 2 | A | 发送 | TM | 成功/失败 |
+| 3 | TM | 发送 | B | Try操作 |
+| 4 | B | 发送 | TM | 成功/失败 |
+| 5 | TM | 发送 | C | Try操作 |
+| 6 | C | 发送 | TM | 成功/失败 |
+| 7 | TM | 发送 | A | Confirm操作 |
+| 8 | TM | 发送 | B | Confirm操作 |
+| 9 | TM | 发送 | C | Confirm操作 |
+| 10 | TM | 发送 | A | Cancel操作 |
+| 11 | TM | 发送 | B | Cancel操作 |
+| 12 | TM | 发送 | C | Cancel操作 |
 
-    alt 所有Try成功
-        Note over TM: 第二阶段：Confirm
-        TM->>A: Confirm操作
-        TM->>B: Confirm操作
-        TM->>C: Confirm操作
-    else 任何Try失败
-        Note over TM: 第二阶段：Cancel
-        TM->>A: Cancel操作
-        TM->>B: Cancel操作
-        TM->>C: Cancel操作
-    end
-```
 
 ## 2. TCC模式核心概念
 

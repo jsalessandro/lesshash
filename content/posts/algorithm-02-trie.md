@@ -47,12 +47,15 @@ Trie树是一种树形数据结构，主要用于高效地存储和检索字符�
 
 每个Trie节点通常包含以下组件：
 
-```mermaid
-graph TD
-    A[Trie节点] --> B[子节点映射<br>Map/Array]
-    A --> C[结束标记<br>isEndOfWord]
-    A --> D[可选：字符值<br>character]
-    A --> E[可选：计数器<br>count]
+#### 流程图表
+
+
+**关系流向：**
+```
+A[Trie节点] → B[子节点映射<br>Map/Array]
+A → C[结束标记<br>isEndOfWord]
+A → D[可选：字符值<br>character]
+A → E[可选：计数器<br>count]
 ```
 
 ### ASCII艺术展示存储过程
@@ -722,17 +725,16 @@ public class DoubleArrayTrie {
 
 ### Trie树与其他数据结构对比
 
-```mermaid
-flowchart TD
-    A[字符串查找数据结构对比] --> B[哈希表 HashMap]
-    A --> C[Trie树]
-    A --> D[平衡搜索树 TreeMap]
-    A --> E[布隆过滤器]
+#### 流程图表
 
-    B --> B1["查找: O(1)平均<br/>空间: O(n)<br/>不支持前缀查询"]
-    C --> C1["查找: O(m)<br/>空间: O(alphabet×n×m)<br/>优秀的前缀支持"]
-    D --> D1["查找: O(log n)<br/>空间: O(n)<br/>有序存储"]
-    E --> E1["查找: O(k)<br/>空间: O(m)<br/>只支持存在性检查"]
+
+**关系流向：**
+```
+A[字符串查找数据结构对比] → B[哈希表 HashMap]
+A → C[Trie树]
+A → D[平衡搜索树 TreeMap]
+A → E[布隆过滤器]
+B → B1["查找: O(1)平均<br/>空间: O(n)<br/>不支持前缀查询"]
 ```
 
 ### 性能基准测试代码

@@ -14,23 +14,16 @@ InfluxDB是一个专为时序数据设计的开源数据库，企业版在开源
 
 ### 1.1 架构特点
 
-```mermaid
-graph TD
-    A[Client] --> B[Load Balancer]
-    B --> C[Meta Node 1]
-    B --> D[Meta Node 2]
-    B --> E[Meta Node 3]
+#### 流程图表
 
-    C --> F[Data Node 1]
-    C --> G[Data Node 2]
-    C --> H[Data Node 3]
 
-    F --> I[Shard 1]
-    F --> J[Shard 2]
-    G --> K[Shard 3]
-    G --> L[Shard 4]
-    H --> M[Shard 5]
-    H --> N[Shard 6]
+**关系流向：**
+```
+A[Client] → B[Load Balancer]
+B → C[Meta Node 1]
+B → D[Meta Node 2]
+B → E[Meta Node 3]
+C → F[Data Node 1]
 ```
 
 ### 1.2 核心组件

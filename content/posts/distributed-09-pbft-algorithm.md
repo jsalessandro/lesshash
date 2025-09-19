@@ -38,40 +38,29 @@ PBFT算法采用三阶段协议来达成共识：
 
 ### 2.1 协议阶段图解
 
-```mermaid
-sequenceDiagram
-    participant C as 客户端
-    participant P as 主节点(Primary)
-    participant B1 as 备份节点1
-    participant B2 as 备份节点2
-    participant B3 as 备份节点3
+#### 序列图
 
-    C->>P: 1. Request
-    Note over P: 主节点分配序列号
-    P->>B1: 2. Pre-prepare
-    P->>B2: 2. Pre-prepare
-    P->>B3: 2. Pre-prepare
+| 步骤 | 参与者 | 动作 | 目标 | 说明 |
+|------|--------|------|------|------|
+| 1 | C | 发送 | P | 1. Request |
+| 2 | P | 发送 | B1 | 2. Pre-prepare |
+| 3 | P | 发送 | B2 | 2. Pre-prepare |
+| 4 | P | 发送 | B3 | 2. Pre-prepare |
+| 5 | B1 | 发送 | B2 | 3. Prepare |
+| 6 | B1 | 发送 | B3 | 3. Prepare |
+| 7 | B2 | 发送 | B1 | 3. Prepare |
+| 8 | B2 | 发送 | B3 | 3. Prepare |
+| 9 | B3 | 发送 | B1 | 3. Prepare |
+| 10 | B3 | 发送 | B2 | 3. Prepare |
+| 11 | B1 | 发送 | B2 | 4. Commit |
+| 12 | B1 | 发送 | B3 | 4. Commit |
+| 13 | B2 | 发送 | B1 | 4. Commit |
+| 14 | B2 | 发送 | B3 | 4. Commit |
+| 15 | B3 | 发送 | B1 | 4. Commit |
+| 16 | B3 | 发送 | B2 | 4. Commit |
+| 17 | P | 发送 | C | 5. Reply |
+| 18 | B1 | 发送 | C | 5. Reply |
 
-    Note over B1,B3: 验证Pre-prepare
-    B1->>B2: 3. Prepare
-    B1->>B3: 3. Prepare
-    B2->>B1: 3. Prepare
-    B2->>B3: 3. Prepare
-    B3->>B1: 3. Prepare
-    B3->>B2: 3. Prepare
-
-    Note over B1,B3: 收集2f个Prepare消息
-    B1->>B2: 4. Commit
-    B1->>B3: 4. Commit
-    B2->>B1: 4. Commit
-    B2->>B3: 4. Commit
-    B3->>B1: 4. Commit
-    B3->>B2: 4. Commit
-
-    Note over B1,B3: 收集2f个Commit消息
-    P->>C: 5. Reply
-    B1->>C: 5. Reply
-```
 
 ### 2.2 三阶段详解
 

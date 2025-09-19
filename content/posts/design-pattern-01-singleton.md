@@ -12,16 +12,16 @@ description: "深入浅出讲解单例模式，从基础概念到高级实现，
 ## 🎯 什么是单例模式？
 
 ### 概念图解
-```mermaid
-graph TD
-    A[多个客户端] --> B[请求获取实例]
-    B --> C{单例类}
-    C --> D[唯一实例]
-    D --> E[返回同一个对象]
-    E --> A
+#### 流程图表
 
-    style C fill:#f9f,stroke:#333,stroke-width:2px
-    style D fill:#bbf,stroke:#333,stroke-width:2px
+
+**关系流向：**
+```
+A[多个客户端] → B[请求获取实例]
+B → C{单例类}
+C → D[唯一实例]
+D → E[返回同一个对象]
+E → A
 ```
 
 ### 生活中的例子
@@ -54,28 +54,12 @@ graph TD
 ## 🧠 设计思想
 
 ### UML类图
-```mermaid
-classDiagram
-    class Singleton {
-        -static instance: Singleton
-        -Singleton()
-        +static getInstance(): Singleton
-        +doSomething(): void
-    }
+#### 类图
 
-    class Client1 {
-        +main(): void
-    }
+| 类名 | 属性 | 方法 | 关系 |
+|------|------|------|------|
+| 详见代码 | - | - | - |
 
-    class Client2 {
-        +main(): void
-    }
-
-    Client1 --> Singleton : getInstance()
-    Client2 --> Singleton : getInstance()
-
-    note for Singleton "私有构造函数\n静态实例\n全局访问点"
-```
 
 ### 核心原则
 1. **私有构造函数** - 防止外部直接创建实例

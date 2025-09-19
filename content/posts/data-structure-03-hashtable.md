@@ -12,20 +12,16 @@ description: "深入浅出讲解哈希表数据结构，从哈希函数到冲突
 ## 🎯 什么是哈希表？
 
 ### 概念图解
-```mermaid
-graph TD
-    A[Key键] --> B[哈希函数]
-    B --> C[哈希值/索引]
-    C --> D[数组位置]
-    D --> E[Value值]
+#### 流程图表
 
-    F["apple"] --> G[hash("apple")]
-    G --> H[3]
-    H --> I[arr[3]]
-    I --> J["苹果"]
 
-    style B fill:#f9f,stroke:#333,stroke-width:2px
-    style I fill:#bbf,stroke:#333,stroke-width:2px
+**关系流向：**
+```
+A[Key键] → B[哈希函数]
+B → C[哈希值/索引]
+C → D[数组位置]
+D → E[Value值]
+F["apple"] → G[hash("apple")]
 ```
 
 ### 生活中的例子
@@ -58,27 +54,16 @@ graph TD
 ## 🏗️ 哈希表原理
 
 ### 基本结构
-```mermaid
-graph TD
-    A[哈希表] --> B[哈希函数]
-    A --> C[存储数组]
-    A --> D[冲突解决机制]
+#### 流程图表
 
-    B --> E[除法散列]
-    B --> F[乘法散列]
-    B --> G[全域散列]
 
-    D --> H[链地址法]
-    D --> I[开放地址法]
-
-    H --> J[单链表]
-    H --> K[红黑树]
-
-    I --> L[线性探测]
-    I --> M[二次探测]
-    I --> N[双重散列]
-
-    style A fill:#f9f,stroke:#333,stroke-width:2px
+**关系流向：**
+```
+A[哈希表] → B[哈希函数]
+A → C[存储数组]
+A → D[冲突解决机制]
+B → E[除法散列]
+B → F[乘法散列]
 ```
 
 ### 哈希函数设计原则

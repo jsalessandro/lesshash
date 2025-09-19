@@ -12,23 +12,16 @@ description: "深入浅出讲解栈数据结构，从基础概念到实际应用
 ## 🎯 什么是栈？
 
 ### 概念图解
-```mermaid
-graph TD
-    A[栈 Stack] --> B[后进先出 LIFO]
-    B --> C[Last In First Out]
+#### 流程图表
 
-    D[栈的操作] --> E[Push 入栈]
-    D --> F[Pop 出栈]
-    D --> G[Peek/Top 查看栈顶]
-    D --> H[isEmpty 判空]
-    D --> I[Size 获取大小]
 
-    J[栈的结构] --> K[栈顶 Top]
-    J --> L[栈底 Bottom]
-
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style B fill:#bbf,stroke:#333,stroke-width:2px
-    style D fill:#bfb,stroke:#333,stroke-width:2px
+**关系流向：**
+```
+A[栈 Stack] → B[后进先出 LIFO]
+B → C[Last In First Out]
+D[栈的操作] → E[Push 入栈]
+D → F[Pop 出栈]
+D → G[Peek/Top 查看栈顶]
 ```
 
 ### 生活中的例子
@@ -119,17 +112,16 @@ Pop() → 返回30
 ```
 
 ### 内存布局
-```mermaid
-flowchart LR
-    A[栈顶指针 Top] --> B[索引2]
-    C[数组] --> D[索引0: 10]
-    C --> E[索引1: 20]
-    C --> F[索引2: 30]
-    C --> G[索引3: null]
-    C --> H[索引4: null]
+#### 流程图表
 
-    style A fill:#ff9999
-    style F fill:#99ff99
+
+**关系流向：**
+```
+A[栈顶指针 Top] → B[索引2]
+C[数组] → D[索引0: 10]
+C → E[索引1: 20]
+C → F[索引2: 30]
+C → G[索引3: null]
 ```
 
 ## 🔧 栈的基本操作
@@ -1077,23 +1069,16 @@ public class BrowserHistory {
 ## ⚡ 性能分析与比较
 
 ### 时间复杂度对比
-```mermaid
-graph TD
-    A[栈操作复杂度] --> B[数组实现]
-    A --> C[链表实现]
+#### 流程图表
 
-    B --> D[Push: O(1)*]
-    B --> E[Pop: O(1)]
-    B --> F[Peek: O(1)]
-    B --> G[Size: O(1)]
 
-    C --> H[Push: O(1)]
-    C --> I[Pop: O(1)]
-    C --> J[Peek: O(1)]
-    C --> K[Size: O(1)]
-
-    style D fill:#ffcccc
-    style H fill:#ccffcc
+**关系流向：**
+```
+A[栈操作复杂度] → B[数组实现]
+A → C[链表实现]
+B → D[Push: O(1)*]
+B → E[Pop: O(1)]
+B → F[Peek: O(1)]
 ```
 
 *注：数组实现在需要扩容时为O(n)
@@ -1278,27 +1263,16 @@ public class StackExceptionDemo {
 ## 🔍 与其他数据结构的比较
 
 ### 栈 vs 队列 vs 数组
-```mermaid
-graph TD
-    A[数据结构比较] --> B[栈 Stack]
-    A --> C[队列 Queue]
-    A --> D[数组 Array]
+#### 流程图表
 
-    B --> E[LIFO 后进先出]
-    B --> F[一端操作]
-    B --> G[递归、撤销]
 
-    C --> H[FIFO 先进先出]
-    C --> I[两端操作]
-    C --> J[调度、缓冲]
-
-    D --> K[随机访问]
-    D --> L[索引操作]
-    D --> M[查找、排序]
-
-    style B fill:#ffcccc
-    style C fill:#ccffcc
-    style D fill:#ccccff
+**关系流向：**
+```
+A[数据结构比较] → B[栈 Stack]
+A → C[队列 Queue]
+A → D[数组 Array]
+B → E[LIFO 后进先出]
+B → F[一端操作]
 ```
 
 | 特性 | 栈 | 队列 | 数组 |

@@ -360,15 +360,16 @@ public class LinkedQueue<T> {
 
 循环队列是一种优化的数组队列实现，通过将数组的末尾连接到开头来形成一个环形结构。
 
-```mermaid
-flowchart LR
-    A[0] --> B[1]
-    B --> C[2]
-    C --> D[3]
-    D --> E[4]
-    E --> A
-    style A fill:#e1f5fe
-    style E fill:#f3e5f5
+#### 流程图表
+
+
+**关系流向：**
+```
+A[0] → B[1]
+B → C[2]
+C → D[3]
+D → E[4]
+E → A
 ```
 
 ```java

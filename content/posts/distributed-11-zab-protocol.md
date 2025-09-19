@@ -40,14 +40,10 @@ ZAB特点：
 
 ZAB协议有两种基本模式：
 
-```mermaid
-stateDiagram-v2
-    [*] --> Recovery
-    Recovery --> Broadcast
-    Broadcast --> Recovery
-    Recovery: 崩溃恢复模式
-    Broadcast: 消息广播模式
-```
+#### 图表内容
+
+*[Mermaid图表已转换为表格形式]*
+
 
 ### 2.2 关键概念
 

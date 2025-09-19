@@ -12,35 +12,16 @@ description: "全面深入解析搜索算法，从基础线性搜索到高级AI�
 ## 🔍 搜索算法概览
 
 ### 搜索算法分类图
-```mermaid
-graph TD
-    A[搜索算法] --> B[基础搜索]
-    A --> C[树搜索]
-    A --> D[图搜索]
-    A --> E[智能搜索]
+#### 流程图表
 
-    B --> B1[线性搜索]
-    B --> B2[二分搜索]
-    B --> B3[插值搜索]
-    B --> B4[指数搜索]
-    B --> B5[哈希搜索]
 
-    C --> C1[深度优先搜索 DFS]
-    C --> C2[广度优先搜索 BFS]
-    C --> C3[A*搜索]
-
-    D --> D1[Dijkstra算法]
-    D --> D2[Bellman-Ford算法]
-
-    E --> E1[Minimax算法]
-    E --> E2[Alpha-Beta剪枝]
-    E --> E3[遗传算法]
-
-    style A fill:#ff9999,stroke:#333,stroke-width:3px
-    style B fill:#99ccff,stroke:#333,stroke-width:2px
-    style C fill:#99ff99,stroke:#333,stroke-width:2px
-    style D fill:#ffcc99,stroke:#333,stroke-width:2px
-    style E fill:#ff99ff,stroke:#333,stroke-width:2px
+**关系流向：**
+```
+A[搜索算法] → B[基础搜索]
+A → C[树搜索]
+A → D[图搜索]
+A → E[智能搜索]
+B → B1[线性搜索]
 ```
 
 ### 现实生活中的搜索场景
@@ -159,16 +140,16 @@ public class LinearSearchPerformance {
 
 #### 核心思想图解
 
-```mermaid
-graph TD
-    A[有序数组] --> B{比较中间元素}
-    B -->|target < mid| C[搜索左半部分]
-    B -->|target > mid| D[搜索右半部分]
-    B -->|target == mid| E[找到目标]
-    C --> F{继续二分}
-    D --> G{继续二分}
-    F --> B
-    G --> B
+#### 流程图表
+
+
+**关系流向：**
+```
+A[有序数组] → B{比较中间元素}
+B →|target < mid| C[搜索左半部分]
+B →|target > mid| D[搜索右半部分]
+B →|target == mid| E[找到目标]
+C → F{继续二分}
 ```
 
 #### 算法实现
@@ -1880,26 +1861,16 @@ public class RecommendationSystem {
 
 ### 算法选择决策树
 
-```mermaid
-graph TD
-    A[搜索问题] --> B{数据是否有序?}
-    B -->|是| C{数据分布如何?}
-    B -->|否| D{数据量大小?}
+#### 流程图表
 
-    C -->|均匀分布| E[插值搜索 O(log log n)]
-    C -->|一般分布| F[二分搜索 O(log n)]
-    C -->|范围未知| G[指数搜索 O(log n)]
 
-    D -->|小数据 n<1000| H[线性搜索 O(n)]
-    D -->|大数据| I{查询频次?}
-
-    I -->|频繁查询| J[哈希表 O(1)]
-    I -->|偶尔查询| K[排序+二分搜索]
-
-    L[特殊场景] --> M[路径规划: A*搜索]
-    L --> N[博弈AI: Minimax+剪枝]
-    L --> O[近似查询: 布隆过滤器]
-    L --> P[动态数据: 平衡树搜索]
+**关系流向：**
+```
+A[搜索问题] → B{数据是否有序?}
+B →|是| C{数据分布如何?}
+B →|否| D{数据量大小?}
+C →|均匀分布| E[插值搜索 O(log log n)]
+C →|一般分布| F[二分搜索 O(log n)]
 ```
 
 ### 现代发展趋势

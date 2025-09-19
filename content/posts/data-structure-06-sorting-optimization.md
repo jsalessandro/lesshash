@@ -14,23 +14,16 @@ description: "深入探讨排序算法的各种优化技术，包含混合排序
 
 在实际应用中，纯粹的教科书算法往往不够用。我们需要各种优化技术来应对复杂多样的实际场景，让排序算法在性能、稳定性、内存使用等多个维度达到最佳平衡。
 
-```mermaid
-graph TD
-    A["基础排序算法"] --> B["优化技术"]
+#### 流程图表
 
-    B --> C["混合排序<br/>Hybrid Sorting"]
-    B --> D["自适应排序<br/>Adaptive Sorting"]
-    B --> E["并行排序<br/>Parallel Sorting"]
-    B --> F["内存优化<br/>Memory Optimization"]
-    B --> G["缓存友好<br/>Cache-Friendly"]
 
-    style A fill:#ffcdd2
-    style B fill:#e1f5fe
-    style C fill:#c8e6c9
-    style D fill:#c8e6c9
-    style E fill:#c8e6c9
-    style F fill:#c8e6c9
-    style G fill:#c8e6c9
+**关系流向：**
+```
+A["基础排序算法"] → B["优化技术"]
+B → C["混合排序<br/>Hybrid Sorting"]
+B → D["自适应排序<br/>Adaptive Sorting"]
+B → E["并行排序<br/>Parallel Sorting"]
+B → F["内存优化<br/>Memory Optimization"]
 ```
 
 ## 🔄 混合排序（Hybrid Sorting）

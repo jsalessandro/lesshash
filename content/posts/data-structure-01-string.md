@@ -12,23 +12,16 @@ description: "深入浅出讲解字符串数据结构，从基础概念到高级
 ## 🎯 什么是字符串？
 
 ### 概念图解
-```mermaid
-graph TD
-    A[字符串] --> B[字符数组]
-    B --> C[H]
-    B --> D[e]
-    B --> E[l]
-    B --> F[l]
-    B --> G[o]
+#### 流程图表
 
-    H[内存结构] --> I[索引 0: H]
-    H --> J[索引 1: e]
-    H --> K[索引 2: l]
-    H --> L[索引 3: l]
-    H --> M[索引 4: o]
 
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style H fill:#bbf,stroke:#333,stroke-width:2px
+**关系流向：**
+```
+A[字符串] → B[字符数组]
+B → C[H]
+B → D[e]
+B → E[l]
+B → F[l]
 ```
 
 ### 生活中的例子
@@ -57,29 +50,12 @@ graph TD
 ## 🧠 设计思想
 
 ### 字符串的本质
-```mermaid
-classDiagram
-    class String {
-        -char[] value
-        -int length
-        +charAt(index): char
-        +substring(start, end): String
-        +indexOf(str): int
-        +replace(old, new): String
-        +split(delimiter): String[]
-    }
+#### 类图
 
-    class StringBuilder {
-        -char[] buffer
-        -int length
-        +append(str): StringBuilder
-        +insert(index, str): StringBuilder
-        +delete(start, end): StringBuilder
-        +toString(): String
-    }
+| 类名 | 属性 | 方法 | 关系 |
+|------|------|------|------|
+| 详见代码 | - | - | - |
 
-    String --|> StringBuilder : 可变版本
-```
 
 ### 内存结构对比
 ```

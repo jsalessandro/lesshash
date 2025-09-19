@@ -53,29 +53,21 @@ CAP理论是分布式系统设计中最重要的理论基础，它揭示了一�
 
 ### 📊 精确定义与衡量标准
 
-```mermaid
-flowchart LR
-    subgraph ConsistencyTypes ["Consistency 一致性类型"]
-        C1[Linear Consistency<br/>线性一致性]
-        C2[Sequential Consistency<br/>顺序一致性]
-        C3[Causal Consistency<br/>因果一致性]
-        C4[Eventual Consistency<br/>最终一致性]
-    end
+#### 流程图表
 
-    subgraph AvailabilityMetrics ["Availability 可用性指标"]
-        A1[99.9% = 8.77小时/年]
-        A2[99.99% = 52.6分钟/年]
-        A3[99.999% = 5.26分钟/年]
-        A4[99.9999% = 31.6秒/年]
-    end
+**节点说明：**
 
-    subgraph PartitionTypes ["Partition Tolerance 容错类型"]
-        P1[网络分区]
-        P2[节点故障]
-        P3[消息丢失]
-        P4[延迟超时]
-    end
-```
+| 节点 | 描述 |
+|------|------|
+| C1 | Linear Consistency 线性一致性 |
+| C2 | Sequential Consistency 顺序一致性 |
+| C3 | Causal Consistency 因果一致性 |
+| C4 | Eventual Consistency 最终一致性 |
+| A1 | 99.9% = 8.77小时/年 |
+| A2 | 99.99% = 52.6分钟/年 |
+| A3 | 99.999% = 5.26分钟/年 |
+| A4 | 99.9999% = 31.6秒/年 |
+
 
 ### 🔥 核心定理深度解读
 
@@ -83,25 +75,23 @@ flowchart LR
 
 #### 🎲 三角关系与权衡选择
 
-```mermaid
-flowchart TD
-    subgraph TriangleChart ["三角权衡图"]
-        A["Consistency<br/>一致性<br/>100% 准确数据"]
-        B["Availability<br/>可用性<br/>100% 响应率"]
-        C["Partition Tolerance<br/>分区容错<br/>100% 网络容错"]
-    end
+#### 流程图表
 
-    A -.->|"不能同时存在"| B
-    B -.->|"不能同时存在"| C
-    C -.->|"不能同时存在"| A
+**节点说明：**
 
-    A --> CP["👍 CP系统<br/>强一致 + 容错<br/>(牺牲可用性)"]
-    B --> AP["🌈 AP系统<br/>可用 + 容错<br/>(牺牲一致性)"]
-    C --> CA["💭 CA系统<br/>一致 + 可用<br/>(理论模型)"]
+| 节点 | 描述 |
+|------|------|
+| A | Consistency 一致性 100% 准确数据 |
+| B | Availability 可用性 100% 响应率 |
+| C | Partition Tolerance 分区容错 100% 网络容错 |
 
-    CP --> CP_SYSTEMS["金融交易<br/>Zookeeper<br/>MongoDB<br/>Redis Cluster"]
-    AP --> AP_SYSTEMS["社交应用<br/>Cassandra<br/>DynamoDB<br/>CouchDB"]
-    CA --> CA_SYSTEMS["单机数据库<br/>传统 RDBMS<br/>(现实中不存在)"]
+**关系流向：**
+```
+A →"不能同时存在"| B
+B →"不能同时存在"| C
+C →"不能同时存在"| A
+A → CP["👍 CP系统<br/>强一致 + 容错<br/>(牺牲可用性)"]
+B → AP["🌈 AP系统<br/>可用 + 容错<br/>(牺牲一致性)"]
 ```
 
 #### 🤔 为什么CA系统不存在？
@@ -122,24 +112,22 @@ flowchart TD
 
 #### 🌈 一致性光谱（从强到弱）
 
-```mermaid
-flowchart TD
-    subgraph StrongConsistency ["强一致性 Strong Consistency"]
-        SC["线性一致性<br/>Linearizability<br/><br/>数据库转账<br/>一定是原子性的"]
-    end
+#### 流程图表
 
-    subgraph MediumConsistency ["中等一致性 Medium Consistency"]
-        MC1["顺序一致性<br/>Sequential Consistency<br/><br/>群聊消息<br/>所有人看到的顺序相同"]
-        MC2["因果一致性<br/>Causal Consistency<br/><br/>朋友圈点赞<br/>先发帖再点赞"]
-    end
+**节点说明：**
 
-    subgraph WeakConsistency ["弱一致性 Weak Consistency"]
-        WC["最终一致性<br/>Eventual Consistency<br/><br/>社交媒体<br/>点赞数延迟更新OK"]
-    end
+| 节点 | 描述 |
+|------|------|
+| SC | 线性一致性 Linearizability  数据库转账 一定是原子性的 |
+| MC1 | 顺序一致性 Sequential Consistency  群聊消息 所有人看到的顺序相同 |
+| MC2 | 因果一致性 Causal Consistency  朋友圈点赞 先发帖再点赞 |
+| WC | 最终一致性 Eventual Consistency  社交媒体 点赞数延迟更新OK |
 
-    SC --> MC1
-    MC1 --> MC2
-    MC2 --> WC
+**关系流向：**
+```
+SC → MC1
+MC1 → MC2
+MC2 → WC
 ```
 
 #### 📈 不同一致性级别的性能对比
