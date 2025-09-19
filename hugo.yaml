@@ -124,8 +124,6 @@ params:
   ShowToc: true
   # 默认展开目录
   TocOpen: false
-  # 启用 Mermaid
-  mermaid: true
 
   # 主页配置
   profileMode:
@@ -190,11 +188,3 @@ markup:
   goldmark:
     renderer:
       unsafe: true
-    parser:
-      attribute:
-        block: true
-        title: true
-      autoHeadingID: true
-      autoHeadingIDType: github
-  mermaid:
-    enable: true
