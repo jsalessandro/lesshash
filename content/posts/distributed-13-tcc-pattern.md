@@ -1,1298 +1,1166 @@
 ---
-title: "分布式系统核心模式详解：TCC原子性执行原理与Java实现"
+title: "分布式系统核心模式详解：TCC原子性执行原理与Java完整实现"
 date: 2024-12-19T15:00:00+08:00
 draft: false
-tags: ["分布式系统", "TCC模式", "分布式事务", "最终一致性", "Java"]
+tags: ["分布式系统", "TCC模式", "分布式事务", "补偿事务", "最终一致性", "微服务", "Java"]
 categories: ["分布式系统"]
 author: "LessHash"
-description: "深入解析TCC分布式事务模式的原理、三阶段协议以及在微服务架构中的应用实践，包含完整的Java实现代码"
+description: "深入解析TCC分布式事务模式的工作原理、三阶段补偿机制、框架实现以及在微服务架构中的应用实践，包含完整的Java实现代码、性能优化和最佳实践"
 ---
 
 ## 1. TCC模式概述
 
-TCC（Try-Confirm-Cancel）是一种分布式事务处理模式，通过业务层面的补偿机制来实现分布式事务的一致性。TCC模式将事务分为三个阶段：Try（尝试）、Confirm（确认）、Cancel（取消），每个参与方都需要实现这三个操作。
+TCC（Try-Confirm-Cancel）是一种分布式事务处理模式，通过业务层面的补偿机制来实现分布式事务的一致性。它将一个完整的业务操作分解为三个阶段，是一种应用层的两阶段提交协议。
 
 ### 1.1 核心思想
 
-```
-TCC三阶段：
-Try阶段    - 预留资源，检查业务规则
-Confirm阶段 - 确认执行，完成业务操作
-Cancel阶段  - 取消预留，释放资源
-```
+```mermaid
+graph TB
+    A[TCC分布式事务] --> B[Try阶段<br/>预留资源]
+    A --> C[Confirm阶段<br/>确认执行]
+    A --> D[Cancel阶段<br/>补偿回滚]
 
-### 1.2 与XA事务的区别
+    B --> E[检查业务规则]
+    B --> F[预留必要资源]
+    B --> G[记录事务状态]
 
-```
-XA事务特点：
-- 基于数据库层面的两阶段提交
-- 长时间持有数据库锁
-- 强一致性但性能较差
+    C --> H[确认业务操作]
+    C --> I[释放预留资源]
+    C --> J[更新最终状态]
 
-TCC模式特点：
-- 基于业务层面的补偿操作
-- 无长时间锁定，提高并发性
-- 最终一致性，性能更好
+    D --> K[释放预留资源]
+    D --> L[恢复原始状态]
+    D --> M[清理事务记录]
 ```
 
-## 2. TCC模式原理
+### 1.2 TCC vs 传统事务对比
+
+| 特性 | 传统ACID事务 | TCC模式 | XA事务 |
+|-----|------------|---------|--------|
+| **一致性保证** | 强一致性 | 最终一致性 | 强一致性 |
+| **资源锁定** | 长时间锁定 | 短时间预留 | 长时间锁定 |
+| **性能影响** | 低并发 | 高并发 | 低并发 |
+| **实现复杂度** | 简单 | 复杂 | 中等 |
+| **跨服务支持** | 不支持 | 支持 | 支持 |
+| **业务侵入性** | 无 | 高 | 低 |
+| **故障恢复** | 自动 | 需要补偿 | 自动 |
+
+### 1.3 适用场景
+
+#### 🎯 适合使用TCC的场景
+
+1. **高并发业务场景**
+   - 电商订单处理
+   - 支付交易系统
+   - 库存扣减操作
+
+2. **跨服务调用场景**
+   - 微服务架构
+   - 多数据源事务
+   - 跨系统集成
+
+3. **性能敏感场景**
+   - 需要高吞吐量
+   - 不能接受长时间锁定
+   - 要求快速响应
+
+#### ⚠️ 不适合使用TCC的场景
+
+1. **简单事务场景**
+   - 单库事务即可满足
+   - 业务逻辑简单
+   - 无跨服务调用
+
+2. **强一致性要求**
+   - 金融核心账务
+   - 实时数据同步
+   - 关键数据更新
+
+## 2. TCC模式原理详解
 
 ### 2.1 三阶段协议流程
 
-#### 序列图
+```mermaid
+sequenceDiagram
+    participant Client as 客户端
+    participant TM as 事务管理器
+    participant RM1 as 资源管理器1
+    participant RM2 as 资源管理器2
+    participant RM3 as 资源管理器3
 
-| 步骤 | 参与者 | 动作 | 目标 | 说明 |
-|------|--------|------|------|------|
-| 1 | TM | 发送 | PA | Try |
-| 2 | PA | 发送 | TM | Try成功 |
-| 3 | TM | 发送 | PB | Try |
-| 4 | PB | 发送 | TM | Try成功 |
-| 5 | TM | 发送 | PC | Try |
-| 6 | PC | 发送 | TM | Try成功 |
-| 7 | TM | 发送 | PA | Confirm |
-| 8 | PA | 发送 | TM | Confirm成功 |
-| 9 | TM | 发送 | PB | Confirm |
-| 10 | PB | 发送 | TM | Confirm成功 |
-| 11 | TM | 发送 | PC | Confirm |
-| 12 | PC | 发送 | TM | Confirm成功 |
+    Client->>TM: 开启分布式事务
+    TM->>TM: 生成全局事务ID
 
+    rect rgb(200, 230, 255)
+        Note over TM,RM3: Try阶段 - 预留资源
+        TM->>RM1: Try操作
+        RM1->>RM1: 预留资源
+        RM1-->>TM: Try成功
+        TM->>RM2: Try操作
+        RM2->>RM2: 预留资源
+        RM2-->>TM: Try成功
+        TM->>RM3: Try操作
+        RM3->>RM3: 预留资源
+        RM3-->>TM: Try成功
+    end
 
-### 2.2 异常情况处理
+    TM->>TM: 判断Try结果
 
-#### 序列图
+    alt 所有Try成功
+        rect rgb(200, 255, 200)
+            Note over TM,RM3: Confirm阶段 - 确认执行
+            TM->>RM1: Confirm操作
+            RM1->>RM1: 确认业务
+            RM1-->>TM: Confirm成功
+            TM->>RM2: Confirm操作
+            RM2->>RM2: 确认业务
+            RM2-->>TM: Confirm成功
+            TM->>RM3: Confirm操作
+            RM3->>RM3: 确认业务
+            RM3-->>TM: Confirm成功
+        end
+        TM-->>Client: 事务成功
+    else 存在Try失败
+        rect rgb(255, 200, 200)
+            Note over TM,RM3: Cancel阶段 - 补偿回滚
+            TM->>RM1: Cancel操作
+            RM1->>RM1: 释放资源
+            RM1-->>TM: Cancel成功
+            TM->>RM2: Cancel操作
+            RM2->>RM2: 释放资源
+            RM2-->>TM: Cancel成功
+            TM->>RM3: Cancel操作
+            RM3->>RM3: 释放资源
+            RM3-->>TM: Cancel成功
+        end
+        TM-->>Client: 事务失败
+    end
+```
 
-| 步骤 | 参与者 | 动作 | 目标 | 说明 |
-|------|--------|------|------|------|
-| 1 | TM | 发送 | PA | Try |
-| 2 | PA | 发送 | TM | Try成功 |
-| 3 | TM | 发送 | PB | Try |
-| 4 | PB | 发送 | TM | Try成功 |
-| 5 | TM | 发送 | PC | Try |
-| 6 | PC | 发送 | TM | Try失败 |
-| 7 | TM | 发送 | PA | Cancel |
-| 8 | PA | 发送 | TM | Cancel成功 |
-| 9 | TM | 发送 | PB | Cancel |
-| 10 | PB | 发送 | TM | Cancel成功 |
+### 2.2 核心组件架构
 
+```mermaid
+graph TB
+    subgraph 应用层
+        APP[应用服务]
+    end
+
+    subgraph TCC框架层
+        TM[事务管理器<br/>Transaction Manager]
+        TC[事务协调器<br/>Transaction Coordinator]
+        TS[事务状态存储<br/>Transaction Store]
+    end
+
+    subgraph 资源层
+        RM1[资源管理器1]
+        RM2[资源管理器2]
+        RM3[资源管理器3]
+        DB1[(数据库1)]
+        DB2[(数据库2)]
+        MQ[消息队列]
+    end
+
+    APP --> TM
+    TM --> TC
+    TC --> TS
+    TC --> RM1
+    TC --> RM2
+    TC --> RM3
+    RM1 --> DB1
+    RM2 --> DB2
+    RM3 --> MQ
+
+    style TM fill:#f9f,stroke:#333,stroke-width:4px
+    style TC fill:#bbf,stroke:#333,stroke-width:2px
+```
+
+### 2.3 状态机模型
+
+```mermaid
+stateDiagram-v2
+    [*] --> Initial: 开始事务
+    Initial --> Trying: 执行Try
+    Trying --> TrySuccess: Try全部成功
+    Trying --> TryFailed: Try存在失败
+
+    TrySuccess --> Confirming: 执行Confirm
+    TryFailed --> Canceling: 执行Cancel
+
+    Confirming --> Confirmed: Confirm成功
+    Confirming --> ConfirmFailed: Confirm失败
+
+    Canceling --> Canceled: Cancel成功
+    Canceling --> CancelFailed: Cancel失败
+
+    Confirmed --> [*]: 事务成功
+    Canceled --> [*]: 事务回滚
+
+    ConfirmFailed --> Confirming: 重试Confirm
+    CancelFailed --> Canceling: 重试Cancel
+```
 
 ## 3. TCC框架核心实现
 
-### 3.1 TCC事务上下文
+### 3.1 事务管理器实现
 
 ```java
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * TCC事务上下文
+ * TCC事务管理器核心实现
  */
-public class TCCTransactionContext {
-    private final String transactionId;
-    private final String rootTransactionId;
-    private final long createTime;
-    private final long timeout;
-    private final Map<String, Object> attributes = new ConcurrentHashMap<>();
-
-    public TCCTransactionContext(String transactionId, long timeout) {
-        this.transactionId = transactionId;
-        this.rootTransactionId = transactionId;
-        this.createTime = System.currentTimeMillis();
-        this.timeout = timeout;
-    }
-
-    public TCCTransactionContext(String transactionId, String rootTransactionId, long timeout) {
-        this.transactionId = transactionId;
-        this.rootTransactionId = rootTransactionId;
-        this.createTime = System.currentTimeMillis();
-        this.timeout = timeout;
-    }
-
-    /**
-     * 创建分支事务上下文
-     */
-    public TCCTransactionContext createBranch() {
-        String branchId = transactionId + "-" + UUID.randomUUID().toString().substring(0, 8);
-        return new TCCTransactionContext(branchId, rootTransactionId, timeout);
-    }
-
-    /**
-     * 检查是否超时
-     */
-    public boolean isTimeout() {
-        return System.currentTimeMillis() - createTime > timeout;
-    }
-
-    /**
-     * 获取剩余时间
-     */
-    public long getRemainingTime() {
-        long elapsed = System.currentTimeMillis() - createTime;
-        return Math.max(0, timeout - elapsed);
-    }
-
-    // Getters and Setters
-    public String getTransactionId() { return transactionId; }
-    public String getRootTransactionId() { return rootTransactionId; }
-    public long getCreateTime() { return createTime; }
-    public long getTimeout() { return timeout; }
-
-    public void setAttribute(String key, Object value) {
-        attributes.put(key, value);
-    }
-
-    public <T> T getAttribute(String key, Class<T> type) {
-        Object value = attributes.get(key);
-        return type.isInstance(value) ? type.cast(value) : null;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("TCCTransactionContext{id='%s', root='%s', age=%dms, timeout=%dms}",
-                transactionId, rootTransactionId,
-                System.currentTimeMillis() - createTime, timeout);
-    }
-}
-
-/**
- * TCC事务上下文持有者
- */
-public class TCCTransactionContextHolder {
-    private static final ThreadLocal<TCCTransactionContext> CONTEXT_HOLDER = new ThreadLocal<>();
-
-    public static void setContext(TCCTransactionContext context) {
-        CONTEXT_HOLDER.set(context);
-    }
-
-    public static TCCTransactionContext getContext() {
-        return CONTEXT_HOLDER.get();
-    }
-
-    public static boolean hasContext() {
-        return CONTEXT_HOLDER.get() != null;
-    }
-
-    public static void clear() {
-        CONTEXT_HOLDER.remove();
-    }
-
-    public static String getCurrentTransactionId() {
-        TCCTransactionContext context = getContext();
-        return context != null ? context.getTransactionId() : null;
-    }
-}
-```
-
-### 3.2 TCC参与者接口
-
-```java
-/**
- * TCC参与者接口
- */
-public interface TCCParticipant {
-
-    /**
-     * Try阶段：预留资源，执行业务检查
-     *
-     * @param context TCC事务上下文
-     * @param businessData 业务数据
-     * @return Try执行结果
-     */
-    TCCResult tryExecute(TCCTransactionContext context, Object businessData);
-
-    /**
-     * Confirm阶段：确认执行，完成业务操作
-     *
-     * @param context TCC事务上下文
-     * @return Confirm执行结果
-     */
-    TCCResult confirmExecute(TCCTransactionContext context);
-
-    /**
-     * Cancel阶段：取消预留，释放资源
-     *
-     * @param context TCC事务上下文
-     * @return Cancel执行结果
-     */
-    TCCResult cancelExecute(TCCTransactionContext context);
-
-    /**
-     * 获取参与者标识
-     */
-    String getParticipantId();
-}
-
-/**
- * TCC执行结果
- */
-public class TCCResult {
-    private final boolean success;
-    private final String message;
-    private final String errorCode;
-    private final Object data;
-
-    public TCCResult(boolean success, String message) {
-        this(success, message, null, null);
-    }
-
-    public TCCResult(boolean success, String message, String errorCode, Object data) {
-        this.success = success;
-        this.message = message;
-        this.errorCode = errorCode;
-        this.data = data;
-    }
-
-    public static TCCResult success() {
-        return new TCCResult(true, "Success");
-    }
-
-    public static TCCResult success(String message) {
-        return new TCCResult(true, message);
-    }
-
-    public static TCCResult success(String message, Object data) {
-        return new TCCResult(true, message, null, data);
-    }
-
-    public static TCCResult failure(String message) {
-        return new TCCResult(false, message);
-    }
-
-    public static TCCResult failure(String message, String errorCode) {
-        return new TCCResult(false, message, errorCode, null);
-    }
-
-    // Getters
-    public boolean isSuccess() { return success; }
-    public String getMessage() { return message; }
-    public String getErrorCode() { return errorCode; }
-    public Object getData() { return data; }
-
-    @Override
-    public String toString() {
-        return String.format("TCCResult{success=%s, message='%s', errorCode='%s'}",
-                success, message, errorCode);
-    }
-}
-
-/**
- * TCC事务阶段枚举
- */
-public enum TCCPhase {
-    TRY,        // 尝试阶段
-    CONFIRM,    // 确认阶段
-    CANCEL      // 取消阶段
-}
-
-/**
- * TCC事务状态枚举
- */
-public enum TCCTransactionStatus {
-    TRYING,     // 尝试中
-    CONFIRMING, // 确认中
-    CONFIRMED,  // 已确认
-    CANCELLING, // 取消中
-    CANCELLED,  // 已取消
-    FAILED      // 失败
-}
-```
-
-### 3.3 TCC事务管理器
-
-```java
-import java.util.concurrent.atomic.AtomicInteger;
-
-/**
- * TCC事务管理器
- */
+@Slf4j
 public class TCCTransactionManager {
-    private final String nodeId;
-    private final AtomicInteger transactionCounter = new AtomicInteger(0);
-    private final Map<String, TCCTransaction> activeTransactions = new ConcurrentHashMap<>();
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(3);
-    private final ExecutorService executor = Executors.newCachedThreadPool();
 
-    // 配置参数
-    private final long defaultTimeout = 30000; // 30秒
-    private final int maxRetryAttempts = 3;
-    private final long retryInterval = 5000; // 5秒
+    // 事务存储
+    private final TransactionStore transactionStore;
 
-    public TCCTransactionManager(String nodeId) {
-        this.nodeId = nodeId;
+    // 参与者注册表
+    private final Map<String, TCCParticipant> participants = new ConcurrentHashMap<>();
 
-        // 启动定时任务
-        scheduler.scheduleAtFixedRate(this::timeoutCheck, 10, 10, TimeUnit.SECONDS);
-        scheduler.scheduleAtFixedRate(this::retryCheck, 30, 30, TimeUnit.SECONDS);
-    }
+    // 事务执行线程池
+    private final ExecutorService executorService;
 
-    /**
-     * 开始TCC事务
-     */
-    public TCCTransactionContext beginTransaction() {
-        return beginTransaction(defaultTimeout);
-    }
+    // 事务超时时间（毫秒）
+    private final long transactionTimeout;
 
-    /**
-     * 开始TCC事务（指定超时时间）
-     */
-    public TCCTransactionContext beginTransaction(long timeout) {
-        String transactionId = generateTransactionId();
-        TCCTransactionContext context = new TCCTransactionContext(transactionId, timeout);
+    // 重试策略
+    private final RetryPolicy retryPolicy;
 
-        TCCTransaction transaction = new TCCTransaction(context);
-        activeTransactions.put(transactionId, transaction);
+    // 事务恢复调度器
+    private final ScheduledExecutorService recoveryScheduler;
 
-        TCCTransactionContextHolder.setContext(context);
+    public TCCTransactionManager(TransactionStore transactionStore,
+                                 int threadPoolSize,
+                                 long transactionTimeout) {
+        this.transactionStore = transactionStore;
+        this.executorService = Executors.newFixedThreadPool(threadPoolSize);
+        this.transactionTimeout = transactionTimeout;
+        this.retryPolicy = new ExponentialBackoffRetryPolicy();
+        this.recoveryScheduler = Executors.newScheduledThreadPool(2);
 
-        System.out.println("开始TCC事务: " + transactionId);
-        return context;
+        // 启动事务恢复任务
+        startRecoveryTask();
     }
 
     /**
      * 注册TCC参与者
      */
-    public void registerParticipant(TCCParticipant participant, Object businessData) {
-        TCCTransactionContext context = TCCTransactionContextHolder.getContext();
-        if (context == null) {
-            throw new IllegalStateException("当前没有活跃的TCC事务");
-        }
-
-        TCCTransaction transaction = activeTransactions.get(context.getTransactionId());
-        if (transaction == null) {
-            throw new IllegalStateException("TCC事务不存在: " + context.getTransactionId());
-        }
-
-        transaction.addParticipant(participant, businessData);
-        System.out.println("注册TCC参与者: " + participant.getParticipantId());
+    public void registerParticipant(String name, TCCParticipant participant) {
+        participants.put(name, participant);
+        log.info("Registered TCC participant: {}", name);
     }
 
     /**
-     * 提交TCC事务
+     * 执行TCC事务
      */
-    public boolean commit() {
-        TCCTransactionContext context = TCCTransactionContextHolder.getContext();
-        if (context == null) {
-            throw new IllegalStateException("当前没有活跃的TCC事务");
-        }
+    public <T> CompletableFuture<T> executeTransaction(TCCTransaction<T> transaction) {
+        String transactionId = generateTransactionId();
+        TransactionContext context = new TransactionContext(transactionId);
 
-        return commit(context.getTransactionId());
-    }
+        // 创建事务记录
+        TransactionRecord record = new TransactionRecord();
+        record.setTransactionId(transactionId);
+        record.setStatus(TransactionStatus.TRYING);
+        record.setCreateTime(System.currentTimeMillis());
+        record.setParticipants(new ArrayList<>());
 
-    /**
-     * 提交指定的TCC事务
-     */
-    public boolean commit(String transactionId) {
-        TCCTransaction transaction = activeTransactions.get(transactionId);
-        if (transaction == null) {
-            System.err.println("TCC事务不存在: " + transactionId);
-            return false;
-        }
+        // 保存事务记录
+        transactionStore.save(record);
 
-        try {
-            transaction.setStatus(TCCTransactionStatus.CONFIRMING);
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // 设置事务上下文
+                TransactionContextHolder.set(context);
 
-            // 执行Try阶段
-            boolean trySuccess = executeTryPhase(transaction);
-            if (!trySuccess) {
-                // Try阶段失败，执行Cancel
-                executeCancel(transactionId);
-                return false;
+                // 执行Try阶段
+                log.info("Starting Try phase for transaction: {}", transactionId);
+                List<ParticipantRecord> tryResults = executeTryPhase(transaction, context, record);
+
+                if (allTrySuccess(tryResults)) {
+                    // Try全部成功，执行Confirm阶段
+                    log.info("Try phase succeeded, starting Confirm phase: {}", transactionId);
+                    record.setStatus(TransactionStatus.CONFIRMING);
+                    transactionStore.update(record);
+
+                    executeConfirmPhase(tryResults, context, record);
+
+                    record.setStatus(TransactionStatus.CONFIRMED);
+                    transactionStore.update(record);
+
+                    log.info("Transaction confirmed successfully: {}", transactionId);
+                    return transaction.getResult();
+                } else {
+                    // Try存在失败，执行Cancel阶段
+                    log.info("Try phase failed, starting Cancel phase: {}", transactionId);
+                    record.setStatus(TransactionStatus.CANCELING);
+                    transactionStore.update(record);
+
+                    executeCancelPhase(tryResults, context, record);
+
+                    record.setStatus(TransactionStatus.CANCELED);
+                    transactionStore.update(record);
+
+                    log.info("Transaction canceled successfully: {}", transactionId);
+                    throw new TCCTransactionException("Transaction failed in Try phase");
+                }
+            } catch (Exception e) {
+                log.error("Transaction failed: {}", transactionId, e);
+                handleTransactionFailure(record, context, e);
+                throw new TCCTransactionException("Transaction execution failed", e);
+            } finally {
+                TransactionContextHolder.clear();
             }
-
-            // 执行Confirm阶段
-            boolean confirmSuccess = executeConfirmPhase(transaction);
-            if (confirmSuccess) {
-                transaction.setStatus(TCCTransactionStatus.CONFIRMED);
-                activeTransactions.remove(transactionId);
-                System.out.println("TCC事务提交成功: " + transactionId);
-                return true;
-            } else {
-                transaction.setStatus(TCCTransactionStatus.FAILED);
-                System.err.println("TCC事务Confirm阶段失败: " + transactionId);
-                return false;
-            }
-
-        } catch (Exception e) {
-            transaction.setStatus(TCCTransactionStatus.FAILED);
-            System.err.println("TCC事务提交异常: " + transactionId + ", " + e.getMessage());
-            return false;
-        } finally {
-            TCCTransactionContextHolder.clear();
-        }
-    }
-
-    /**
-     * 回滚TCC事务
-     */
-    public boolean rollback() {
-        TCCTransactionContext context = TCCTransactionContextHolder.getContext();
-        if (context == null) {
-            throw new IllegalStateException("当前没有活跃的TCC事务");
-        }
-
-        return rollback(context.getTransactionId());
-    }
-
-    /**
-     * 回滚指定的TCC事务
-     */
-    public boolean rollback(String transactionId) {
-        return executeCancel(transactionId);
-    }
-
-    /**
-     * 执行Cancel操作
-     */
-    private boolean executeCancel(String transactionId) {
-        TCCTransaction transaction = activeTransactions.get(transactionId);
-        if (transaction == null) {
-            System.err.println("TCC事务不存在: " + transactionId);
-            return false;
-        }
-
-        try {
-            transaction.setStatus(TCCTransactionStatus.CANCELLING);
-
-            boolean cancelSuccess = executeCancelPhase(transaction);
-            if (cancelSuccess) {
-                transaction.setStatus(TCCTransactionStatus.CANCELLED);
-                activeTransactions.remove(transactionId);
-                System.out.println("TCC事务回滚成功: " + transactionId);
-                return true;
-            } else {
-                transaction.setStatus(TCCTransactionStatus.FAILED);
-                System.err.println("TCC事务Cancel阶段失败: " + transactionId);
-                return false;
-            }
-
-        } catch (Exception e) {
-            transaction.setStatus(TCCTransactionStatus.FAILED);
-            System.err.println("TCC事务回滚异常: " + transactionId + ", " + e.getMessage());
-            return false;
-        } finally {
-            TCCTransactionContextHolder.clear();
-        }
+        }, executorService);
     }
 
     /**
      * 执行Try阶段
      */
-    private boolean executeTryPhase(TCCTransaction transaction) {
-        System.out.println("执行Try阶段: " + transaction.getContext().getTransactionId());
+    private List<ParticipantRecord> executeTryPhase(TCCTransaction<?> transaction,
+                                                     TransactionContext context,
+                                                     TransactionRecord record) {
+        List<ParticipantRecord> results = new ArrayList<>();
+        List<CompletableFuture<ParticipantRecord>> futures = new ArrayList<>();
 
-        List<CompletableFuture<TCCResult>> futures = new ArrayList<>();
+        for (TCCAction action : transaction.getActions()) {
+            CompletableFuture<ParticipantRecord> future = CompletableFuture.supplyAsync(() -> {
+                ParticipantRecord participant = new ParticipantRecord();
+                participant.setParticipantName(action.getParticipantName());
+                participant.setActionId(UUID.randomUUID().toString());
 
-        for (TCCParticipantInfo participantInfo : transaction.getParticipants()) {
-            CompletableFuture<TCCResult> future = CompletableFuture.supplyAsync(() -> {
                 try {
-                    return participantInfo.getParticipant().tryExecute(
-                            transaction.getContext(),
-                            participantInfo.getBusinessData()
-                    );
+                    TCCParticipant tccParticipant = participants.get(action.getParticipantName());
+                    if (tccParticipant == null) {
+                        throw new IllegalStateException("Participant not found: " + action.getParticipantName());
+                    }
+
+                    // 执行Try操作
+                    Object result = tccParticipant.doTry(context, action.getRequest());
+
+                    participant.setTryResult(result);
+                    participant.setStatus(ParticipantStatus.TRY_SUCCESS);
+                    participant.setTryTime(System.currentTimeMillis());
+
+                    log.info("Try succeeded for participant: {}", action.getParticipantName());
                 } catch (Exception e) {
-                    System.err.println("Try阶段异常: " + participantInfo.getParticipant().getParticipantId() +
-                                     ", " + e.getMessage());
-                    return TCCResult.failure("Try阶段执行异常: " + e.getMessage());
+                    participant.setStatus(ParticipantStatus.TRY_FAILED);
+                    participant.setErrorMessage(e.getMessage());
+                    log.error("Try failed for participant: {}", action.getParticipantName(), e);
                 }
-            }, executor);
+
+                return participant;
+            }, executorService);
 
             futures.add(future);
         }
 
-        // 等待所有Try完成
+        // 等待所有Try操作完成
         try {
-            List<TCCResult> results = futures.stream()
-                    .map(future -> {
-                        try {
-                            return future.get(10, TimeUnit.SECONDS);
-                        } catch (Exception e) {
-                            return TCCResult.failure("Try阶段超时");
-                        }
-                    })
-                    .collect(Collectors.toList());
+            CompletableFuture<Void> allFutures = CompletableFuture.allOf(
+                futures.toArray(new CompletableFuture[0])
+            );
+            allFutures.get(transactionTimeout, TimeUnit.MILLISECONDS);
 
-            // 检查是否所有Try都成功
-            boolean allSuccess = results.stream().allMatch(TCCResult::isSuccess);
-
-            if (!allSuccess) {
-                System.err.println("Try阶段存在失败:");
-                for (int i = 0; i < results.size(); i++) {
-                    TCCResult result = results.get(i);
-                    if (!result.isSuccess()) {
-                        TCCParticipantInfo participantInfo = transaction.getParticipants().get(i);
-                        System.err.println("- " + participantInfo.getParticipant().getParticipantId() +
-                                         ": " + result.getMessage());
-                    }
-                }
+            for (CompletableFuture<ParticipantRecord> future : futures) {
+                ParticipantRecord result = future.get();
+                results.add(result);
+                record.getParticipants().add(result);
             }
 
-            return allSuccess;
-
+            transactionStore.update(record);
         } catch (Exception e) {
-            System.err.println("Try阶段执行异常: " + e.getMessage());
-            return false;
+            log.error("Error waiting for Try phase completion", e);
+            throw new TCCTransactionException("Try phase execution timeout or failed", e);
         }
+
+        return results;
     }
 
     /**
      * 执行Confirm阶段
      */
-    private boolean executeConfirmPhase(TCCTransaction transaction) {
-        System.out.println("执行Confirm阶段: " + transaction.getContext().getTransactionId());
+    private void executeConfirmPhase(List<ParticipantRecord> participants,
+                                      TransactionContext context,
+                                      TransactionRecord record) {
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-        List<CompletableFuture<TCCResult>> futures = new ArrayList<>();
+        for (ParticipantRecord participant : participants) {
+            if (participant.getStatus() == ParticipantStatus.TRY_SUCCESS) {
+                CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                    executeWithRetry(() -> {
+                        TCCParticipant tccParticipant = this.participants.get(participant.getParticipantName());
+                        tccParticipant.doConfirm(context, participant.getTryResult());
+                        participant.setStatus(ParticipantStatus.CONFIRMED);
+                        participant.setConfirmTime(System.currentTimeMillis());
+                        log.info("Confirm succeeded for participant: {}", participant.getParticipantName());
+                    }, "Confirm", participant.getParticipantName());
+                }, executorService);
 
-        for (TCCParticipantInfo participantInfo : transaction.getParticipants()) {
-            CompletableFuture<TCCResult> future = CompletableFuture.supplyAsync(() -> {
-                try {
-                    return participantInfo.getParticipant().confirmExecute(transaction.getContext());
-                } catch (Exception e) {
-                    System.err.println("Confirm阶段异常: " + participantInfo.getParticipant().getParticipantId() +
-                                     ", " + e.getMessage());
-                    return TCCResult.failure("Confirm阶段执行异常: " + e.getMessage());
-                }
-            }, executor);
-
-            futures.add(future);
+                futures.add(future);
+            }
         }
 
-        // 等待所有Confirm完成
+        // 等待所有Confirm操作完成
         try {
-            List<TCCResult> results = futures.stream()
-                    .map(future -> {
-                        try {
-                            return future.get(10, TimeUnit.SECONDS);
-                        } catch (Exception e) {
-                            return TCCResult.failure("Confirm阶段超时");
-                        }
-                    })
-                    .collect(Collectors.toList());
+            CompletableFuture<Void> allFutures = CompletableFuture.allOf(
+                futures.toArray(new CompletableFuture[0])
+            );
+            allFutures.get(transactionTimeout, TimeUnit.MILLISECONDS);
 
-            // 检查是否所有Confirm都成功
-            boolean allSuccess = results.stream().allMatch(TCCResult::isSuccess);
-
-            if (!allSuccess) {
-                System.err.println("Confirm阶段存在失败:");
-                for (int i = 0; i < results.size(); i++) {
-                    TCCResult result = results.get(i);
-                    if (!result.isSuccess()) {
-                        TCCParticipantInfo participantInfo = transaction.getParticipants().get(i);
-                        System.err.println("- " + participantInfo.getParticipant().getParticipantId() +
-                                         ": " + result.getMessage());
-                    }
-                }
-            }
-
-            return allSuccess;
-
+            transactionStore.update(record);
         } catch (Exception e) {
-            System.err.println("Confirm阶段执行异常: " + e.getMessage());
-            return false;
+            log.error("Error during Confirm phase", e);
+            // Confirm阶段失败需要持续重试
+            scheduleRetry(record, TransactionStatus.CONFIRMING);
         }
     }
 
     /**
      * 执行Cancel阶段
      */
-    private boolean executeCancelPhase(TCCTransaction transaction) {
-        System.out.println("执行Cancel阶段: " + transaction.getContext().getTransactionId());
+    private void executeCancelPhase(List<ParticipantRecord> participants,
+                                     TransactionContext context,
+                                     TransactionRecord record) {
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-        List<CompletableFuture<TCCResult>> futures = new ArrayList<>();
+        for (ParticipantRecord participant : participants) {
+            if (participant.getStatus() == ParticipantStatus.TRY_SUCCESS) {
+                CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                    executeWithRetry(() -> {
+                        TCCParticipant tccParticipant = this.participants.get(participant.getParticipantName());
+                        tccParticipant.doCancel(context, participant.getTryResult());
+                        participant.setStatus(ParticipantStatus.CANCELED);
+                        participant.setCancelTime(System.currentTimeMillis());
+                        log.info("Cancel succeeded for participant: {}", participant.getParticipantName());
+                    }, "Cancel", participant.getParticipantName());
+                }, executorService);
 
-        for (TCCParticipantInfo participantInfo : transaction.getParticipants()) {
-            CompletableFuture<TCCResult> future = CompletableFuture.supplyAsync(() -> {
-                try {
-                    return participantInfo.getParticipant().cancelExecute(transaction.getContext());
-                } catch (Exception e) {
-                    System.err.println("Cancel阶段异常: " + participantInfo.getParticipant().getParticipantId() +
-                                     ", " + e.getMessage());
-                    return TCCResult.failure("Cancel阶段执行异常: " + e.getMessage());
-                }
-            }, executor);
-
-            futures.add(future);
+                futures.add(future);
+            }
         }
 
-        // 等待所有Cancel完成
+        // 等待所有Cancel操作完成
         try {
-            List<TCCResult> results = futures.stream()
-                    .map(future -> {
-                        try {
-                            return future.get(10, TimeUnit.SECONDS);
-                        } catch (Exception e) {
-                            return TCCResult.failure("Cancel阶段超时");
-                        }
-                    })
-                    .collect(Collectors.toList());
+            CompletableFuture<Void> allFutures = CompletableFuture.allOf(
+                futures.toArray(new CompletableFuture[0])
+            );
+            allFutures.get(transactionTimeout, TimeUnit.MILLISECONDS);
 
-            // Cancel阶段要求最大努力，即使部分失败也认为成功
-            long successCount = results.stream().mapToLong(result -> result.isSuccess() ? 1 : 0).sum();
-            System.out.println("Cancel阶段完成: " + successCount + "/" + results.size() + " 成功");
-
-            return true;
-
+            transactionStore.update(record);
         } catch (Exception e) {
-            System.err.println("Cancel阶段执行异常: " + e.getMessage());
-            return false;
+            log.error("Error during Cancel phase", e);
+            // Cancel阶段失败需要持续重试
+            scheduleRetry(record, TransactionStatus.CANCELING);
         }
     }
 
     /**
-     * 超时检查
+     * 带重试的执行
      */
-    private void timeoutCheck() {
-        List<String> timeoutTransactions = new ArrayList<>();
+    private void executeWithRetry(Runnable action, String phase, String participant) {
+        int maxRetries = retryPolicy.getMaxRetries();
+        long delay = retryPolicy.getInitialDelay();
 
-        for (TCCTransaction transaction : activeTransactions.values()) {
-            if (transaction.getContext().isTimeout()) {
-                timeoutTransactions.add(transaction.getContext().getTransactionId());
+        for (int i = 0; i <= maxRetries; i++) {
+            try {
+                action.run();
+                return; // 成功执行
+            } catch (Exception e) {
+                if (i == maxRetries) {
+                    log.error("{} failed after {} retries for participant: {}",
+                              phase, maxRetries, participant, e);
+                    throw new TCCTransactionException(phase + " failed after max retries", e);
+                }
+
+                log.warn("{} failed, retrying... (attempt {}/{}) for participant: {}",
+                         phase, i + 1, maxRetries, participant);
+
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new TCCTransactionException("Retry interrupted", ie);
+                }
+
+                delay = retryPolicy.getNextDelay(delay);
             }
-        }
-
-        for (String transactionId : timeoutTransactions) {
-            System.out.println("TCC事务超时，自动回滚: " + transactionId);
-            executeCancel(transactionId);
         }
     }
 
     /**
-     * 重试检查
+     * 判断所有Try是否成功
      */
-    private void retryCheck() {
-        for (TCCTransaction transaction : activeTransactions.values()) {
-            if (transaction.getStatus() == TCCTransactionStatus.FAILED &&
-                transaction.getRetryCount() < maxRetryAttempts &&
-                System.currentTimeMillis() - transaction.getLastRetryTime() > retryInterval) {
+    private boolean allTrySuccess(List<ParticipantRecord> results) {
+        return results.stream().allMatch(r -> r.getStatus() == ParticipantStatus.TRY_SUCCESS);
+    }
 
-                System.out.println("重试TCC事务: " + transaction.getContext().getTransactionId());
-                transaction.incrementRetryCount();
-                transaction.setLastRetryTime(System.currentTimeMillis());
+    /**
+     * 处理事务失败
+     */
+    private void handleTransactionFailure(TransactionRecord record,
+                                           TransactionContext context,
+                                           Exception e) {
+        try {
+            record.setStatus(TransactionStatus.FAILED);
+            record.setErrorMessage(e.getMessage());
+            transactionStore.update(record);
 
-                // 重新尝试提交
-                executor.submit(() -> commit(transaction.getContext().getTransactionId()));
+            // 尝试执行补偿
+            if (record.getStatus() == TransactionStatus.TRYING ||
+                record.getStatus() == TransactionStatus.CONFIRMING) {
+                scheduleRetry(record, TransactionStatus.CANCELING);
+            }
+        } catch (Exception ex) {
+            log.error("Failed to handle transaction failure", ex);
+        }
+    }
+
+    /**
+     * 调度重试任务
+     */
+    private void scheduleRetry(TransactionRecord record, TransactionStatus targetStatus) {
+        recoveryScheduler.schedule(() -> {
+            try {
+                recoverTransaction(record, targetStatus);
+            } catch (Exception e) {
+                log.error("Failed to recover transaction: {}", record.getTransactionId(), e);
+            }
+        }, retryPolicy.getInitialDelay(), TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * 恢复事务
+     */
+    private void recoverTransaction(TransactionRecord record, TransactionStatus targetStatus) {
+        TransactionContext context = new TransactionContext(record.getTransactionId());
+
+        if (targetStatus == TransactionStatus.CONFIRMING) {
+            executeConfirmPhase(record.getParticipants(), context, record);
+        } else if (targetStatus == TransactionStatus.CANCELING) {
+            executeCancelPhase(record.getParticipants(), context, record);
+        }
+    }
+
+    /**
+     * 启动事务恢复任务
+     */
+    private void startRecoveryTask() {
+        recoveryScheduler.scheduleWithFixedDelay(() -> {
+            try {
+                recoverPendingTransactions();
+            } catch (Exception e) {
+                log.error("Error in recovery task", e);
+            }
+        }, 30, 60, TimeUnit.SECONDS);
+    }
+
+    /**
+     * 恢复未完成的事务
+     */
+    private void recoverPendingTransactions() {
+        List<TransactionRecord> pendingTransactions = transactionStore.findPendingTransactions();
+
+        for (TransactionRecord record : pendingTransactions) {
+            if (isTimeout(record)) {
+                log.info("Recovering timeout transaction: {}", record.getTransactionId());
+
+                if (record.getStatus() == TransactionStatus.TRYING) {
+                    // Try阶段超时，执行Cancel
+                    scheduleRetry(record, TransactionStatus.CANCELING);
+                } else if (record.getStatus() == TransactionStatus.CONFIRMING) {
+                    // Confirm阶段超时，继续Confirm
+                    scheduleRetry(record, TransactionStatus.CONFIRMING);
+                } else if (record.getStatus() == TransactionStatus.CANCELING) {
+                    // Cancel阶段超时，继续Cancel
+                    scheduleRetry(record, TransactionStatus.CANCELING);
+                }
             }
         }
+    }
+
+    /**
+     * 判断事务是否超时
+     */
+    private boolean isTimeout(TransactionRecord record) {
+        return System.currentTimeMillis() - record.getCreateTime() > transactionTimeout;
     }
 
     /**
      * 生成事务ID
      */
     private String generateTransactionId() {
-        return nodeId + "-" + System.currentTimeMillis() + "-" + transactionCounter.incrementAndGet();
-    }
-
-    /**
-     * 获取活跃事务统计
-     */
-    public TCCTransactionManagerStats getStats() {
-        Map<TCCTransactionStatus, Long> statusCount = activeTransactions.values().stream()
-                .collect(Collectors.groupingBy(TCCTransaction::getStatus, Collectors.counting()));
-
-        return new TCCTransactionManagerStats(
-                nodeId,
-                transactionCounter.get(),
-                activeTransactions.size(),
-                statusCount
-        );
+        return "TCC-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString();
     }
 
     /**
      * 关闭事务管理器
      */
     public void shutdown() {
-        // 回滚所有活跃事务
-        for (String transactionId : new ArrayList<>(activeTransactions.keySet())) {
-            executeCancel(transactionId);
-        }
-
-        scheduler.shutdown();
-        executor.shutdown();
+        executorService.shutdown();
+        recoveryScheduler.shutdown();
 
         try {
-            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
-                scheduler.shutdownNow();
+            if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
+                executorService.shutdownNow();
             }
-            if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
-                executor.shutdownNow();
+            if (!recoveryScheduler.awaitTermination(60, TimeUnit.SECONDS)) {
+                recoveryScheduler.shutdownNow();
             }
         } catch (InterruptedException e) {
-            scheduler.shutdownNow();
-            executor.shutdownNow();
+            executorService.shutdownNow();
+            recoveryScheduler.shutdownNow();
             Thread.currentThread().interrupt();
         }
-
-        System.out.println("TCC事务管理器已关闭: " + nodeId);
-    }
-}
-
-/**
- * TCC事务
- */
-class TCCTransaction {
-    private final TCCTransactionContext context;
-    private volatile TCCTransactionStatus status;
-    private final List<TCCParticipantInfo> participants = new ArrayList<>();
-    private volatile int retryCount = 0;
-    private volatile long lastRetryTime = 0;
-
-    public TCCTransaction(TCCTransactionContext context) {
-        this.context = context;
-        this.status = TCCTransactionStatus.TRYING;
-    }
-
-    public void addParticipant(TCCParticipant participant, Object businessData) {
-        participants.add(new TCCParticipantInfo(participant, businessData));
-    }
-
-    public void incrementRetryCount() {
-        this.retryCount++;
-    }
-
-    // Getters and Setters
-    public TCCTransactionContext getContext() { return context; }
-    public TCCTransactionStatus getStatus() { return status; }
-    public void setStatus(TCCTransactionStatus status) { this.status = status; }
-    public List<TCCParticipantInfo> getParticipants() { return new ArrayList<>(participants); }
-    public int getRetryCount() { return retryCount; }
-    public long getLastRetryTime() { return lastRetryTime; }
-    public void setLastRetryTime(long lastRetryTime) { this.lastRetryTime = lastRetryTime; }
-}
-
-/**
- * TCC参与者信息
- */
-class TCCParticipantInfo {
-    private final TCCParticipant participant;
-    private final Object businessData;
-
-    public TCCParticipantInfo(TCCParticipant participant, Object businessData) {
-        this.participant = participant;
-        this.businessData = businessData;
-    }
-
-    public TCCParticipant getParticipant() { return participant; }
-    public Object getBusinessData() { return businessData; }
-}
-
-/**
- * TCC事务管理器统计信息
- */
-class TCCTransactionManagerStats {
-    private final String nodeId;
-    private final long totalTransactions;
-    private final int activeTransactions;
-    private final Map<TCCTransactionStatus, Long> statusDistribution;
-
-    public TCCTransactionManagerStats(String nodeId, long totalTransactions, int activeTransactions,
-                                    Map<TCCTransactionStatus, Long> statusDistribution) {
-        this.nodeId = nodeId;
-        this.totalTransactions = totalTransactions;
-        this.activeTransactions = activeTransactions;
-        this.statusDistribution = new HashMap<>(statusDistribution);
-    }
-
-    // Getters
-    public String getNodeId() { return nodeId; }
-    public long getTotalTransactions() { return totalTransactions; }
-    public int getActiveTransactions() { return activeTransactions; }
-    public Map<TCCTransactionStatus, Long> getStatusDistribution() { return new HashMap<>(statusDistribution); }
-
-    @Override
-    public String toString() {
-        return String.format("TCCTransactionManagerStats{nodeId='%s', total=%d, active=%d, status=%s}",
-                nodeId, totalTransactions, activeTransactions, statusDistribution);
     }
 }
 ```
 
-## 4. TCC参与者具体实现
-
-### 4.1 账户服务TCC参与者
+### 3.2 事务上下文管理
 
 ```java
-import java.math.BigDecimal;
-import java.sql.*;
-
 /**
- * 账户服务TCC参与者
+ * 事务上下文
  */
-public class AccountServiceTCCParticipant implements TCCParticipant {
-    private final String participantId;
-    private final String jdbcUrl;
-    private final String username;
-    private final String password;
+@Data
+public class TransactionContext {
+    private String transactionId;
+    private Map<String, Object> attributes = new HashMap<>();
+    private long startTime;
+    private long timeout;
 
-    public AccountServiceTCCParticipant(String participantId, String jdbcUrl, String username, String password) {
-        this.participantId = participantId;
-        this.jdbcUrl = jdbcUrl;
-        this.username = username;
-        this.password = password;
+    public TransactionContext(String transactionId) {
+        this.transactionId = transactionId;
+        this.startTime = System.currentTimeMillis();
+        this.timeout = 60000; // 默认60秒超时
     }
 
-    @Override
-    public TCCResult tryExecute(TCCTransactionContext context, Object businessData) {
-        if (!(businessData instanceof AccountTransferRequest)) {
-            return TCCResult.failure("业务数据类型错误");
-        }
-
-        AccountTransferRequest request = (AccountTransferRequest) businessData;
-
-        try (Connection conn = getConnection()) {
-            // 检查账户余额是否足够
-            BigDecimal balance = getAccountBalance(conn, request.getFromAccount());
-            if (balance.compareTo(request.getAmount()) < 0) {
-                return TCCResult.failure("账户余额不足");
-            }
-
-            // 冻结转账金额
-            boolean freezeSuccess = freezeAmount(conn, request.getFromAccount(), request.getAmount(),
-                                               context.getTransactionId());
-            if (!freezeSuccess) {
-                return TCCResult.failure("冻结金额失败");
-            }
-
-            System.out.println("Try阶段成功 - 账户: " + request.getFromAccount() +
-                              ", 冻结金额: " + request.getAmount());
-            return TCCResult.success("Try阶段成功");
-
-        } catch (SQLException e) {
-            System.err.println("Try阶段异常: " + e.getMessage());
-            return TCCResult.failure("Try阶段执行异常: " + e.getMessage());
-        }
+    public void setAttribute(String key, Object value) {
+        attributes.put(key, value);
     }
 
-    @Override
-    public TCCResult confirmExecute(TCCTransactionContext context) {
-        try (Connection conn = getConnection()) {
-            // 从事务上下文获取业务数据
-            AccountTransferRequest request = getBusinessDataFromContext(context);
-            if (request == null) {
-                return TCCResult.failure("无法获取业务数据");
-            }
-
-            // 执行实际转账：从冻结金额中扣除
-            boolean deductSuccess = deductFrozenAmount(conn, request.getFromAccount(),
-                                                     request.getAmount(), context.getTransactionId());
-            if (!deductSuccess) {
-                return TCCResult.failure("扣除冻结金额失败");
-            }
-
-            // 向目标账户增加金额
-            boolean addSuccess = addAmount(conn, request.getToAccount(), request.getAmount());
-            if (!addSuccess) {
-                return TCCResult.failure("增加目标账户金额失败");
-            }
-
-            System.out.println("Confirm阶段成功 - 从账户: " + request.getFromAccount() +
-                              " 向账户: " + request.getToAccount() +
-                              " 转账: " + request.getAmount());
-            return TCCResult.success("Confirm阶段成功");
-
-        } catch (SQLException e) {
-            System.err.println("Confirm阶段异常: " + e.getMessage());
-            return TCCResult.failure("Confirm阶段执行异常: " + e.getMessage());
-        }
+    public Object getAttribute(String key) {
+        return attributes.get(key);
     }
 
-    @Override
-    public TCCResult cancelExecute(TCCTransactionContext context) {
-        try (Connection conn = getConnection()) {
-            // 释放冻结的金额
-            boolean unfreezeSuccess = unfreezeAmount(conn, context.getTransactionId());
-            if (unfreezeSuccess) {
-                System.out.println("Cancel阶段成功 - 释放冻结金额: " + context.getTransactionId());
-                return TCCResult.success("Cancel阶段成功");
-            } else {
-                System.err.println("Cancel阶段失败 - 释放冻结金额失败: " + context.getTransactionId());
-                return TCCResult.failure("释放冻结金额失败");
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Cancel阶段异常: " + e.getMessage());
-            return TCCResult.failure("Cancel阶段执行异常: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 获取数据库连接
-     */
-    private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(jdbcUrl, username, password);
-    }
-
-    /**
-     * 获取账户余额
-     */
-    private BigDecimal getAccountBalance(Connection conn, String accountId) throws SQLException {
-        String sql = "SELECT balance FROM accounts WHERE account_id = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, accountId);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getBigDecimal("balance");
-                } else {
-                    throw new SQLException("账户不存在: " + accountId);
-                }
-            }
-        }
-    }
-
-    /**
-     * 冻结金额
-     */
-    private boolean freezeAmount(Connection conn, String accountId, BigDecimal amount, String transactionId)
-            throws SQLException {
-        // 插入冻结记录
-        String insertSql = "INSERT INTO account_freeze (account_id, amount, transaction_id, create_time) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement pstmt = conn.prepareStatement(insertSql)) {
-            pstmt.setString(1, accountId);
-            pstmt.setBigDecimal(2, amount);
-            pstmt.setString(3, transactionId);
-            pstmt.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
-
-            int result = pstmt.executeUpdate();
-            return result > 0;
-        }
-    }
-
-    /**
-     * 扣除冻结金额
-     */
-    private boolean deductFrozenAmount(Connection conn, String accountId, BigDecimal amount, String transactionId)
-            throws SQLException {
-        conn.setAutoCommit(false);
-        try {
-            // 从账户余额中扣除
-            String updateBalanceSql = "UPDATE accounts SET balance = balance - ? WHERE account_id = ?";
-            try (PreparedStatement pstmt = conn.prepareStatement(updateBalanceSql)) {
-                pstmt.setBigDecimal(1, amount);
-                pstmt.setString(2, accountId);
-                pstmt.executeUpdate();
-            }
-
-            // 删除冻结记录
-            String deleteFreezeS
-= "DELETE FROM account_freeze WHERE account_id = ? AND transaction_id = ?";
-            try (PreparedStatement pstmt = conn.prepareStatement(deleteFreezeSql)) {
-                pstmt.setString(1, accountId);
-                pstmt.setString(2, transactionId);
-                pstmt.executeUpdate();
-            }
-
-            conn.commit();
-            return true;
-
-        } catch (SQLException e) {
-            conn.rollback();
-            throw e;
-        } finally {
-            conn.setAutoCommit(true);
-        }
-    }
-
-    /**
-     * 向账户增加金额
-     */
-    private boolean addAmount(Connection conn, String accountId, BigDecimal amount) throws SQLException {
-        String sql = "UPDATE accounts SET balance = balance + ? WHERE account_id = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setBigDecimal(1, amount);
-            pstmt.setString(2, accountId);
-
-            int result = pstmt.executeUpdate();
-            return result > 0;
-        }
-    }
-
-    /**
-     * 释放冻结金额
-     */
-    private boolean unfreezeAmount(Connection conn, String transactionId) throws SQLException {
-        String sql = "DELETE FROM account_freeze WHERE transaction_id = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, transactionId);
-
-            int result = pstmt.executeUpdate();
-            return result >= 0; // 删除0行也算成功（可能已经被处理过）
-        }
-    }
-
-    /**
-     * 从上下文获取业务数据
-     */
-    private AccountTransferRequest getBusinessDataFromContext(TCCTransactionContext context) {
-        // 在实际实现中，应该从持久化存储中获取业务数据
-        // 这里简化处理，从上下文属性中获取
-        return context.getAttribute("businessData", AccountTransferRequest.class);
-    }
-
-    @Override
-    public String getParticipantId() {
-        return participantId;
+    public boolean isTimeout() {
+        return System.currentTimeMillis() - startTime > timeout;
     }
 }
 
 /**
- * 账户转账请求
+ * 事务上下文持有者
  */
-class AccountTransferRequest {
-    private final String fromAccount;
-    private final String toAccount;
-    private final BigDecimal amount;
-    private final String description;
+public class TransactionContextHolder {
+    private static final ThreadLocal<TransactionContext> contextHolder = new ThreadLocal<>();
 
-    public AccountTransferRequest(String fromAccount, String toAccount, BigDecimal amount, String description) {
-        this.fromAccount = fromAccount;
-        this.toAccount = toAccount;
-        this.amount = amount;
-        this.description = description;
+    public static void set(TransactionContext context) {
+        contextHolder.set(context);
     }
 
-    // Getters
-    public String getFromAccount() { return fromAccount; }
-    public String getToAccount() { return toAccount; }
-    public BigDecimal getAmount() { return amount; }
-    public String getDescription() { return description; }
+    public static TransactionContext get() {
+        return contextHolder.get();
+    }
 
-    @Override
-    public String toString() {
-        return String.format("AccountTransferRequest{from='%s', to='%s', amount=%s, desc='%s'}",
-                fromAccount, toAccount, amount, description);
+    public static void clear() {
+        contextHolder.remove();
+    }
+
+    public static String getCurrentTransactionId() {
+        TransactionContext context = get();
+        return context != null ? context.getTransactionId() : null;
     }
 }
 ```
 
-### 4.2 库存服务TCC参与者
+## 4. TCC参与者实现
+
+### 4.1 TCC参与者接口
 
 ```java
 /**
- * 库存服务TCC参与者
+ * TCC参与者接口
  */
-public class InventoryServiceTCCParticipant implements TCCParticipant {
-    private final String participantId;
-    private final String jdbcUrl;
-    private final String username;
-    private final String password;
+public interface TCCParticipant<T, R> {
+    /**
+     * Try阶段：预留资源
+     * @param context 事务上下文
+     * @param request 请求参数
+     * @return Try结果，用于Confirm/Cancel阶段
+     */
+    R doTry(TransactionContext context, T request) throws TCCException;
 
-    public InventoryServiceTCCParticipant(String participantId, String jdbcUrl, String username, String password) {
-        this.participantId = participantId;
-        this.jdbcUrl = jdbcUrl;
-        this.username = username;
-        this.password = password;
+    /**
+     * Confirm阶段：确认执行
+     * @param context 事务上下文
+     * @param tryResult Try阶段的结果
+     */
+    void doConfirm(TransactionContext context, R tryResult) throws TCCException;
+
+    /**
+     * Cancel阶段：补偿回滚
+     * @param context 事务上下文
+     * @param tryResult Try阶段的结果
+     */
+    void doCancel(TransactionContext context, R tryResult) throws TCCException;
+}
+```
+
+### 4.2 库存服务TCC实现
+
+```java
+/**
+ * 库存服务TCC参与者实现
+ */
+@Component
+@Slf4j
+public class InventoryTCCParticipant implements TCCParticipant<InventoryRequest, InventoryReservation> {
+
+    @Autowired
+    private InventoryRepository inventoryRepository;
+
+    @Autowired
+    private ReservationRepository reservationRepository;
+
+    @Override
+    @Transactional
+    public InventoryReservation doTry(TransactionContext context, InventoryRequest request) {
+        log.info("Inventory Try phase - Transaction: {}, Product: {}, Quantity: {}",
+                 context.getTransactionId(), request.getProductId(), request.getQuantity());
+
+        // 1. 检查库存是否充足
+        Inventory inventory = inventoryRepository.findByProductId(request.getProductId())
+            .orElseThrow(() -> new TCCException("Product not found: " + request.getProductId()));
+
+        if (inventory.getAvailable() < request.getQuantity()) {
+            throw new TCCException("Insufficient inventory, available: " +
+                                   inventory.getAvailable() + ", requested: " + request.getQuantity());
+        }
+
+        // 2. 预留库存
+        inventory.setAvailable(inventory.getAvailable() - request.getQuantity());
+        inventory.setReserved(inventory.getReserved() + request.getQuantity());
+        inventoryRepository.save(inventory);
+
+        // 3. 创建预留记录
+        InventoryReservation reservation = new InventoryReservation();
+        reservation.setReservationId(UUID.randomUUID().toString());
+        reservation.setTransactionId(context.getTransactionId());
+        reservation.setProductId(request.getProductId());
+        reservation.setQuantity(request.getQuantity());
+        reservation.setStatus(ReservationStatus.RESERVED);
+        reservation.setCreateTime(new Date());
+        reservation.setExpireTime(new Date(System.currentTimeMillis() + 600000)); // 10分钟过期
+
+        reservationRepository.save(reservation);
+
+        log.info("Inventory reserved successfully - Reservation: {}", reservation.getReservationId());
+        return reservation;
     }
 
     @Override
-    public TCCResult tryExecute(TCCTransactionContext context, Object businessData) {
-        if (!(businessData instanceof InventoryReservationRequest)) {
-            return TCCResult.failure("业务数据类型错误");
+    @Transactional
+    public void doConfirm(TransactionContext context, InventoryReservation reservation) {
+        log.info("Inventory Confirm phase - Transaction: {}, Reservation: {}",
+                 context.getTransactionId(), reservation.getReservationId());
+
+        // 1. 查找预留记录
+        InventoryReservation existingReservation = reservationRepository
+            .findById(reservation.getReservationId())
+            .orElseThrow(() -> new TCCException("Reservation not found: " + reservation.getReservationId()));
+
+        // 幂等性检查
+        if (existingReservation.getStatus() == ReservationStatus.CONFIRMED) {
+            log.warn("Reservation already confirmed: {}", reservation.getReservationId());
+            return;
         }
 
-        InventoryReservationRequest request = (InventoryReservationRequest) businessData;
+        // 2. 确认扣减库存
+        Inventory inventory = inventoryRepository.findByProductId(reservation.getProductId())
+            .orElseThrow(() -> new TCCException("Product not found: " + reservation.getProductId()));
 
-        try (Connection conn = getConnection()) {
-            // 检查库存是否足够
-            int availableQuantity = getAvailableQuantity(conn, request.getProductId());
-            if (availableQuantity < request.getQuantity()) {
-                return TCCResult.failure("库存不足");
-            }
+        inventory.setReserved(inventory.getReserved() - reservation.getQuantity());
+        inventory.setTotal(inventory.getTotal() - reservation.getQuantity());
+        inventoryRepository.save(inventory);
 
-            // 预留库存
-            boolean reserveSuccess = reserveInventory(conn, request.getProductId(), request.getQuantity(),
-                                                    context.getTransactionId());
-            if (!reserveSuccess) {
-                return TCCResult.failure("预留库存失败");
-            }
+        // 3. 更新预留状态
+        existingReservation.setStatus(ReservationStatus.CONFIRMED);
+        existingReservation.setConfirmTime(new Date());
+        reservationRepository.save(existingReservation);
 
-            System.out.println("Try阶段成功 - 产品: " + request.getProductId() +
-                              ", 预留数量: " + request.getQuantity());
-            return TCCResult.success("Try阶段成功");
-
-        } catch (SQLException e) {
-            System.err.println("Try阶段异常: " + e.getMessage());
-            return TCCResult.failure("Try阶段执行异常: " + e.getMessage());
-        }
+        log.info("Inventory confirmed successfully - Reservation: {}", reservation.getReservationId());
     }
 
     @Override
-    public TCCResult confirmExecute(TCCTransactionContext context) {
-        try (Connection conn = getConnection()) {
-            // 确认扣减库存：将预留的库存转为实际扣减
-            boolean confirmSuccess = confirmInventoryDeduction(conn, context.getTransactionId());
-            if (confirmSuccess) {
-                System.out.println("Confirm阶段成功 - 确认库存扣减: " + context.getTransactionId());
-                return TCCResult.success("Confirm阶段成功");
-            } else {
-                return TCCResult.failure("确认库存扣减失败");
-            }
+    @Transactional
+    public void doCancel(TransactionContext context, InventoryReservation reservation) {
+        log.info("Inventory Cancel phase - Transaction: {}, Reservation: {}",
+                 context.getTransactionId(), reservation.getReservationId());
 
-        } catch (SQLException e) {
-            System.err.println("Confirm阶段异常: " + e.getMessage());
-            return TCCResult.failure("Confirm阶段执行异常: " + e.getMessage());
+        // 1. 查找预留记录
+        InventoryReservation existingReservation = reservationRepository
+            .findById(reservation.getReservationId())
+            .orElse(null);
+
+        if (existingReservation == null) {
+            log.warn("Reservation not found, may not have been created: {}", reservation.getReservationId());
+            return;
         }
-    }
 
-    @Override
-    public TCCResult cancelExecute(TCCTransactionContext context) {
-        try (Connection conn = getConnection()) {
-            // 释放预留的库存
-            boolean releaseSuccess = releaseReservedInventory(conn, context.getTransactionId());
-            if (releaseSuccess) {
-                System.out.println("Cancel阶段成功 - 释放预留库存: " + context.getTransactionId());
-                return TCCResult.success("Cancel阶段成功");
-            } else {
-                System.err.println("Cancel阶段失败 - 释放预留库存失败: " + context.getTransactionId());
-                return TCCResult.failure("释放预留库存失败");
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Cancel阶段异常: " + e.getMessage());
-            return TCCResult.failure("Cancel阶段执行异常: " + e.getMessage());
+        // 幂等性检查
+        if (existingReservation.getStatus() == ReservationStatus.CANCELED) {
+            log.warn("Reservation already canceled: {}", reservation.getReservationId());
+            return;
         }
-    }
 
-    /**
-     * 获取数据库连接
-     */
-    private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(jdbcUrl, username, password);
-    }
+        // 2. 恢复库存
+        Inventory inventory = inventoryRepository.findByProductId(reservation.getProductId())
+            .orElseThrow(() -> new TCCException("Product not found: " + reservation.getProductId()));
 
-    /**
-     * 获取可用库存数量
-     */
-    private int getAvailableQuantity(Connection conn, String productId) throws SQLException {
-        String sql = "SELECT quantity FROM inventory WHERE product_id = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, productId);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("quantity");
-                } else {
-                    throw new SQLException("产品不存在: " + productId);
-                }
-            }
-        }
-    }
+        inventory.setAvailable(inventory.getAvailable() + reservation.getQuantity());
+        inventory.setReserved(inventory.getReserved() - reservation.getQuantity());
+        inventoryRepository.save(inventory);
 
-    /**
-     * 预留库存
-     */
-    private boolean reserveInventory(Connection conn, String productId, int quantity, String transactionId)
-            throws SQLException {
-        // 插入预留记录
-        String insertSql = "INSERT INTO inventory_reservation (product_id, quantity, transaction_id, create_time) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement pstmt = conn.prepareStatement(insertSql)) {
-            pstmt.setString(1, productId);
-            pstmt.setInt(2, quantity);
-            pstmt.setString(3, transactionId);
-            pstmt.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+        // 3. 更新预留状态
+        existingReservation.setStatus(ReservationStatus.CANCELED);
+        existingReservation.setCancelTime(new Date());
+        reservationRepository.save(existingReservation);
 
-            int result = pstmt.executeUpdate();
-            return result > 0;
-        }
-    }
-
-    /**
-     * 确认库存扣减
-     */
-    private boolean confirmInventoryDeduction(Connection conn, String transactionId) throws SQLException {
-        conn.setAutoCommit(false);
-        try {
-            // 获取预留信息
-            String selectSql = "SELECT product_id, quantity FROM inventory_reservation WHERE transaction_id = ?";
-            String productId = null;
-            int quantity = 0;
-
-            try (PreparedStatement pstmt = conn.prepareStatement(selectSql)) {
-                pstmt.setString(1, transactionId);
-                try (ResultSet rs = pstmt.executeQuery()) {
-                    if (rs.next()) {
-                        productId = rs.getString("product_id");
-                        quantity = rs.getInt("quantity");
-                    } else {
-                        throw new SQLException("预留记录不存在: " + transactionId);
-                    }
-                }
-            }
-
-            // 扣减实际库存
-            String updateSql = "UPDATE inventory SET quantity = quantity - ? WHERE product_id = ?";
-            try (PreparedStatement pstmt = conn.prepareStatement(updateSql)) {
-                pstmt.setInt(1, quantity);
-                pstmt.setString(2, productId);
-                pstmt.executeUpdate();
-            }
-
-            // 删除预留记录
-            String deleteSql = "DELETE FROM inventory_reservation WHERE transaction_id = ?";
-            try (PreparedStatement pstmt = conn.prepareStatement(deleteSql)) {
-                pstmt.setString(1, transactionId);
-                pstmt.executeUpdate();
-            }
-
-            // 插入库存变动记录
-            String insertLogSql = "INSERT INTO inventory_log (product_id, quantity_change, transaction_id, operation_type, create_time) VALUES (?, ?, ?, ?, ?)";
-            try (PreparedStatement pstmt = conn.prepareStatement(insertLogSql)) {
-                pstmt.setString(1, productId);
-                pstmt.setInt(2, -quantity);
-                pstmt.setString(3, transactionId);
-                pstmt.setString(4, "DEDUCTION");
-                pstmt.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
-                pstmt.executeUpdate();
-            }
-
-            conn.commit();
-            return true;
-
-        } catch (SQLException e) {
-            conn.rollback();
-            throw e;
-        } finally {
-            conn.setAutoCommit(true);
-        }
-    }
-
-    /**
-     * 释放预留库存
-     */
-    private boolean releaseReservedInventory(Connection conn, String transactionId) throws SQLException {
-        String sql = "DELETE FROM inventory_reservation WHERE transaction_id = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, transactionId);
-
-            int result = pstmt.executeUpdate();
-            return result >= 0; // 删除0行也算成功
-        }
-    }
-
-    @Override
-    public String getParticipantId() {
-        return participantId;
+        log.info("Inventory canceled successfully - Reservation: {}", reservation.getReservationId());
     }
 }
+```
 
+### 4.3 订单服务TCC实现
+
+```java
 /**
- * 库存预留请求
+ * 订单服务TCC参与者实现
  */
-class InventoryReservationRequest {
-    private final String productId;
-    private final int quantity;
-    private final String orderId;
+@Component
+@Slf4j
+public class OrderTCCParticipant implements TCCParticipant<OrderRequest, OrderRecord> {
 
-    public InventoryReservationRequest(String productId, int quantity, String orderId) {
-        this.productId = productId;
-        this.quantity = quantity;
-        this.orderId = orderId;
-    }
+    @Autowired
+    private OrderRepository orderRepository;
 
-    // Getters
-    public String getProductId() { return productId; }
-    public int getQuantity() { return quantity; }
-    public String getOrderId() { return orderId; }
+    @Autowired
+    private OrderItemRepository orderItemRepository;
 
     @Override
-    public String toString() {
-        return String.format("InventoryReservationRequest{productId='%s', quantity=%d, orderId='%s'}",
-                productId, quantity, orderId);
+    @Transactional
+    public OrderRecord doTry(TransactionContext context, OrderRequest request) {
+        log.info("Order Try phase - Transaction: {}, User: {}, Amount: {}",
+                 context.getTransactionId(), request.getUserId(), request.getTotalAmount());
+
+        // 1. 创建订单（预创建状态）
+        Order order = new Order();
+        order.setOrderId(generateOrderId());
+        order.setTransactionId(context.getTransactionId());
+        order.setUserId(request.getUserId());
+        order.setTotalAmount(request.getTotalAmount());
+        order.setStatus(OrderStatus.PENDING);
+        order.setCreateTime(new Date());
+
+        orderRepository.save(order);
+
+        // 2. 创建订单项
+        for (OrderItemRequest itemRequest : request.getItems()) {
+            OrderItem item = new OrderItem();
+            item.setOrderId(order.getOrderId());
+            item.setProductId(itemRequest.getProductId());
+            item.setQuantity(itemRequest.getQuantity());
+            item.setPrice(itemRequest.getPrice());
+            item.setStatus(OrderItemStatus.PENDING);
+
+            orderItemRepository.save(item);
+        }
+
+        // 3. 创建订单记录
+        OrderRecord record = new OrderRecord();
+        record.setOrderId(order.getOrderId());
+        record.setTransactionId(context.getTransactionId());
+        record.setUserId(request.getUserId());
+        record.setTotalAmount(request.getTotalAmount());
+
+        log.info("Order created in pending status - OrderId: {}", order.getOrderId());
+        return record;
+    }
+
+    @Override
+    @Transactional
+    public void doConfirm(TransactionContext context, OrderRecord record) {
+        log.info("Order Confirm phase - Transaction: {}, OrderId: {}",
+                 context.getTransactionId(), record.getOrderId());
+
+        // 1. 查找订单
+        Order order = orderRepository.findById(record.getOrderId())
+            .orElseThrow(() -> new TCCException("Order not found: " + record.getOrderId()));
+
+        // 幂等性检查
+        if (order.getStatus() == OrderStatus.CONFIRMED) {
+            log.warn("Order already confirmed: {}", record.getOrderId());
+            return;
+        }
+
+        // 2. 确认订单
+        order.setStatus(OrderStatus.CONFIRMED);
+        order.setConfirmTime(new Date());
+        orderRepository.save(order);
+
+        // 3. 确认订单项
+        List<OrderItem> items = orderItemRepository.findByOrderId(record.getOrderId());
+        for (OrderItem item : items) {
+            item.setStatus(OrderItemStatus.CONFIRMED);
+            orderItemRepository.save(item);
+        }
+
+        // 4. 发送订单确认事件
+        publishOrderConfirmedEvent(order);
+
+        log.info("Order confirmed successfully - OrderId: {}", record.getOrderId());
+    }
+
+    @Override
+    @Transactional
+    public void doCancel(TransactionContext context, OrderRecord record) {
+        log.info("Order Cancel phase - Transaction: {}, OrderId: {}",
+                 context.getTransactionId(), record.getOrderId());
+
+        // 1. 查找订单
+        Order order = orderRepository.findById(record.getOrderId())
+            .orElse(null);
+
+        if (order == null) {
+            log.warn("Order not found, may not have been created: {}", record.getOrderId());
+            return;
+        }
+
+        // 幂等性检查
+        if (order.getStatus() == OrderStatus.CANCELED) {
+            log.warn("Order already canceled: {}", record.getOrderId());
+            return;
+        }
+
+        // 2. 取消订单
+        order.setStatus(OrderStatus.CANCELED);
+        order.setCancelTime(new Date());
+        order.setCancelReason("Transaction failed");
+        orderRepository.save(order);
+
+        // 3. 取消订单项
+        List<OrderItem> items = orderItemRepository.findByOrderId(record.getOrderId());
+        for (OrderItem item : items) {
+            item.setStatus(OrderItemStatus.CANCELED);
+            orderItemRepository.save(item);
+        }
+
+        // 4. 发送订单取消事件
+        publishOrderCanceledEvent(order);
+
+        log.info("Order canceled successfully - OrderId: {}", record.getOrderId());
+    }
+
+    private String generateOrderId() {
+        return "ORD" + System.currentTimeMillis() + RandomUtils.nextInt(1000, 9999);
+    }
+
+    private void publishOrderConfirmedEvent(Order order) {
+        // 发布订单确认事件到消息队列
+        log.info("Publishing order confirmed event: {}", order.getOrderId());
+    }
+
+    private void publishOrderCanceledEvent(Order order) {
+        // 发布订单取消事件到消息队列
+        log.info("Publishing order canceled event: {}", order.getOrderId());
+    }
+}
+```
+
+### 4.4 支付服务TCC实现
+
+```java
+/**
+ * 支付服务TCC参与者实现
+ */
+@Component
+@Slf4j
+public class PaymentTCCParticipant implements TCCParticipant<PaymentRequest, PaymentRecord> {
+
+    @Autowired
+    private AccountRepository accountRepository;
+
+    @Autowired
+    private PaymentRecordRepository paymentRecordRepository;
+
+    @Autowired
+    private FrozenRecordRepository frozenRecordRepository;
+
+    @Override
+    @Transactional
+    public PaymentRecord doTry(TransactionContext context, PaymentRequest request) {
+        log.info("Payment Try phase - Transaction: {}, Account: {}, Amount: {}",
+                 context.getTransactionId(), request.getAccountId(), request.getAmount());
+
+        // 1. 检查账户余额
+        Account account = accountRepository.findByAccountId(request.getAccountId())
+            .orElseThrow(() -> new TCCException("Account not found: " + request.getAccountId()));
+
+        if (account.getBalance().compareTo(request.getAmount()) < 0) {
+            throw new TCCException("Insufficient balance, available: " +
+                                   account.getBalance() + ", requested: " + request.getAmount());
+        }
+
+        // 2. 冻结金额
+        account.setBalance(account.getBalance().subtract(request.getAmount()));
+        account.setFrozenAmount(account.getFrozenAmount().add(request.getAmount()));
+        accountRepository.save(account);
+
+        // 3. 创建冻结记录
+        FrozenRecord frozen = new FrozenRecord();
+        frozen.setFrozenId(UUID.randomUUID().toString());
+        frozen.setTransactionId(context.getTransactionId());
+        frozen.setAccountId(request.getAccountId());
+        frozen.setAmount(request.getAmount());
+        frozen.setStatus(FrozenStatus.FROZEN);
+        frozen.setCreateTime(new Date());
+        frozen.setExpireTime(new Date(System.currentTimeMillis() + 600000)); // 10分钟过期
+
+        frozenRecordRepository.save(frozen);
+
+        // 4. 创建支付记录（待确认状态）
+        PaymentRecord payment = new PaymentRecord();
+        payment.setPaymentId(generatePaymentId());
+        payment.setTransactionId(context.getTransactionId());
+        payment.setAccountId(request.getAccountId());
+        payment.setAmount(request.getAmount());
+        payment.setFrozenId(frozen.getFrozenId());
+        payment.setStatus(PaymentStatus.PENDING);
+        payment.setCreateTime(new Date());
+
+        paymentRecordRepository.save(payment);
+
+        log.info("Payment amount frozen successfully - PaymentId: {}, FrozenId: {}",
+                 payment.getPaymentId(), frozen.getFrozenId());
+        return payment;
+    }
+
+    @Override
+    @Transactional
+    public void doConfirm(TransactionContext context, PaymentRecord payment) {
+        log.info("Payment Confirm phase - Transaction: {}, PaymentId: {}",
+                 context.getTransactionId(), payment.getPaymentId());
+
+        // 1. 查找支付记录
+        PaymentRecord existingPayment = paymentRecordRepository
+            .findById(payment.getPaymentId())
+            .orElseThrow(() -> new TCCException("Payment not found: " + payment.getPaymentId()));
+
+        // 幂等性检查
+        if (existingPayment.getStatus() == PaymentStatus.SUCCESS) {
+            log.warn("Payment already confirmed: {}", payment.getPaymentId());
+            return;
+        }
+
+        // 2. 查找冻结记录
+        FrozenRecord frozen = frozenRecordRepository.findById(payment.getFrozenId())
+            .orElseThrow(() -> new TCCException("Frozen record not found: " + payment.getFrozenId()));
+
+        // 3. 确认扣款
+        Account account = accountRepository.findByAccountId(payment.getAccountId())
+            .orElseThrow(() -> new TCCException("Account not found: " + payment.getAccountId()));
+
+        account.setFrozenAmount(account.getFrozenAmount().subtract(payment.getAmount()));
+        accountRepository.save(account);
+
+        // 4. 更新冻结记录状态
+        frozen.setStatus(FrozenStatus.CONFIRMED);
+        frozen.setConfirmTime(new Date());
+        frozenRecordRepository.save(frozen);
+
+        // 5. 更新支付记录状态
+        existingPayment.setStatus(PaymentStatus.SUCCESS);
+        existingPayment.setCompleteTime(new Date());
+        paymentRecordRepository.save(existingPayment);
+
+        // 6. 记录交易流水
+        recordTransaction(account, payment, TransactionType.PAYMENT);
+
+        log.info("Payment confirmed successfully - PaymentId: {}", payment.getPaymentId());
+    }
+
+    @Override
+    @Transactional
+    public void doCancel(TransactionContext context, PaymentRecord payment) {
+        log.info("Payment Cancel phase - Transaction: {}, PaymentId: {}",
+                 context.getTransactionId(), payment.getPaymentId());
+
+        // 1. 查找支付记录
+        PaymentRecord existingPayment = paymentRecordRepository
+            .findById(payment.getPaymentId())
+            .orElse(null);
+
+        if (existingPayment == null) {
+            log.warn("Payment not found, may not have been created: {}", payment.getPaymentId());
+            return;
+        }
+
+        // 幂等性检查
+        if (existingPayment.getStatus() == PaymentStatus.CANCELED) {
+            log.warn("Payment already canceled: {}", payment.getPaymentId());
+            return;
+        }
+
+        // 2. 查找冻结记录
+        FrozenRecord frozen = frozenRecordRepository.findById(payment.getFrozenId())
+            .orElse(null);
+
+        if (frozen == null) {
+            log.warn("Frozen record not found: {}", payment.getFrozenId());
+            return;
+        }
+
+        // 3. 解冻金额
+        Account account = accountRepository.findByAccountId(payment.getAccountId())
+            .orElseThrow(() -> new TCCException("Account not found: " + payment.getAccountId()));
+
+        account.setBalance(account.getBalance().add(payment.getAmount()));
+        account.setFrozenAmount(account.getFrozenAmount().subtract(payment.getAmount()));
+        accountRepository.save(account);
+
+        // 4. 更新冻结记录状态
+        frozen.setStatus(FrozenStatus.CANCELED);
+        frozen.setCancelTime(new Date());
+        frozenRecordRepository.save(frozen);
+
+        // 5. 更新支付记录状态
+        existingPayment.setStatus(PaymentStatus.CANCELED);
+        existingPayment.setCancelTime(new Date());
+        existingPayment.setCancelReason("Transaction failed");
+        paymentRecordRepository.save(existingPayment);
+
+        log.info("Payment canceled successfully - PaymentId: {}", payment.getPaymentId());
+    }
+
+    private String generatePaymentId() {
+        return "PAY" + System.currentTimeMillis() + RandomUtils.nextInt(1000, 9999);
+    }
+
+    private void recordTransaction(Account account, PaymentRecord payment, TransactionType type) {
+        // 记录交易流水
+        TransactionLog log = new TransactionLog();
+        log.setAccountId(account.getAccountId());
+        log.setPaymentId(payment.getPaymentId());
+        log.setAmount(payment.getAmount());
+        log.setType(type);
+        log.setBalance(account.getBalance());
+        log.setCreateTime(new Date());
+
+        // 保存交易记录
     }
 }
 ```
@@ -1302,718 +1170,1016 @@ class InventoryReservationRequest {
 ### 5.1 TCC注解定义
 
 ```java
-import java.lang.annotation.*;
-
 /**
  * TCC事务注解
  */
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface TCC {
+public @interface TCCTransaction {
     /**
-     * 事务超时时间（毫秒）
+     * 事务名称
      */
-    long timeout() default 30000;
+    String name() default "";
 
     /**
-     * 确认方法名
+     * 超时时间（毫秒）
      */
-    String confirmMethod() default "";
+    long timeout() default 60000;
 
     /**
-     * 取消方法名
+     * 重试次数
      */
-    String cancelMethod() default "";
+    int maxRetries() default 3;
 
     /**
-     * 是否自动提交
+     * 传播行为
      */
-    boolean autoCommit() default true;
+    Propagation propagation() default Propagation.REQUIRED;
 }
 
 /**
- * TCC Try方法注解
+ * TCC Try操作注解
  */
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface TCCTry {
-    /**
-     * 确认方法名
-     */
     String confirmMethod();
-
-    /**
-     * 取消方法名
-     */
     String cancelMethod();
 }
 
 /**
- * TCC Confirm方法注解
+ * TCC Confirm操作注解
  */
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface TCCConfirm {
 }
 
 /**
- * TCC Cancel方法注解
+ * TCC Cancel操作注解
  */
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface TCCCancel {
 }
 ```
 
-### 5.2 TCC切面处理器
+### 5.2 TCC AOP切面实现
 
 ```java
-import java.lang.reflect.Method;
-
 /**
- * TCC切面处理器
+ * TCC事务切面
  */
-public class TCCAspectHandler {
-    private final TCCTransactionManager transactionManager;
+@Aspect
+@Component
+@Slf4j
+public class TCCTransactionAspect {
 
-    public TCCAspectHandler(TCCTransactionManager transactionManager) {
-        this.transactionManager = transactionManager;
-    }
+    @Autowired
+    private TCCTransactionManager transactionManager;
 
-    /**
-     * 处理TCC事务方法
-     */
-    public Object handleTCCTransaction(Method method, Object[] args, Callable<?> proceed) throws Exception {
-        TCC tccAnnotation = method.getAnnotation(TCC.class);
-        if (tccAnnotation == null) {
-            return proceed.call();
-        }
+    @Around("@annotation(tccTransaction)")
+    public Object handleTCCTransaction(ProceedingJoinPoint joinPoint,
+                                        TCCTransaction tccTransaction) throws Throwable {
 
-        // 检查是否已经在TCC事务中
-        boolean isRootTransaction = !TCCTransactionContextHolder.hasContext();
+        String transactionName = StringUtils.hasText(tccTransaction.name())
+            ? tccTransaction.name()
+            : joinPoint.getSignature().getName();
 
-        TCCTransactionContext context = null;
-        if (isRootTransaction) {
-            // 开始新的TCC事务
-            context = transactionManager.beginTransaction(tccAnnotation.timeout());
-        }
+        log.info("Starting TCC transaction: {}", transactionName);
+
+        // 创建事务上下文
+        String transactionId = generateTransactionId();
+        TransactionContext context = new TransactionContext(transactionId);
+        context.setTimeout(tccTransaction.timeout());
 
         try {
-            Object result = proceed.call();
+            // 设置事务上下文
+            TransactionContextHolder.set(context);
 
-            if (isRootTransaction && tccAnnotation.autoCommit()) {
-                // 自动提交事务
-                boolean success = transactionManager.commit();
-                if (!success) {
-                    throw new RuntimeException("TCC事务提交失败");
-                }
-            }
+            // 执行业务方法
+            Object result = joinPoint.proceed();
 
+            log.info("TCC transaction completed successfully: {}", transactionName);
             return result;
 
         } catch (Exception e) {
-            if (isRootTransaction) {
-                // 回滚事务
-                transactionManager.rollback();
-            }
+            log.error("TCC transaction failed: {}", transactionName, e);
+            throw e;
+        } finally {
+            TransactionContextHolder.clear();
+        }
+    }
+
+    @Around("@annotation(tccTry)")
+    public Object handleTCCTry(ProceedingJoinPoint joinPoint, TCCTry tccTry) throws Throwable {
+
+        TransactionContext context = TransactionContextHolder.get();
+        if (context == null) {
+            throw new TCCException("No transaction context found for TCC Try operation");
+        }
+
+        String methodName = joinPoint.getSignature().getName();
+        log.info("Executing TCC Try: {} in transaction: {}", methodName, context.getTransactionId());
+
+        try {
+            // 执行Try操作
+            Object tryResult = joinPoint.proceed();
+
+            // 注册Confirm和Cancel方法
+            registerTCCMethods(joinPoint, tccTry, tryResult);
+
+            return tryResult;
+        } catch (Exception e) {
+            log.error("TCC Try failed: {}", methodName, e);
             throw e;
         }
     }
 
-    /**
-     * 处理TCC Try方法
-     */
-    public Object handleTCCTry(Method method, Object target, Object[] args, Callable<?> proceed) throws Exception {
-        TCCTry tryAnnotation = method.getAnnotation(TCCTry.class);
-        if (tryAnnotation == null) {
-            return proceed.call();
-        }
-
-        // 创建动态TCC参与者
-        DynamicTCCParticipant participant = new DynamicTCCParticipant(
-                target.getClass().getName() + "." + method.getName(),
-                target,
-                method,
-                tryAnnotation.confirmMethod(),
-                tryAnnotation.cancelMethod()
-        );
-
-        // 注册参与者
-        transactionManager.registerParticipant(participant, args);
-
-        // 执行Try方法（实际业务逻辑在参与者中执行）
-        return proceed.call();
-    }
-}
-
-/**
- * 动态TCC参与者
- */
-class DynamicTCCParticipant implements TCCParticipant {
-    private final String participantId;
-    private final Object target;
-    private final Method tryMethod;
-    private final Method confirmMethod;
-    private final Method cancelMethod;
-
-    public DynamicTCCParticipant(String participantId, Object target, Method tryMethod,
-                               String confirmMethodName, String cancelMethodName) {
-        this.participantId = participantId;
-        this.target = target;
-        this.tryMethod = tryMethod;
+    private void registerTCCMethods(ProceedingJoinPoint joinPoint,
+                                    TCCTry tccTry,
+                                    Object tryResult) {
+        // 获取目标对象和方法
+        Object target = joinPoint.getTarget();
+        Class<?> targetClass = target.getClass();
 
         try {
-            this.confirmMethod = target.getClass().getMethod(confirmMethodName, tryMethod.getParameterTypes());
-            this.cancelMethod = target.getClass().getMethod(cancelMethodName, tryMethod.getParameterTypes());
+            // 注册Confirm方法
+            Method confirmMethod = targetClass.getMethod(tccTry.confirmMethod(), tryResult.getClass());
+
+            // 注册Cancel方法
+            Method cancelMethod = targetClass.getMethod(tccTry.cancelMethod(), tryResult.getClass());
+
+            // 创建TCC动作
+            TCCAction action = new TCCAction();
+            action.setTarget(target);
+            action.setTryResult(tryResult);
+            action.setConfirmMethod(confirmMethod);
+            action.setCancelMethod(cancelMethod);
+
+            // 注册到事务管理器
+            TransactionContext context = TransactionContextHolder.get();
+            transactionManager.registerAction(context.getTransactionId(), action);
+
         } catch (NoSuchMethodException e) {
-            throw new RuntimeException("TCC方法不存在", e);
+            throw new TCCException("TCC method not found", e);
         }
     }
 
-    @Override
-    public TCCResult tryExecute(TCCTransactionContext context, Object businessData) {
-        try {
-            Object[] args = (Object[]) businessData;
-            Object result = tryMethod.invoke(target, args);
-
-            // 将结果保存到上下文
-            context.setAttribute("tryResult", result);
-            context.setAttribute("businessData", businessData);
-
-            return TCCResult.success("Try阶段成功", result);
-
-        } catch (Exception e) {
-            return TCCResult.failure("Try阶段失败: " + e.getMessage());
-        }
-    }
-
-    @Override
-    public TCCResult confirmExecute(TCCTransactionContext context) {
-        try {
-            Object[] args = context.getAttribute("businessData", Object[].class);
-            confirmMethod.invoke(target, args);
-
-            return TCCResult.success("Confirm阶段成功");
-
-        } catch (Exception e) {
-            return TCCResult.failure("Confirm阶段失败: " + e.getMessage());
-        }
-    }
-
-    @Override
-    public TCCResult cancelExecute(TCCTransactionContext context) {
-        try {
-            Object[] args = context.getAttribute("businessData", Object[].class);
-            cancelMethod.invoke(target, args);
-
-            return TCCResult.success("Cancel阶段成功");
-
-        } catch (Exception e) {
-            return TCCResult.failure("Cancel阶段失败: " + e.getMessage());
-        }
-    }
-
-    @Override
-    public String getParticipantId() {
-        return participantId;
+    private String generateTransactionId() {
+        return "TCC-AOP-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString();
     }
 }
 ```
 
 ## 6. 完整应用示例
 
-### 6.1 电商订单服务
+### 6.1 电商下单场景
 
 ```java
 /**
- * 电商订单服务（使用TCC模式）
+ * 电商下单服务
  */
-public class ECommerceOrderService {
-    private final TCCTransactionManager transactionManager;
-    private final AccountServiceTCCParticipant accountService;
-    private final InventoryServiceTCCParticipant inventoryService;
+@Service
+@Slf4j
+public class OrderService {
 
-    public ECommerceOrderService(TCCTransactionManager transactionManager,
-                               AccountServiceTCCParticipant accountService,
-                               InventoryServiceTCCParticipant inventoryService) {
-        this.transactionManager = transactionManager;
-        this.accountService = accountService;
-        this.inventoryService = inventoryService;
-    }
+    @Autowired
+    private TCCTransactionManager tccManager;
+
+    @Autowired
+    private OrderTCCParticipant orderParticipant;
+
+    @Autowired
+    private InventoryTCCParticipant inventoryParticipant;
+
+    @Autowired
+    private PaymentTCCParticipant paymentParticipant;
 
     /**
-     * 创建订单（TCC事务）
+     * 创建订单（使用TCC事务）
      */
-    @TCC(timeout = 60000)
-    public OrderResult createOrder(CreateOrderRequest request) {
-        try {
-            System.out.println("开始创建订单: " + request);
+    public OrderResponse createOrder(CreateOrderRequest request) {
+        log.info("Creating order for user: {}, total amount: {}",
+                 request.getUserId(), request.getTotalAmount());
 
-            // 1. 验证订单数据
-            validateOrderRequest(request);
+        // 注册TCC参与者
+        tccManager.registerParticipant("order", orderParticipant);
+        tccManager.registerParticipant("inventory", inventoryParticipant);
+        tccManager.registerParticipant("payment", paymentParticipant);
 
-            // 2. 注册账户服务参与者（扣款）
-            AccountTransferRequest accountRequest = new AccountTransferRequest(
-                    request.getCustomerAccount(),
-                    "MERCHANT_ACCOUNT",
-                    request.getTotalAmount(),
-                    "订单支付: " + request.getOrderId()
-            );
-            transactionManager.registerParticipant(accountService, accountRequest);
+        // 创建TCC事务
+        TCCTransaction<OrderResponse> transaction = new TCCTransaction<OrderResponse>() {
+            private OrderRecord orderRecord;
+            private List<InventoryReservation> inventoryReservations = new ArrayList<>();
+            private PaymentRecord paymentRecord;
 
-            // 3. 注册库存服务参与者（扣减库存）
-            for (OrderItem item : request.getItems()) {
-                InventoryReservationRequest inventoryRequest = new InventoryReservationRequest(
-                        item.getProductId(),
-                        item.getQuantity(),
-                        request.getOrderId()
-                );
-                transactionManager.registerParticipant(inventoryService, inventoryRequest);
+            @Override
+            public List<TCCAction> getActions() {
+                List<TCCAction> actions = new ArrayList<>();
+
+                // 1. 创建订单
+                actions.add(new TCCAction("order",
+                    new OrderRequest(request.getUserId(), request.getItems(), request.getTotalAmount())));
+
+                // 2. 预留库存
+                for (OrderItemRequest item : request.getItems()) {
+                    actions.add(new TCCAction("inventory",
+                        new InventoryRequest(item.getProductId(), item.getQuantity())));
+                }
+
+                // 3. 支付扣款
+                actions.add(new TCCAction("payment",
+                    new PaymentRequest(request.getUserId(), request.getTotalAmount())));
+
+                return actions;
             }
 
-            // 4. 创建订单记录
-            String orderId = createOrderRecord(request);
+            @Override
+            public OrderResponse getResult() {
+                return new OrderResponse(
+                    orderRecord != null ? orderRecord.getOrderId() : null,
+                    "Order created successfully",
+                    OrderStatus.CONFIRMED
+                );
+            }
+        };
 
-            System.out.println("订单创建成功: " + orderId);
-            return new OrderResult(true, "订单创建成功", orderId);
+        // 执行TCC事务
+        try {
+            CompletableFuture<OrderResponse> future = tccManager.executeTransaction(transaction);
+            OrderResponse response = future.get(30, TimeUnit.SECONDS);
+
+            log.info("Order created successfully: {}", response.getOrderId());
+            return response;
 
         } catch (Exception e) {
-            System.err.println("创建订单失败: " + e.getMessage());
-            return new OrderResult(false, "订单创建失败: " + e.getMessage(), null);
+            log.error("Failed to create order", e);
+            throw new OrderException("Order creation failed: " + e.getMessage(), e);
         }
     }
 
     /**
-     * 手动提交订单事务
+     * 使用注解方式的TCC事务
      */
-    public boolean commitOrder() {
-        return transactionManager.commit();
+    @TCCTransaction(name = "createOrderWithAnnotation", timeout = 30000)
+    public OrderResponse createOrderWithAnnotation(CreateOrderRequest request) {
+        log.info("Creating order with annotation for user: {}", request.getUserId());
+
+        // Try阶段
+        OrderRecord order = tryCreateOrder(request);
+        List<InventoryReservation> inventories = tryReserveInventory(request.getItems());
+        PaymentRecord payment = tryMakePayment(request.getUserId(), request.getTotalAmount());
+
+        // 如果所有Try成功，框架会自动调用Confirm
+        // 如果有失败，框架会自动调用Cancel
+
+        return new OrderResponse(order.getOrderId(), "Success", OrderStatus.CONFIRMED);
     }
 
-    /**
-     * 手动回滚订单事务
-     */
-    public boolean rollbackOrder() {
-        return transactionManager.rollback();
+    @TCCTry(confirmMethod = "confirmCreateOrder", cancelMethod = "cancelCreateOrder")
+    private OrderRecord tryCreateOrder(CreateOrderRequest request) {
+        // Try逻辑
+        return orderParticipant.doTry(TransactionContextHolder.get(),
+            new OrderRequest(request.getUserId(), request.getItems(), request.getTotalAmount()));
     }
 
-    /**
-     * 验证订单请求
-     */
-    private void validateOrderRequest(CreateOrderRequest request) {
-        if (request.getOrderId() == null || request.getOrderId().trim().isEmpty()) {
-            throw new IllegalArgumentException("订单ID不能为空");
+    @TCCConfirm
+    private void confirmCreateOrder(OrderRecord order) {
+        // Confirm逻辑
+        orderParticipant.doConfirm(TransactionContextHolder.get(), order);
+    }
+
+    @TCCCancel
+    private void cancelCreateOrder(OrderRecord order) {
+        // Cancel逻辑
+        orderParticipant.doCancel(TransactionContextHolder.get(), order);
+    }
+
+    @TCCTry(confirmMethod = "confirmReserveInventory", cancelMethod = "cancelReserveInventory")
+    private List<InventoryReservation> tryReserveInventory(List<OrderItemRequest> items) {
+        List<InventoryReservation> reservations = new ArrayList<>();
+        for (OrderItemRequest item : items) {
+            InventoryReservation reservation = inventoryParticipant.doTry(
+                TransactionContextHolder.get(),
+                new InventoryRequest(item.getProductId(), item.getQuantity())
+            );
+            reservations.add(reservation);
         }
+        return reservations;
+    }
 
-        if (request.getCustomerAccount() == null || request.getCustomerAccount().trim().isEmpty()) {
-            throw new IllegalArgumentException("客户账户不能为空");
-        }
-
-        if (request.getItems() == null || request.getItems().isEmpty()) {
-            throw new IllegalArgumentException("订单项不能为空");
-        }
-
-        if (request.getTotalAmount() == null || request.getTotalAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("订单金额必须大于0");
+    @TCCConfirm
+    private void confirmReserveInventory(List<InventoryReservation> reservations) {
+        for (InventoryReservation reservation : reservations) {
+            inventoryParticipant.doConfirm(TransactionContextHolder.get(), reservation);
         }
     }
 
-    /**
-     * 创建订单记录
-     */
-    private String createOrderRecord(CreateOrderRequest request) {
-        // 这里应该将订单信息保存到数据库
-        // 简化实现中返回订单ID
-        System.out.println("保存订单记录: " + request.getOrderId());
-        return request.getOrderId();
-    }
-}
-
-/**
- * 创建订单请求
- */
-class CreateOrderRequest {
-    private final String orderId;
-    private final String customerAccount;
-    private final List<OrderItem> items;
-    private final BigDecimal totalAmount;
-
-    public CreateOrderRequest(String orderId, String customerAccount, List<OrderItem> items, BigDecimal totalAmount) {
-        this.orderId = orderId;
-        this.customerAccount = customerAccount;
-        this.items = new ArrayList<>(items);
-        this.totalAmount = totalAmount;
+    @TCCCancel
+    private void cancelReserveInventory(List<InventoryReservation> reservations) {
+        for (InventoryReservation reservation : reservations) {
+            inventoryParticipant.doCancel(TransactionContextHolder.get(), reservation);
+        }
     }
 
-    // Getters
-    public String getOrderId() { return orderId; }
-    public String getCustomerAccount() { return customerAccount; }
-    public List<OrderItem> getItems() { return new ArrayList<>(items); }
-    public BigDecimal getTotalAmount() { return totalAmount; }
-
-    @Override
-    public String toString() {
-        return String.format("CreateOrderRequest{orderId='%s', account='%s', items=%d, amount=%s}",
-                orderId, customerAccount, items.size(), totalAmount);
-    }
-}
-
-/**
- * 订单项
- */
-class OrderItem {
-    private final String productId;
-    private final int quantity;
-    private final BigDecimal price;
-
-    public OrderItem(String productId, int quantity, BigDecimal price) {
-        this.productId = productId;
-        this.quantity = quantity;
-        this.price = price;
+    @TCCTry(confirmMethod = "confirmMakePayment", cancelMethod = "cancelMakePayment")
+    private PaymentRecord tryMakePayment(String userId, BigDecimal amount) {
+        return paymentParticipant.doTry(
+            TransactionContextHolder.get(),
+            new PaymentRequest(userId, amount)
+        );
     }
 
-    // Getters
-    public String getProductId() { return productId; }
-    public int getQuantity() { return quantity; }
-    public BigDecimal getPrice() { return price; }
-
-    @Override
-    public String toString() {
-        return String.format("OrderItem{productId='%s', quantity=%d, price=%s}",
-                productId, quantity, price);
-    }
-}
-
-/**
- * 订单结果
- */
-class OrderResult {
-    private final boolean success;
-    private final String message;
-    private final String orderId;
-
-    public OrderResult(boolean success, String message, String orderId) {
-        this.success = success;
-        this.message = message;
-        this.orderId = orderId;
+    @TCCConfirm
+    private void confirmMakePayment(PaymentRecord payment) {
+        paymentParticipant.doConfirm(TransactionContextHolder.get(), payment);
     }
 
-    // Getters
-    public boolean isSuccess() { return success; }
-    public String getMessage() { return message; }
-    public String getOrderId() { return orderId; }
-
-    @Override
-    public String toString() {
-        return String.format("OrderResult{success=%s, message='%s', orderId='%s'}",
-                success, message, orderId);
+    @TCCCancel
+    private void cancelMakePayment(PaymentRecord payment) {
+        paymentParticipant.doCancel(TransactionContextHolder.get(), payment);
     }
 }
 ```
 
-## 7. 完整测试示例
+## 7. 性能优化和最佳实践
 
-### 7.1 TCC模式综合测试
+### 7.1 性能优化策略
+
+#### 7.1.1 异步并行执行
 
 ```java
 /**
- * TCC模式综合测试
+ * 并行执行TCC操作
  */
-public class TCCPatternTest {
+public class ParallelTCCExecutor {
 
-    public static void main(String[] args) throws Exception {
-        testTCCPattern();
+    private final ExecutorService executorService;
+
+    public ParallelTCCExecutor(int parallelism) {
+        this.executorService = new ForkJoinPool(parallelism);
     }
 
     /**
-     * 测试TCC模式
+     * 并行执行Try阶段
      */
-    private static void testTCCPattern() throws Exception {
-        System.out.println("=== TCC模式测试开始 ===\n");
-
-        // 创建TCC事务管理器
-        TCCTransactionManager txManager = new TCCTransactionManager("test-node");
-
-        try {
-            // 创建参与者
-            AccountServiceTCCParticipant accountService = createAccountService();
-            InventoryServiceTCCParticipant inventoryService = createInventoryService();
-
-            // 创建订单服务
-            ECommerceOrderService orderService = new ECommerceOrderService(
-                    txManager, accountService, inventoryService);
-
-            // 测试成功的订单创建
-            testSuccessfulOrder(orderService);
-
-            // 测试失败的订单创建
-            testFailedOrder(orderService);
-
-            // 测试并发订单
-            testConcurrentOrders(orderService);
-
-            // 打印统计信息
-            printStats(txManager);
-
-        } finally {
-            txManager.shutdown();
-        }
-
-        System.out.println("\n=== TCC模式测试完成 ===");
-    }
-
-    /**
-     * 创建账户服务
-     */
-    private static AccountServiceTCCParticipant createAccountService() {
-        return new AccountServiceTCCParticipant(
-                "account-service",
-                "jdbc:mysql://localhost:3306/account_db",
-                "test_user",
-                "test_password"
-        );
-    }
-
-    /**
-     * 创建库存服务
-     */
-    private static InventoryServiceTCCParticipant createInventoryService() {
-        return new InventoryServiceTCCParticipant(
-                "inventory-service",
-                "jdbc:mysql://localhost:3306/inventory_db",
-                "test_user",
-                "test_password"
-        );
-    }
-
-    /**
-     * 测试成功的订单创建
-     */
-    private static void testSuccessfulOrder(ECommerceOrderService orderService) throws Exception {
-        System.out.println("=== 测试成功的订单创建 ===");
-
-        List<OrderItem> items = Arrays.asList(
-                new OrderItem("PRODUCT_001", 2, new BigDecimal("50.00")),
-                new OrderItem("PRODUCT_002", 1, new BigDecimal("30.00"))
-        );
-
-        CreateOrderRequest request = new CreateOrderRequest(
-                "ORDER_" + System.currentTimeMillis(),
-                "CUSTOMER_001",
-                items,
-                new BigDecimal("130.00")
-        );
-
-        OrderResult result = orderService.createOrder(request);
-        System.out.println("订单创建结果: " + result);
-
-        if (result.isSuccess()) {
-            boolean commitSuccess = orderService.commitOrder();
-            System.out.println("订单提交结果: " + commitSuccess);
-        }
-
-        System.out.println("=== 成功订单测试完成 ===\n");
-    }
-
-    /**
-     * 测试失败的订单创建
-     */
-    private static void testFailedOrder(ECommerceOrderService orderService) throws Exception {
-        System.out.println("=== 测试失败的订单创建 ===");
-
-        // 创建一个会导致库存不足的订单
-        List<OrderItem> items = Arrays.asList(
-                new OrderItem("PRODUCT_003", 1000, new BigDecimal("10.00")) // 大量库存
-        );
-
-        CreateOrderRequest request = new CreateOrderRequest(
-                "ORDER_FAIL_" + System.currentTimeMillis(),
-                "CUSTOMER_002",
-                items,
-                new BigDecimal("10000.00")
-        );
-
-        OrderResult result = orderService.createOrder(request);
-        System.out.println("订单创建结果: " + result);
-
-        if (!result.isSuccess()) {
-            boolean rollbackSuccess = orderService.rollbackOrder();
-            System.out.println("订单回滚结果: " + rollbackSuccess);
-        }
-
-        System.out.println("=== 失败订单测试完成 ===\n");
-    }
-
-    /**
-     * 测试并发订单
-     */
-    private static void testConcurrentOrders(ECommerceOrderService orderService) throws Exception {
-        System.out.println("=== 测试并发订单 ===");
-
-        int concurrentCount = 5;
-        ExecutorService executor = Executors.newFixedThreadPool(concurrentCount);
-        CountDownLatch latch = new CountDownLatch(concurrentCount);
-        AtomicInteger successCount = new AtomicInteger(0);
-        AtomicInteger failureCount = new AtomicInteger(0);
-
-        for (int i = 0; i < concurrentCount; i++) {
-            final int threadId = i;
-            executor.submit(() -> {
+    public List<TryResult> parallelTry(List<TCCAction> actions) {
+        return actions.parallelStream()
+            .map(action -> {
                 try {
-                    List<OrderItem> items = Arrays.asList(
-                            new OrderItem("PRODUCT_" + threadId, 1, new BigDecimal("20.00"))
-                    );
-
-                    CreateOrderRequest request = new CreateOrderRequest(
-                            "CONCURRENT_ORDER_" + threadId + "_" + System.currentTimeMillis(),
-                            "CUSTOMER_" + threadId,
-                            items,
-                            new BigDecimal("20.00")
-                    );
-
-                    OrderResult result = orderService.createOrder(request);
-
-                    if (result.isSuccess()) {
-                        boolean commitSuccess = orderService.commitOrder();
-                        if (commitSuccess) {
-                            successCount.incrementAndGet();
-                            System.out.println("并发订单 " + threadId + " 成功");
-                        } else {
-                            failureCount.incrementAndGet();
-                            System.err.println("并发订单 " + threadId + " 提交失败");
-                        }
-                    } else {
-                        orderService.rollbackOrder();
-                        failureCount.incrementAndGet();
-                        System.err.println("并发订单 " + threadId + " 创建失败: " + result.getMessage());
-                    }
-
+                    return executeTry(action);
                 } catch (Exception e) {
-                    failureCount.incrementAndGet();
-                    System.err.println("并发订单 " + threadId + " 异常: " + e.getMessage());
+                    return TryResult.failure(action, e);
+                }
+            })
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * 并行执行Confirm阶段
+     */
+    public void parallelConfirm(List<ConfirmAction> actions) {
+        CompletableFuture<?>[] futures = actions.stream()
+            .map(action -> CompletableFuture.runAsync(() -> executeConfirm(action), executorService))
+            .toArray(CompletableFuture[]::new);
+
+        CompletableFuture.allOf(futures).join();
+    }
+}
+```
+
+#### 7.1.2 批量操作优化
+
+```java
+/**
+ * 批量TCC操作优化
+ */
+@Component
+public class BatchTCCOptimizer {
+
+    /**
+     * 批量预留库存
+     */
+    @Transactional
+    public List<InventoryReservation> batchTryReserveInventory(List<InventoryRequest> requests) {
+        // 批量查询库存
+        List<String> productIds = requests.stream()
+            .map(InventoryRequest::getProductId)
+            .collect(Collectors.toList());
+
+        Map<String, Inventory> inventoryMap = inventoryRepository.findByProductIdIn(productIds)
+            .stream()
+            .collect(Collectors.toMap(Inventory::getProductId, Function.identity()));
+
+        // 批量检查和预留
+        List<InventoryReservation> reservations = new ArrayList<>();
+        List<Inventory> toUpdate = new ArrayList<>();
+
+        for (InventoryRequest request : requests) {
+            Inventory inventory = inventoryMap.get(request.getProductId());
+            if (inventory == null || inventory.getAvailable() < request.getQuantity()) {
+                throw new InsufficientInventoryException(request.getProductId());
+            }
+
+            inventory.setAvailable(inventory.getAvailable() - request.getQuantity());
+            inventory.setReserved(inventory.getReserved() + request.getQuantity());
+            toUpdate.add(inventory);
+
+            InventoryReservation reservation = createReservation(request, inventory);
+            reservations.add(reservation);
+        }
+
+        // 批量更新
+        inventoryRepository.saveAll(toUpdate);
+        reservationRepository.saveAll(reservations);
+
+        return reservations;
+    }
+}
+```
+
+### 7.2 最佳实践
+
+#### 7.2.1 幂等性设计
+
+```java
+/**
+ * 幂等性保证
+ */
+public abstract class IdempotentTCCParticipant<T, R> implements TCCParticipant<T, R> {
+
+    @Autowired
+    private IdempotentRecordRepository idempotentRepository;
+
+    @Override
+    public final R doTry(TransactionContext context, T request) throws TCCException {
+        String idempotentKey = generateIdempotentKey(context, request, "TRY");
+
+        // 检查幂等性
+        Optional<IdempotentRecord> existing = idempotentRepository.findByKey(idempotentKey);
+        if (existing.isPresent()) {
+            log.warn("Try operation already executed: {}", idempotentKey);
+            return (R) existing.get().getResult();
+        }
+
+        // 执行业务逻辑
+        R result = doTryInternal(context, request);
+
+        // 记录幂等信息
+        IdempotentRecord record = new IdempotentRecord();
+        record.setIdempotentKey(idempotentKey);
+        record.setTransactionId(context.getTransactionId());
+        record.setPhase("TRY");
+        record.setResult(result);
+        record.setCreateTime(new Date());
+        idempotentRepository.save(record);
+
+        return result;
+    }
+
+    protected abstract R doTryInternal(TransactionContext context, T request) throws TCCException;
+
+    private String generateIdempotentKey(TransactionContext context, Object request, String phase) {
+        return String.format("%s:%s:%s",
+            context.getTransactionId(),
+            phase,
+            request.hashCode());
+    }
+}
+```
+
+#### 7.2.2 资源隔离
+
+```java
+/**
+ * TCC资源隔离
+ */
+@Configuration
+public class TCCResourceIsolation {
+
+    @Bean
+    public DataSource tccDataSource() {
+        // TCC专用数据源
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:mysql://localhost:3306/tcc_db");
+        config.setUsername("tcc_user");
+        config.setPassword("tcc_password");
+        config.setMaximumPoolSize(20);
+        config.setConnectionTimeout(5000);
+        return new HikariDataSource(config);
+    }
+
+    @Bean
+    public ThreadPoolExecutor tccExecutor() {
+        // TCC专用线程池
+        return new ThreadPoolExecutor(
+            10,  // 核心线程数
+            50,  // 最大线程数
+            60L, // 空闲时间
+            TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>(1000),
+            new ThreadFactory() {
+                private final AtomicInteger counter = new AtomicInteger();
+
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread thread = new Thread(r);
+                    thread.setName("tcc-executor-" + counter.incrementAndGet());
+                    thread.setDaemon(false);
+                    return thread;
+                }
+            },
+            new ThreadPoolExecutor.CallerRunsPolicy()
+        );
+    }
+}
+```
+
+#### 7.2.3 监控和告警
+
+```java
+/**
+ * TCC监控
+ */
+@Component
+@Slf4j
+public class TCCMonitor {
+
+    private final MeterRegistry meterRegistry;
+    private final AlertService alertService;
+
+    public TCCMonitor(MeterRegistry meterRegistry, AlertService alertService) {
+        this.meterRegistry = meterRegistry;
+        this.alertService = alertService;
+    }
+
+    /**
+     * 记录TCC事务指标
+     */
+    public void recordTransaction(String transactionId, TransactionStatus status, long duration) {
+        // 记录事务数量
+        meterRegistry.counter("tcc.transaction.total",
+            "status", status.toString()).increment();
+
+        // 记录事务耗时
+        meterRegistry.timer("tcc.transaction.duration",
+            "status", status.toString()).record(duration, TimeUnit.MILLISECONDS);
+
+        // 告警处理
+        if (status == TransactionStatus.FAILED) {
+            alertService.sendAlert("TCC Transaction Failed",
+                "Transaction " + transactionId + " failed after " + duration + "ms");
+        }
+
+        if (duration > 10000) {  // 超过10秒
+            alertService.sendAlert("TCC Transaction Slow",
+                "Transaction " + transactionId + " took " + duration + "ms");
+        }
+    }
+
+    /**
+     * 健康检查
+     */
+    @Scheduled(fixedDelay = 60000)
+    public void healthCheck() {
+        // 检查待处理事务数量
+        long pendingCount = transactionStore.countPendingTransactions();
+        if (pendingCount > 100) {
+            alertService.sendAlert("TCC Pending Transactions High",
+                "There are " + pendingCount + " pending transactions");
+        }
+
+        // 检查失败率
+        double failureRate = calculateFailureRate();
+        if (failureRate > 0.1) {  // 失败率超过10%
+            alertService.sendAlert("TCC High Failure Rate",
+                "Failure rate is " + (failureRate * 100) + "%");
+        }
+    }
+}
+```
+
+## 8. 测试示例
+
+### 8.1 单元测试
+
+```java
+/**
+ * TCC单元测试
+ */
+@SpringBootTest
+@Transactional
+@Rollback
+public class TCCTransactionTest {
+
+    @Autowired
+    private OrderService orderService;
+
+    @Autowired
+    private TCCTransactionManager tccManager;
+
+    @MockBean
+    private InventoryRepository inventoryRepository;
+
+    @MockBean
+    private AccountRepository accountRepository;
+
+    @Test
+    public void testSuccessfulTransaction() {
+        // 准备测试数据
+        CreateOrderRequest request = new CreateOrderRequest();
+        request.setUserId("USER001");
+        request.setTotalAmount(new BigDecimal("1000"));
+        request.setItems(Arrays.asList(
+            new OrderItemRequest("PROD001", 2, new BigDecimal("500"))
+        ));
+
+        // Mock库存充足
+        Inventory inventory = new Inventory();
+        inventory.setProductId("PROD001");
+        inventory.setAvailable(10);
+        when(inventoryRepository.findByProductId("PROD001"))
+            .thenReturn(Optional.of(inventory));
+
+        // Mock账户余额充足
+        Account account = new Account();
+        account.setAccountId("USER001");
+        account.setBalance(new BigDecimal("2000"));
+        when(accountRepository.findByAccountId("USER001"))
+            .thenReturn(Optional.of(account));
+
+        // 执行测试
+        OrderResponse response = orderService.createOrder(request);
+
+        // 验证结果
+        assertNotNull(response);
+        assertEquals(OrderStatus.CONFIRMED, response.getStatus());
+        verify(inventoryRepository, times(2)).save(any(Inventory.class)); // Try + Confirm
+        verify(accountRepository, times(2)).save(any(Account.class)); // Try + Confirm
+    }
+
+    @Test
+    public void testTransactionRollback() {
+        // 准备测试数据
+        CreateOrderRequest request = new CreateOrderRequest();
+        request.setUserId("USER001");
+        request.setTotalAmount(new BigDecimal("1000"));
+
+        // Mock库存不足
+        Inventory inventory = new Inventory();
+        inventory.setProductId("PROD001");
+        inventory.setAvailable(0);  // 库存不足
+        when(inventoryRepository.findByProductId("PROD001"))
+            .thenReturn(Optional.of(inventory));
+
+        // 执行测试并期望异常
+        assertThrows(OrderException.class, () -> {
+            orderService.createOrder(request);
+        });
+
+        // 验证Cancel被调用
+        verify(inventoryRepository, atLeastOnce()).save(any(Inventory.class));
+    }
+}
+```
+
+### 8.2 集成测试
+
+```java
+/**
+ * TCC集成测试
+ */
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureMockMvc
+public class TCCIntegrationTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private TestRestTemplate restTemplate;
+
+    @Test
+    public void testCreateOrderEndToEnd() throws Exception {
+        // 准备请求数据
+        CreateOrderRequest request = new CreateOrderRequest();
+        request.setUserId("USER001");
+        request.setTotalAmount(new BigDecimal("1000"));
+        request.setItems(Arrays.asList(
+            new OrderItemRequest("PROD001", 2, new BigDecimal("500"))
+        ));
+
+        // 发送HTTP请求
+        mockMvc.perform(post("/api/orders")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CONFIRMED"))
+                .andExpect(jsonPath("$.orderId").isNotEmpty());
+
+        // 验证数据库状态
+        Order order = orderRepository.findByUserId("USER001").get(0);
+        assertEquals(OrderStatus.CONFIRMED, order.getStatus());
+
+        Inventory inventory = inventoryRepository.findByProductId("PROD001").orElseThrow();
+        assertEquals(8, inventory.getAvailable()); // 原10个减去2个
+
+        Account account = accountRepository.findByAccountId("USER001").orElseThrow();
+        assertEquals(new BigDecimal("1000"), account.getBalance()); // 原2000减去1000
+    }
+
+    @Test
+    public void testConcurrentTransactions() throws Exception {
+        int threadCount = 10;
+        CountDownLatch latch = new CountDownLatch(threadCount);
+        AtomicInteger successCount = new AtomicInteger();
+        AtomicInteger failCount = new AtomicInteger();
+
+        // 并发创建订单
+        for (int i = 0; i < threadCount; i++) {
+            final int index = i;
+            new Thread(() -> {
+                try {
+                    CreateOrderRequest request = new CreateOrderRequest();
+                    request.setUserId("USER" + index);
+                    request.setTotalAmount(new BigDecimal("100"));
+
+                    ResponseEntity<OrderResponse> response = restTemplate.postForEntity(
+                        "/api/orders", request, OrderResponse.class);
+
+                    if (response.getStatusCode() == HttpStatus.OK) {
+                        successCount.incrementAndGet();
+                    } else {
+                        failCount.incrementAndGet();
+                    }
+                } catch (Exception e) {
+                    failCount.incrementAndGet();
                 } finally {
                     latch.countDown();
                 }
-            });
+            }).start();
         }
 
-        latch.await(60, TimeUnit.SECONDS);
-        executor.shutdown();
+        // 等待所有线程完成
+        latch.await(30, TimeUnit.SECONDS);
 
-        System.out.println("并发订单结果 - 成功: " + successCount.get() + ", 失败: " + failureCount.get());
-        System.out.println("=== 并发订单测试完成 ===\n");
-    }
+        // 验证结果
+        log.info("Concurrent test result - Success: {}, Fail: {}",
+                 successCount.get(), failCount.get());
+        assertTrue(successCount.get() > 0);
 
-    /**
-     * 打印统计信息
-     */
-    private static void printStats(TCCTransactionManager txManager) {
-        TCCTransactionManagerStats stats = txManager.getStats();
-        System.out.println("=== TCC事务统计 ===");
-        System.out.println("节点ID: " + stats.getNodeId());
-        System.out.println("总事务数: " + stats.getTotalTransactions());
-        System.out.println("活跃事务数: " + stats.getActiveTransactions());
-        System.out.println("状态分布: " + stats.getStatusDistribution());
-        System.out.println("=================\n");
-    }
-
-    /**
-     * 性能测试
-     */
-    private static void performanceTest() throws Exception {
-        System.out.println("=== TCC性能测试 ===");
-
-        TCCTransactionManager txManager = new TCCTransactionManager("perf-node");
-
-        try {
-            AccountServiceTCCParticipant accountService = createAccountService();
-            InventoryServiceTCCParticipant inventoryService = createInventoryService();
-            ECommerceOrderService orderService = new ECommerceOrderService(
-                    txManager, accountService, inventoryService);
-
-            int testCount = 100;
-            long startTime = System.currentTimeMillis();
-
-            for (int i = 0; i < testCount; i++) {
-                List<OrderItem> items = Arrays.asList(
-                        new OrderItem("PERF_PRODUCT_" + i, 1, new BigDecimal("10.00"))
-                );
-
-                CreateOrderRequest request = new CreateOrderRequest(
-                        "PERF_ORDER_" + i,
-                        "PERF_CUSTOMER_" + i,
-                        items,
-                        new BigDecimal("10.00")
-                );
-
-                OrderResult result = orderService.createOrder(request);
-                if (result.isSuccess()) {
-                    orderService.commitOrder();
-                } else {
-                    orderService.rollbackOrder();
-                }
-            }
-
-            long endTime = System.currentTimeMillis();
-            long duration = endTime - startTime;
-
-            System.out.println("性能测试结果:");
-            System.out.println("事务数量: " + testCount);
-            System.out.println("总耗时: " + duration + "ms");
-            System.out.println("平均耗时: " + (duration / (double) testCount) + "ms/事务");
-            System.out.println("吞吐量: " + (testCount * 1000.0 / duration) + " 事务/秒");
-
-        } finally {
-            txManager.shutdown();
-        }
-
-        System.out.println("=== 性能测试完成 ===\n");
+        // 验证数据一致性
+        long totalOrders = orderRepository.count();
+        assertEquals(successCount.get(), totalOrders);
     }
 }
 ```
 
-## 8. 总结
+## 9. 故障处理和恢复
 
-TCC（Try-Confirm-Cancel）模式是一种重要的分布式事务解决方案，具有以下特点：
+### 9.1 异常处理机制
 
-### 8.1 核心优势
-- **业务无侵入性较低**：通过业务层面的补偿实现事务
-- **性能优秀**：避免长时间锁定资源，提高并发性
-- **灵活性高**：可以根据业务需求定制补偿逻辑
-- **适应性强**：适用于微服务和分布式系统架构
+```java
+/**
+ * TCC异常处理器
+ */
+@Component
+@Slf4j
+public class TCCExceptionHandler {
 
-### 8.2 关键机制
-- **三阶段协议**：Try、Confirm、Cancel保证事务原子性
-- **资源预留**：Try阶段预留资源而不立即执行
-- **最终一致性**：通过补偿机制实现数据最终一致
-- **幂等性**：Confirm和Cancel操作必须支持幂等
+    @Autowired
+    private TransactionStore transactionStore;
 
-### 8.3 应用场景
-- **电商订单**：涉及库存、支付、物流等多个服务
-- **金融转账**：跨银行或跨系统的资金转移
-- **预订系统**：酒店、机票等资源预订
-- **资源分配**：云计算资源的分配和释放
+    @Autowired
+    private RecoveryService recoveryService;
 
-### 8.4 实现要点
-- **Try阶段**：检查业务规则，预留资源
-- **Confirm阶段**：确认执行，完成业务操作
-- **Cancel阶段**：释放资源，回滚预留操作
-- **异常处理**：完善的重试和恢复机制
+    /**
+     * 处理Try阶段异常
+     */
+    public void handleTryException(TransactionRecord record, Exception e) {
+        log.error("Try phase exception for transaction: {}", record.getTransactionId(), e);
 
-### 8.5 与其他方案比较
-- **vs XA事务**：TCC性能更好，但实现复杂度更高
-- **vs Saga模式**：TCC提供更强的一致性保证
-- **vs 本地消息表**：TCC实时性更好，Saga适合长流程
-- **vs 最大努力通知**：TCC保证强一致性
+        // 更新事务状态
+        record.setStatus(TransactionStatus.TRY_FAILED);
+        record.setErrorMessage(e.getMessage());
+        transactionStore.update(record);
 
-### 8.6 最佳实践
-- **幂等设计**：所有TCC操作都要支持幂等
-- **超时处理**：合理设置超时时间和重试策略
-- **监控告警**：完善的事务监控和异常告警
-- **数据一致性**：确保Try和Cancel操作的数据一致性
+        // 触发Cancel流程
+        recoveryService.scheduleCancel(record);
+    }
 
-通过本文的详细实现，你可以深入理解TCC模式的工作原理和实现细节，为构建高性能的分布式事务系统提供有力支持。
+    /**
+     * 处理Confirm阶段异常
+     */
+    public void handleConfirmException(TransactionRecord record, Exception e) {
+        log.error("Confirm phase exception for transaction: {}", record.getTransactionId(), e);
+
+        // Confirm失败需要持续重试
+        record.setStatus(TransactionStatus.CONFIRM_FAILED);
+        record.setErrorMessage(e.getMessage());
+        record.setRetryCount(record.getRetryCount() + 1);
+        transactionStore.update(record);
+
+        // 调度重试
+        if (record.getRetryCount() < maxRetries) {
+            recoveryService.scheduleConfirmRetry(record);
+        } else {
+            // 达到最大重试次数，需要人工介入
+            alertService.sendCriticalAlert("TCC Confirm Max Retries Reached", record);
+        }
+    }
+
+    /**
+     * 处理Cancel阶段异常
+     */
+    public void handleCancelException(TransactionRecord record, Exception e) {
+        log.error("Cancel phase exception for transaction: {}", record.getTransactionId(), e);
+
+        // Cancel失败也需要持续重试
+        record.setStatus(TransactionStatus.CANCEL_FAILED);
+        record.setErrorMessage(e.getMessage());
+        record.setRetryCount(record.getRetryCount() + 1);
+        transactionStore.update(record);
+
+        // 调度重试
+        if (record.getRetryCount() < maxRetries) {
+            recoveryService.scheduleCancelRetry(record);
+        } else {
+            // 达到最大重试次数，需要人工介入
+            alertService.sendCriticalAlert("TCC Cancel Max Retries Reached", record);
+        }
+    }
+}
+```
+
+### 9.2 事务恢复服务
+
+```java
+/**
+ * TCC事务恢复服务
+ */
+@Service
+@Slf4j
+public class TCCRecoveryService {
+
+    @Autowired
+    private TransactionStore transactionStore;
+
+    @Autowired
+    private TCCTransactionManager transactionManager;
+
+    @Scheduled(fixedDelay = 30000) // 每30秒执行一次
+    public void recoverPendingTransactions() {
+        log.info("Starting TCC transaction recovery scan");
+
+        List<TransactionRecord> pendingTransactions =
+            transactionStore.findByStatusIn(Arrays.asList(
+                TransactionStatus.TRYING,
+                TransactionStatus.CONFIRMING,
+                TransactionStatus.CANCELING,
+                TransactionStatus.CONFIRM_FAILED,
+                TransactionStatus.CANCEL_FAILED
+            ));
+
+        for (TransactionRecord record : pendingTransactions) {
+            try {
+                recoverTransaction(record);
+            } catch (Exception e) {
+                log.error("Failed to recover transaction: {}", record.getTransactionId(), e);
+            }
+        }
+
+        log.info("TCC transaction recovery scan completed, processed {} transactions",
+                 pendingTransactions.size());
+    }
+
+    private void recoverTransaction(TransactionRecord record) {
+        long age = System.currentTimeMillis() - record.getCreateTime();
+
+        switch (record.getStatus()) {
+            case TRYING:
+                if (age > tryTimeout) {
+                    // Try超时，执行Cancel
+                    log.info("Try timeout, executing cancel for: {}", record.getTransactionId());
+                    executeCancelRecovery(record);
+                }
+                break;
+
+            case CONFIRMING:
+            case CONFIRM_FAILED:
+                // 继续Confirm
+                log.info("Continuing confirm for: {}", record.getTransactionId());
+                executeConfirmRecovery(record);
+                break;
+
+            case CANCELING:
+            case CANCEL_FAILED:
+                // 继续Cancel
+                log.info("Continuing cancel for: {}", record.getTransactionId());
+                executeCancelRecovery(record);
+                break;
+        }
+    }
+
+    private void executeConfirmRecovery(TransactionRecord record) {
+        TransactionContext context = new TransactionContext(record.getTransactionId());
+
+        for (ParticipantRecord participant : record.getParticipants()) {
+            if (participant.getStatus() != ParticipantStatus.CONFIRMED) {
+                try {
+                    TCCParticipant tccParticipant =
+                        transactionManager.getParticipant(participant.getParticipantName());
+                    tccParticipant.doConfirm(context, participant.getTryResult());
+
+                    participant.setStatus(ParticipantStatus.CONFIRMED);
+                    participant.setConfirmTime(System.currentTimeMillis());
+                } catch (Exception e) {
+                    log.error("Confirm recovery failed for participant: {}",
+                             participant.getParticipantName(), e);
+                }
+            }
+        }
+
+        // 检查是否所有参与者都已确认
+        boolean allConfirmed = record.getParticipants().stream()
+            .allMatch(p -> p.getStatus() == ParticipantStatus.CONFIRMED);
+
+        if (allConfirmed) {
+            record.setStatus(TransactionStatus.CONFIRMED);
+            transactionStore.update(record);
+        }
+    }
+
+    private void executeCancelRecovery(TransactionRecord record) {
+        TransactionContext context = new TransactionContext(record.getTransactionId());
+
+        for (ParticipantRecord participant : record.getParticipants()) {
+            if (participant.getStatus() == ParticipantStatus.TRY_SUCCESS) {
+                try {
+                    TCCParticipant tccParticipant =
+                        transactionManager.getParticipant(participant.getParticipantName());
+                    tccParticipant.doCancel(context, participant.getTryResult());
+
+                    participant.setStatus(ParticipantStatus.CANCELED);
+                    participant.setCancelTime(System.currentTimeMillis());
+                } catch (Exception e) {
+                    log.error("Cancel recovery failed for participant: {}",
+                             participant.getParticipantName(), e);
+                }
+            }
+        }
+
+        // 检查是否所有参与者都已取消
+        boolean allCanceled = record.getParticipants().stream()
+            .allMatch(p -> p.getStatus() == ParticipantStatus.CANCELED ||
+                         p.getStatus() == ParticipantStatus.TRY_FAILED);
+
+        if (allCanceled) {
+            record.setStatus(TransactionStatus.CANCELED);
+            transactionStore.update(record);
+        }
+    }
+}
+```
+
+## 10. 总结
+
+### 10.1 TCC模式优势
+
+1. **高性能**：避免了长时间的资源锁定，提高了系统并发能力
+2. **灵活性**：业务逻辑自定义，可以实现复杂的补偿逻辑
+3. **可靠性**：通过补偿机制保证最终一致性
+4. **跨服务**：天然支持微服务架构下的分布式事务
+
+### 10.2 TCC模式劣势
+
+1. **开发复杂**：需要实现Try、Confirm、Cancel三个方法
+2. **业务侵入**：对业务代码有较大侵入性
+3. **数据设计**：需要设计中间状态和补偿数据
+4. **运维成本**：需要监控和处理补偿失败的情况
+
+### 10.3 使用建议
+
+1. **评估场景**：确认业务场景确实需要分布式事务
+2. **简化设计**：尽量减少参与者数量，降低复杂度
+3. **幂等设计**：所有操作都要支持幂等性
+4. **监控告警**：建立完善的监控和告警机制
+5. **故障演练**：定期进行故障演练，验证补偿机制
+
+### 10.4 相关资源
+
+- [TCC-Transaction开源框架](https://github.com/changmingxie/tcc-transaction)
+- [Seata TCC模式](https://seata.io/zh-cn/docs/dev/mode/tcc-mode.html)
+- [分布式事务最佳实践](https://www.infoq.cn/article/distributed-transaction-best-practice)
+
+---
+
+**延伸阅读**：
+- [分布式事务：Saga模式详解](./distributed-saga-pattern.md)
+- [分布式事务：两阶段提交(2PC)详解](./distributed-2pc.md)
+- [分布式事务：消息事务详解](./distributed-message-transaction.md)

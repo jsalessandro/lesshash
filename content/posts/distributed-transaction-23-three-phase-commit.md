@@ -2474,113 +2474,309 @@ public class ReliableMessaging {
 💡
 
 **建议做法**：从非核心业务开始试点，积累经验后再推广到核心系统，同时建立完善的监控和应急响应机制
-### 📈 成本效益分析
-💰 3PC实施成本效益分析
-💸 实施成本分析
+### 📈 成本效益分析：3PC投资决策全攻略
 
-开发成本
+> 💡 **投资智慧**：每一分钱的技术投入，都应该有清晰的回报预期
 
-**开发工作量估算**：
-```
-2PC实现：10人天
-3PC实现：25人天 (+150%)
+```mermaid
+graph TB
+    subgraph "💰 3PC投资分析框架"
+        A[实施成本] --> D[投资回报]
+        B[运营成本] --> D
+        C[机会成本] --> D
 
-额外工作量包括：
-- 状态机设计和实现：5人天
-- 超时机制开发：3人天
-- 故障恢复逻辑：4人天
-- 测试用例编写：3人天
-```
+        A --> A1[🏗️ 开发投入]
+        A --> A2[🎓 培训成本]
+        A --> A3[⚙️ 工具采购]
 
-**技能要求**：
-- 高级分布式系统工程师
-- 深入理解一致性理论
-- 丰富的故障处理经验
-运维成本
+        B --> B1[📊 运维开销]
+        B --> B2[🔧 维护成本]
+        B --> B3[⚡ 性能开销]
 
-**运维复杂度**：
-```
-监控指标：2PC(15个) vs 3PC(35个)
-告警规则：2PC(8个) vs 3PC(20个)
-运维手册：2PC(50页) vs 3PC(120页)
+        C --> C1[⏱️ 时间窗口]
+        C --> C2[🎯 市场机会]
+        C --> C3[🏃 竞争优势]
+
+        D --> E[💎 ROI决策]
+    end
 ```
 
-**人员培训**：
-- 运维团队培训：5人天/人
-- 开发团队培训：3人天/人
-- 持续的知识更新
-性能成本
+## 🏗️ 实施成本深度分析
 
-**资源开销增加**：
-```
-CPU使用：+20%（状态管理）
-内存使用：+30%（超时任务）
-网络带宽：+30%（额外消息）
-存储空间：+25%（详细日志）
-```
+### 💻 开发成本详细评估
 
-**延迟增加**：
-- 平均事务延迟：+50%
-- 99%延迟：+60%
-- 吞吐量下降：-30%
-📈 预期收益分析
+| 📋 开发项目 | 💰 成本估算 | ⏰ 时间周期 | 🎯 关键风险 | 💡 优化建议 |
+|-------------|-------------|-------------|-------------|-------------|
+| **核心协议实现** | 12人天 | 2-3周 | 复杂状态机设计 | 采用成熟框架 |
+| **超时处理机制** | 5人天 | 1周 | 边界条件处理 | 大量单元测试 |
+| **故障恢复逻辑** | 8人天 | 1.5周 | 数据一致性风险 | 故障注入测试 |
+| **监控与日志** | 6人天 | 1周 | 性能影响 | 异步日志处理 |
+| **集成测试** | 10人天 | 2周 | 环境复杂度 | 容器化测试 |
+| **文档与培训** | 4人天 | 1周 | 知识传递效果 | 实战演练 |
+| **🎯 总计** | **45人天** | **8-9周** | **$22,500** | **渐进实施** |
 
-可用性提升
-
-**可用性指标改善**：
-```
-系统可用性：
-2PC: 99.9% (8.76小时/年停机)
-3PC: 99.95% (4.38小时/年停机)
-
-故障恢复时间：
-2PC: 15-60分钟（需人工干预）
-3PC: 2-5分钟（自动恢复）
+```mermaid
+gantt
+    title 3PC开发项目时间线
+    dateFormat  YYYY-MM-DD
+    section 核心开发
+    协议实现     :done, impl, 2024-01-01, 15d
+    超时机制     :done, timeout, after impl, 7d
+    故障恢复     :active, recovery, after timeout, 10d
+    section 质量保证
+    监控日志     :monitor, after recovery, 7d
+    集成测试     :test, after monitor, 14d
+    section 部署准备
+    文档培训     :doc, after test, 7d
 ```
 
-**业务价值**：
-- 减少业务中断时间
-- 提高用户满意度
-- 避免SLA违约成本
-运维效率
+### 🎓 人才培养投资
 
-**运维工作量减少**：
+| 👥 培训对象 | 📚 培训内容 | ⏰ 培训周期 | 💰 人均成本 | 🎯 预期效果 |
+|-------------|-------------|-------------|-------------|-------------|
+| **架构师(2人)** | 分布式理论深度训练 | 5天 | $2,000 | 设计能力提升80% |
+| **高级开发(4人)** | 3PC实现与调优 | 3天 | $1,200 | 开发效率提升60% |
+| **测试工程师(2人)** | 分布式系统测试 | 3天 | $1,000 | 测试覆盖率95%+ |
+| **运维工程师(3人)** | 3PC运维与故障排查 | 4天 | $1,500 | 故障响应时间减半 |
+| **项目经理(1人)** | 分布式项目管理 | 2天 | $800 | 项目成功率提升40% |
+
+**💡 培训优化策略**：
+- 📖 理论学习 + 🛠️ 实战演练 = 最佳效果
+- 🔄 定期复训，确保知识不断更新
+- 🏆 建立认证体系，激励持续学习
+
+### 🛠️ 工具与基础设施
+
+```mermaid
+mindmap
+  root)3PC工具生态系统(
+    开发工具
+      IDE插件
+      调试工具
+      性能分析器
+    测试工具
+      压力测试
+      故障注入
+      自动化测试
+    运维工具
+      监控平台
+      告警系统
+      日志分析
+    管理工具
+      配置管理
+      版本控制
+      文档系统
 ```
-故障处理次数：
-2PC: 12次/月
-3PC: 4次/月 (-67%)
 
-紧急响应：
-2PC: 需要24×7待命
-3PC: 减少非工作时间干预
+| 🔧 工具类别 | 📦 推荐产品 | 💰 年度成本 | 🎯 核心价值 |
+|-------------|-------------|-------------|-------------|
+| **监控平台** | Prometheus + Grafana | $3,000 | 全方位系统可观测性 |
+| **APM工具** | SkyWalking / Zipkin | $5,000 | 分布式链路追踪 |
+| **测试平台** | Chaos Monkey | $2,000 | 故障注入与演练 |
+| **日志系统** | ELK Stack | $4,000 | 集中化日志分析 |
+| **配置中心** | Nacos / Consul | $1,000 | 动态配置管理 |
+
+## 📊 运营成本全景分析
+
+### ⚡ 性能开销量化评估
+
+```mermaid
+graph LR
+    subgraph "🔋 资源消耗对比"
+        A[2PC基准] --> B[CPU: 100%]
+        A --> C[内存: 100%]
+        A --> D[网络: 100%]
+        A --> E[磁盘: 100%]
+
+        F[3PC实际] --> G[CPU: 125%]
+        F --> H[内存: 140%]
+        F --> I[网络: 150%]
+        F --> J[磁盘: 130%]
+    end
 ```
 
-**成本节约**：
-- 减少运维人力成本
-- 降低故障处理成本
-- 提高系统可预测性
-📊 投资回报率计算
+| 📈 性能指标 | 2️⃣ 2PC基准 | 3️⃣ 3PC实际 | 📊 增长幅度 | 💰 成本影响 |
+|-------------|-------------|-------------|-------------|-------------|
+| **CPU使用率** | 45% | 56% | +25% | 每月$200额外成本 |
+| **内存占用** | 2GB | 2.8GB | +40% | 每月$120额外成本 |
+| **网络带宽** | 100Mbps | 150Mbps | +50% | 每月$300额外成本 |
+| **存储空间** | 50GB | 65GB | +30% | 每月$80额外成本 |
+| **事务延迟** | 15ms | 23ms | +53% | 用户体验影响 |
 
-**ROI计算模型**：
-```
-总实施成本 = 开发成本 + 运维成本 + 性能成本
-= 25人天 × $500 + $2000/月 + 20%硬件成本
+### 🚨 运维复杂度评估
 
-年度收益 = 可用性收益 + 运维效率收益
-= (停机成本减少) + (人力成本节约)
-
-ROI = (年度收益 - 年度成本) / 总实施成本
-
-典型结果：
-- 大型金融系统：ROI > 200%
-- 中型企业系统：ROI ≈ 50%
-- 小型互联网系统：ROI < 0%
+```mermaid
+pie title 运维工作量分布
+    "监控告警" : 35
+    "故障处理" : 25
+    "性能调优" : 20
+    "文档维护" : 10
+    "培训支持" : 10
 ```
 
-**结论**：
-- 对于高可用性要求的关键系统，3PC有明显价值
-- 对于成本敏感的系统，需要谨慎评估
-- 技术团队能力是成功的关键因素
+| 🔧 运维活动 | 📅 频率 | ⏰ 平均耗时 | 👥 人员需求 | 💰 月度成本 |
+|-------------|---------|-------------|-------------|-------------|
+| **监控巡检** | 每日 | 30分钟 | 运维工程师 | $1,200 |
+| **告警处理** | 20次/月 | 45分钟/次 | 值班工程师 | $800 |
+| **性能调优** | 每周 | 2小时 | 高级工程师 | $2,000 |
+| **故障演练** | 每月 | 4小时 | 技术团队 | $1,500 |
+| **知识更新** | 每季度 | 8小时 | 全体成员 | $3,000 |
+
+## 💎 收益价值深度挖掘
+
+### 🎯 可用性收益量化
+
+```mermaid
+graph TB
+    subgraph "💼 业务连续性价值链"
+        A[系统可用性] --> B[用户体验]
+        B --> C[客户满意度]
+        C --> D[业务收入]
+        D --> E[竞争优势]
+
+        A1[99.9% → 99.95%] --> B1[响应时间优化]
+        B1 --> C1[客户投诉减少80%]
+        C1 --> D1[客户流失率降低40%]
+        D1 --> E1[市场份额提升15%]
+    end
+```
+
+| 📊 可用性指标 | 2️⃣ 2PC现状 | 3️⃣ 3PC目标 | 📈 改善幅度 | 💰 年度价值 |
+|---------------|-------------|-------------|-------------|-------------|
+| **系统可用性** | 99.9% (8.76h停机) | 99.95% (4.38h停机) | **+50%** | $2,190,000 |
+| **故障恢复时间** | 30分钟 | 3分钟 | **-90%** | $850,000 |
+| **自动化率** | 60% | 85% | **+25%** | $420,000 |
+| **用户满意度** | 4.2/5.0 | 4.7/5.0 | **+12%** | $650,000 |
+
+### 🏆 运维效率提升
+
+| 🎯 效率指标 | 📉 改善前 | 📈 改善后 | 🚀 提升比例 | 💰 年度节约 |
+|-------------|-----------|-----------|-------------|-------------|
+| **故障处理次数** | 36次/月 | 12次/月 | **-67%** | $288,000 |
+| **紧急响应时间** | 24×7待命 | 工作时间响应 | **-40%** | $180,000 |
+| **人工干预率** | 80% | 30% | **-63%** | $320,000 |
+| **知识传递效率** | 15天培训 | 5天培训 | **-67%** | $120,000 |
+
+## 📊 ROI综合决策模型
+
+### 💰 三年期投资回报分析
+
+```mermaid
+graph LR
+    subgraph "📈 ROI趋势分析"
+        A[Year 1: 初始投入期] --> B[Year 2: 平衡点]
+        B --> C[Year 3: 收益期]
+
+        A1[-$150K] --> B1[Break Even]
+        B1 --> C1[+$500K ROI]
+    end
+```
+
+| 📅 年度 | 💸 投资成本 | 💰 运营收益 | 📊 净现金流 | 📈 累计ROI |
+|---------|-------------|-------------|-------------|-------------|
+| **第1年** | $150,000 | $120,000 | **-$30,000** | -20% |
+| **第2年** | $50,000 | $380,000 | **+$330,000** | +220% |
+| **第3年** | $30,000 | $420,000 | **+$390,000** | +480% |
+
+### 🎯 不同场景下的ROI预测
+
+```mermaid
+graph TB
+    subgraph "🏢 企业规模与ROI关系"
+        A[初创企业<br/>📊 ROI: -50%] --> A1[技术债务风险]
+        B[中型企业<br/>📊 ROI: +120%] --> B1[平衡点最佳]
+        C[大型企业<br/>📊 ROI: +350%] --> C1[规模效应显著]
+        D[超大型企业<br/>📊 ROI: +500%] --> D1[战略必需品]
+    end
+```
+
+| 🏢 企业类型 | 💼 业务特征 | 🎯 适用场景 | 📊 预期ROI | 🚀 推荐度 |
+|-------------|-------------|-------------|-------------|-----------|
+| **金融银行** | 高可用性要求 | 核心交易系统 | **+400%** | ⭐⭐⭐⭐⭐ |
+| **电商平台** | 流量峰值明显 | 订单处理系统 | **+250%** | ⭐⭐⭐⭐⭐ |
+| **制造业** | 稳定性优先 | ERP集成系统 | **+180%** | ⭐⭐⭐⭐ |
+| **初创公司** | 成本敏感 | MVP快速验证 | **-30%** | ⭐⭐ |
+| **政府机构** | 合规要求高 | 公共服务系统 | **+300%** | ⭐⭐⭐⭐⭐ |
+
+## 🎯 投资决策建议框架
+
+### ✅ 3PC投资"绿灯"指标
+
+```mermaid
+radar
+    title 3PC适用性雷达图
+    options
+        scale: [0, 5]
+    data
+        datasets
+            label: "理想场景"
+            data: [5, 5, 4, 5, 4, 3]
+            backgroundColor: "rgba(34, 197, 94, 0.2)"
+            borderColor: "rgb(34, 197, 94)"
+        datasets
+            label: "最低要求"
+            data: [3, 3, 2, 3, 2, 2]
+            backgroundColor: "rgba(239, 68, 68, 0.2)"
+            borderColor: "rgb(239, 68, 68)"
+    labels
+        ["可用性要求", "技术团队能力", "预算充足度", "业务关键性", "扩展需求", "时间紧迫性"]
+```
+
+| ✅ 推荐投资条件 | 🎯 评估标准 | ⭐ 权重 |
+|-----------------|-------------|--------|
+| **可用性要求** | SLA > 99.9% | 25% |
+| **团队技术能力** | 高级工程师占比 > 30% | 20% |
+| **预算充足性** | 年度技术预算 > $500K | 20% |
+| **业务关键性** | 核心业务系统 | 15% |
+| **扩展计划** | 3年内业务增长 > 100% | 10% |
+| **竞争压力** | 行业技术领先需求 | 10% |
+
+### ⚠️ 投资风险预警
+
+| 🚨 风险类别 | 📊 风险等级 | 🎯 影响因素 | 💡 缓解策略 |
+|-------------|-------------|-------------|-------------|
+| **技术风险** | 🔴 高 | 团队能力不足 | 外部咨询 + 培训 |
+| **进度风险** | 🟡 中 | 复杂度超预期 | 分阶段实施 |
+| **成本风险** | 🟡 中 | 隐性成本增加 | 详细预算规划 |
+| **业务风险** | 🔴 高 | 迁移过程中断 | 充分测试 + 回滚计划 |
+
+## 💡 最终投资建议
+
+### 🎯 决策矩阵
+
+```mermaid
+graph TB
+    subgraph "🤔 3PC投资决策树"
+        A{业务是否关键？} --> B[是]
+        A --> C[否]
+
+        B --> D{预算是否充足？}
+        D --> E[是] --> F{团队能力是否足够？}
+        D --> G[否] --> H[延迟投资]
+
+        F --> I[是] --> J[🟢 强烈推荐]
+        F --> K[否] --> L[🟡 谨慎投资]
+
+        C --> M[🔴 不推荐]
+    end
+```
+
+### 🏆 成功实施的关键要素
+
+| 🎯 成功要素 | 📊 重要性 | 💡 实施建议 |
+|-------------|-----------|-------------|
+| **🧠 技术能力** | ⭐⭐⭐⭐⭐ | 核心团队至少2名分布式专家 |
+| **💰 预算规划** | ⭐⭐⭐⭐ | 预留30%应急预算 |
+| **⏰ 时间安排** | ⭐⭐⭐⭐ | 分3期逐步实施 |
+| **🎓 培训计划** | ⭐⭐⭐⭐ | 全员培训 + 认证考核 |
+| **🔧 工具支持** | ⭐⭐⭐ | 完善的开发运维工具链 |
+| **📈 监控体系** | ⭐⭐⭐⭐⭐ | 从第一天开始建立监控 |
+
+**🎯 投资建议总结**：
+- 💎 **高价值场景**：金融、电商等高可用性要求的核心系统
+- ⚖️ **平衡考虑**：技术能力、预算约束、时间窗口的综合平衡
+- 🚀 **渐进实施**：从非关键系统开始，积累经验后推广
+- 📊 **持续监控**：建立ROI跟踪机制，及时调整投资策略
 ## 🚀 3PC的改进方向和未来发展
 
 ### 🔬 理论改进研究
@@ -2708,125 +2904,850 @@ public class Consensus3PC {
 - Raft的强一致性保证
 - 3PC的非阻塞特性
 - 更好的故障恢复能力
-### 🏗️ 工程实践优化
-🔧 3PC工程实践优化方向
-📊 智能监控与诊断
+### 🏗️ 工程实践优化：从理论到生产的全方位指南
 
-**AI驱动的异常检测**：
+> 💡 **实践智慧**：优秀的3PC实现不仅要理论正确，更要在生产环境中稳定高效
+
+```mermaid
+graph TB
+    subgraph "🎯 3PC工程实践全景图"
+        A[理论基础] --> B[架构设计]
+        B --> C[性能优化]
+        C --> D[可观测性]
+        D --> E[运维自动化]
+        E --> F[生产部署]
+
+        A --> A1[协议理解]
+        A --> A2[场景分析]
+        A --> A3[风险评估]
+
+        B --> B1[模块化设计]
+        B --> B2[容错架构]
+        B --> B3[扩展性设计]
+
+        C --> C1[批量处理]
+        C --> C2[连接优化]
+        C --> C3[缓存策略]
+
+        D --> D1[指标体系]
+        D --> D2[链路追踪]
+        D --> D3[智能告警]
+
+        E --> E1[自动部署]
+        E --> E2[故障自愈]
+        E --> E3[弹性伸缩]
+
+        F --> F1[灰度发布]
+        F --> F2[生产监控]
+        F --> F3[应急响应]
+    end
+```
+
+## 🏛️ 企业级架构设计模式
+
+### 🎨 模块化架构设计
+
+```mermaid
+graph TB
+    subgraph "🏗️ 3PC企业级架构"
+        A[API Gateway] --> B[协调者集群]
+        B --> C[状态管理]
+        B --> D[通信层]
+        B --> E[监控层]
+
+        C --> C1[内存状态]
+        C --> C2[持久化]
+        C --> C3[状态同步]
+
+        D --> D1[消息队列]
+        D --> D2[连接池]
+        D --> D3[负载均衡]
+
+        E --> E1[指标收集]
+        E --> E2[链路追踪]
+        E --> E3[日志聚合]
+
+        F[参与者集群] --> D
+        G[配置中心] --> B
+        H[服务发现] --> B
+    end
+```
+
+| 🏗️ 架构层次 | 🎯 核心职责 | 💼 关键技术 | 📊 性能指标 |
+|-------------|-------------|-------------|-------------|
+| **API层** | 请求路由、限流、认证 | Spring Gateway, Zuul | 延迟 < 10ms |
+| **协调层** | 事务协调、状态管理 | Akka, Vert.x | 吞吐 > 1000 TPS |
+| **通信层** | 可靠消息传递 | Netty, gRPC | 丢包率 < 0.01% |
+| **存储层** | 状态持久化 | Redis, PostgreSQL | 可用性 > 99.99% |
+| **监控层** | 全链路可观测 | Prometheus, Jaeger | 采样率 100% |
+
+### 🛡️ 容错与恢复机制
+
 ```java
-public class IntelligentMonitoring {
-    private final AnomalyDetector anomalyDetector;
-    private final PredictiveAnalyzer predictiveAnalyzer;
+@Component
+public class EnterpriseThreePCCoordinator {
 
-    public void monitorTransactionHealth() {
-        // 收集多维度指标
-        TransactionMetrics metrics = collectMetrics();
+    @Autowired
+    private CircuitBreakerRegistry circuitBreakerRegistry;
 
-        // AI异常检测
-        if (anomalyDetector.isAnomalous(metrics)) {
-            AnomalyReport report = anomalyDetector.analyze(metrics);
+    @Autowired
+    private RetryRegistry retryRegistry;
 
-            // 预测性故障处理
-            if (report.getSeverity() > THRESHOLD) {
-                PredictiveAction action = predictiveAnalyzer.suggest(report);
-                executePreventiveAction(action);
-            }
-        }
+    @Autowired
+    private BulkheadRegistry bulkheadRegistry;
+
+    public TransactionResult executeWithResilience(String txnId,
+                                                  List<ThreePCParticipant> participants,
+                                                  TransactionOperation operation) {
+
+        // 1. 断路器保护
+        CircuitBreaker circuitBreaker = circuitBreakerRegistry
+            .circuitBreaker("3pc-transaction");
+
+        // 2. 重试机制
+        Retry retry = retryRegistry.retry("3pc-retry");
+
+        // 3. 舱壁隔离
+        Bulkhead bulkhead = bulkheadRegistry.bulkhead("3pc-bulkhead");
+
+        // 4. 组合容错机制
+        Supplier<TransactionResult> decoratedSupplier = Decorators
+            .ofSupplier(() -> executeTransaction(txnId, participants, operation))
+            .withCircuitBreaker(circuitBreaker)
+            .withRetry(retry)
+            .withBulkhead(bulkhead)
+            .withFallback(Arrays.asList(
+                Exception.class),
+                throwable -> handleFallback(txnId, throwable)
+            );
+
+        return decoratedSupplier.get();
     }
 
-    private TransactionMetrics collectMetrics() {
-        return TransactionMetrics.builder()
-            .averageLatency(latencyCollector.getAverage())
-            .successRate(transactionTracker.getSuccessRate())
-            .participantHealth(healthChecker.checkAll())
-            .networkQuality(networkMonitor.getQuality())
+    private TransactionResult handleFallback(String txnId, Throwable throwable) {
+        log.error("事务{}执行失败，触发降级处理", txnId, throwable);
+
+        // 降级策略
+        if (throwable instanceof TimeoutException) {
+            return TransactionResult.timeout(txnId);
+        } else if (throwable instanceof NetworkException) {
+            return TransactionResult.networkError(txnId);
+        } else {
+            return TransactionResult.unknownError(txnId);
+        }
+    }
+}
+```
+
+## 🚀 极致性能优化策略
+
+### ⚡ 批量处理增强版
+
+```mermaid
+sequenceDiagram
+    participant C as 协调者
+    participant P1 as 参与者1
+    participant P2 as 参与者2
+    participant P3 as 参与者3
+
+    Note over C: 收集100个事务请求
+    Note over C: 智能分组优化
+
+    C->>+P1: 批量CanCommit(25个事务)
+    C->>+P2: 批量CanCommit(25个事务)
+    C->>+P3: 批量CanCommit(50个事务)
+
+    P1-->>-C: 批量投票结果
+    P2-->>-C: 批量投票结果
+    P3-->>-C: 批量投票结果
+
+    Note over C: 过滤可提交事务(85个)
+
+    C->>+P1: 批量PreCommit(20个)
+    C->>+P2: 批量PreCommit(20个)
+    C->>+P3: 批量PreCommit(45个)
+
+    P1-->>-C: 批量准备完成
+    P2-->>-C: 批量准备完成
+    P3-->>-C: 批量准备完成
+
+    C->>P1: 批量DoCommit
+    C->>P2: 批量DoCommit
+    C->>P3: 批量DoCommit
+```
+
+```java
+@Service
+public class UltraBatchOptimized3PC {
+
+    private final TransactionBatcher batcher;
+    private final LoadBalancer loadBalancer;
+
+    public BatchExecutionResult executeBatchWithOptimization(
+            List<Transaction> transactions) {
+
+        // 1. 智能分组策略
+        BatchGroupingResult grouping = optimizedGrouping(transactions);
+
+        // 2. 并行执行批量操作
+        List<CompletableFuture<BatchResult>> futures = grouping.getGroups()
+            .parallelStream()
+            .map(group -> CompletableFuture.supplyAsync(() ->
+                executeSingleBatch(group), executorService))
+            .collect(toList());
+
+        // 3. 收集结果并优化
+        return BatchExecutionResult.of(
+            futures.stream()
+                .map(CompletableFuture::join)
+                .collect(toList())
+        );
+    }
+
+    private BatchGroupingResult optimizedGrouping(List<Transaction> transactions) {
+        return BatchGroupingStrategy.builder()
+            // 按参与者相似度分组
+            .participantSimilarity(0.8)
+            // 按资源依赖分组
+            .resourceDependency(true)
+            // 按优先级分组
+            .priorityAware(true)
+            // 批量大小优化
+            .optimalBatchSize(50)
+            .group(transactions);
+    }
+
+    private BatchResult executeSingleBatch(TransactionGroup group) {
+        try {
+            // 第一阶段：智能CanCommit
+            BatchVoteResult voteResult = executeSmartCanCommit(group);
+
+            // 动态调整：根据投票结果优化
+            if (voteResult.getSuccessRate() < 0.7) {
+                // 拆分大批量为小批量
+                return splitAndRetry(group);
+            }
+
+            // 第二阶段：并行PreCommit
+            BatchPreCommitResult preCommitResult =
+                executeParallelPreCommit(voteResult.getPassedTransactions());
+
+            // 第三阶段：最终提交
+            return executeFinalCommit(preCommitResult);
+
+        } catch (Exception e) {
+            return handleBatchFailure(group, e);
+        }
+    }
+}
+```
+
+### 🔗 智能连接管理
+
+```java
+@Component
+public class IntelligentConnectionManager {
+
+    private final Map<Participant, SmartConnectionPool> pools;
+    private final ConnectionPredictor predictor;
+    private final HealthMonitor healthMonitor;
+
+    @EventListener
+    public void onSystemLoad(SystemLoadEvent event) {
+        // 动态调整连接池配置
+        adjustConnectionPools(event.getLoadMetrics());
+    }
+
+    private void adjustConnectionPools(LoadMetrics metrics) {
+        pools.forEach((participant, pool) -> {
+            // 基于机器学习预测连接需求
+            ConnectionDemandPrediction prediction =
+                predictor.predict(participant, metrics);
+
+            // 动态调整池大小
+            pool.adjustSize(
+                prediction.getMinConnections(),
+                prediction.getMaxConnections(),
+                prediction.getOptimalConnections()
+            );
+
+            // 预热连接
+            if (prediction.shouldPreWarm()) {
+                pool.preWarmConnections(prediction.getPreWarmCount());
+            }
+        });
+    }
+
+    public Connection getOptimalConnection(Participant participant,
+                                         TransactionPriority priority) {
+        SmartConnectionPool pool = pools.get(participant);
+
+        // 基于事务优先级选择连接
+        return pool.getConnection(
+            ConnectionSelectionStrategy.builder()
+                .priority(priority)
+                .latencyRequirement(priority.getMaxLatency())
+                .reliabilityRequirement(priority.getMinReliability())
+                .build()
+        );
+    }
+}
+```
+
+## 📊 智能监控与可观测性
+
+### 🎯 全维度指标体系
+
+```mermaid
+mindmap
+  root)3PC监控指标体系(
+    业务指标
+      事务成功率
+      平均延迟
+      吞吐量
+      错误率
+    系统指标
+      CPU使用率
+      内存占用
+      网络延迟
+      磁盘I/O
+    协议指标
+      阶段耗时
+      投票成功率
+      超时频率
+      状态转换
+    质量指标
+      可用性
+      一致性
+      分区容忍性
+      恢复时间
+```
+
+| 📈 指标类别 | 🎯 关键指标 | 📊 正常范围 | ⚠️ 告警阈值 | 🚨 严重阈值 |
+|-------------|-------------|-------------|-------------|-------------|
+| **性能指标** | 事务延迟 | < 100ms | > 500ms | > 1000ms |
+| **性能指标** | 吞吐量 | > 1000 TPS | < 500 TPS | < 100 TPS |
+| **可靠性** | 成功率 | > 99.9% | < 99% | < 95% |
+| **可用性** | 系统可用性 | > 99.95% | < 99.9% | < 99% |
+| **资源指标** | CPU使用率 | < 70% | > 80% | > 95% |
+| **资源指标** | 内存使用率 | < 80% | > 90% | > 95% |
+
+### 🔍 AI驱动的异常检测
+
+```java
+@Service
+public class AIAnomalyDetector {
+
+    @Autowired
+    private MachineLearningService mlService;
+
+    @Autowired
+    private TimeSeriesAnalyzer timeSeriesAnalyzer;
+
+    public AnomalyDetectionResult detectAnomalies(TransactionMetrics metrics) {
+
+        // 1. 时间序列异常检测
+        TimeSeriesAnomaly timeSeriesAnomaly =
+            timeSeriesAnalyzer.detectAnomaly(metrics.getTimeSeries());
+
+        // 2. 多维度特征分析
+        FeatureVector features = extractFeatures(metrics);
+        MLAnomalyResult mlResult = mlService.detectAnomaly(features);
+
+        // 3. 规则引擎检测
+        RuleBasedResult ruleResult = applyBusinessRules(metrics);
+
+        // 4. 综合分析
+        return AnomalyDetectionResult.builder()
+            .timeSeriesAnomaly(timeSeriesAnomaly)
+            .mlAnomaly(mlResult)
+            .ruleBasedAnomaly(ruleResult)
+            .confidence(calculateConfidence(timeSeriesAnomaly, mlResult, ruleResult))
+            .recommendation(generateRecommendation(metrics))
+            .build();
+    }
+
+    private FeatureVector extractFeatures(TransactionMetrics metrics) {
+        return FeatureVector.builder()
+            // 性能特征
+            .latencyPercentiles(metrics.getLatencyPercentiles())
+            .throughputTrend(metrics.getThroughputTrend())
+            // 错误特征
+            .errorRateByType(metrics.getErrorRateByType())
+            .timeoutFrequency(metrics.getTimeoutFrequency())
+            // 参与者特征
+            .participantHealthScore(metrics.getParticipantHealthScore())
+            .networkQualityScore(metrics.getNetworkQualityScore())
+            // 业务特征
+            .transactionComplexity(metrics.getTransactionComplexity())
+            .peakTrafficRatio(metrics.getPeakTrafficRatio())
             .build();
     }
 }
 ```
 
-**智能告警系统**：
-- 基于机器学习的异常检测
-- 预测性故障告警
-- 自动根因分析
-🚀 性能优化技术
+### 📊 实时大屏监控
 
-**批量处理优化**：
 ```java
-public class BatchOptimized3PC {
+@RestController
+@RequestMapping("/api/monitoring")
+public class MonitoringDashboardController {
 
-    public List<TransactionResult> executeBatch(List<Transaction> transactions) {
-        // 按参与者分组
-        Map<Set<Participant>, List<Transaction>> grouped =
-            transactions.stream().collect(groupingBy(Transaction::getParticipants));
-
-        List<TransactionResult> results = new ArrayList<>();
-
-        for (Map.Entry<Set<Participant>, List<Transaction>> entry : grouped.entrySet()) {
-            // 同一组参与者的事务可以批量处理
-            List<TransactionResult> batchResults =
-                executeBatchWithSameParticipants(entry.getValue(), entry.getKey());
-            results.addAll(batchResults);
-        }
-
-        return results;
+    @GetMapping("/dashboard")
+    public DashboardData getRealTimeDashboard() {
+        return DashboardData.builder()
+            // 核心KPI
+            .coreKPIs(buildCoreKPIs())
+            // 实时流量
+            .realTimeTraffic(buildTrafficMetrics())
+            // 系统健康度
+            .systemHealth(buildHealthMetrics())
+            // 告警统计
+            .alertsSummary(buildAlertsSummary())
+            // 性能趋势
+            .performanceTrends(buildTrends())
+            .build();
     }
 
-    private List<TransactionResult> executeBatchWithSameParticipants(
-            List<Transaction> transactions, Set<Participant> participants) {
-
-        // 第一阶段：批量CanCommit
-        Map<String, Vote> votes = batchCanCommit(transactions, participants);
-
-        // 过滤通过的事务
-        List<Transaction> passedTransactions = transactions.stream()
-            .filter(tx -> votes.get(tx.getId()) == Vote.YES)
-            .collect(toList());
-
-        // 第二阶段：批量PreCommit
-        Map<String, Boolean> preCommitResults =
-            batchPreCommit(passedTransactions, participants);
-
-        // 第三阶段：批量DoCommit
-        return batchDoCommit(preCommitResults, participants);
+    private CoreKPIs buildCoreKPIs() {
+        return CoreKPIs.builder()
+            .totalTransactions(transactionCounter.getCount())
+            .successRate(calculateSuccessRate())
+            .averageLatency(latencyTracker.getAverage())
+            .currentTPS(tpsCalculator.getCurrentTPS())
+            .systemUptime(uptimeTracker.getUptime())
+            .build();
     }
 }
 ```
 
-**连接池优化**：
+## 🤖 运维自动化与智能化
+
+### 🎯 自动故障检测与恢复
+
+```mermaid
+graph LR
+    subgraph "🔄 自动化运维流程"
+        A[异常检测] --> B[故障诊断]
+        B --> C[自动恢复]
+        C --> D[效果验证]
+        D --> E[经验学习]
+        E --> A
+
+        B --> B1[根因分析]
+        B --> B2[影响评估]
+        B --> B3[修复策略]
+
+        C --> C1[自动重启]
+        C --> C2[流量切换]
+        C --> C3[资源扩容]
+    end
+```
+
 ```java
-public class OptimizedConnectionManager {
-    private final Map<Participant, ConnectionPool> connectionPools;
+@Component
+public class AutoHealingSystem {
 
-    // 智能连接预热
-    public void preWarmConnections() {
-        for (Participant participant : participants) {
-            ConnectionPool pool = connectionPools.get(participant);
+    @EventListener
+    public void onAnomalyDetected(AnomalyDetectedEvent event) {
 
-            // 基于历史负载预热连接
-            int expectedLoad = loadPredictor.predict(participant);
-            pool.preWarm(expectedLoad);
+        AnomalyType type = event.getAnomalyType();
+        Severity severity = event.getSeverity();
+
+        // 根据异常类型选择恢复策略
+        RecoveryStrategy strategy = selectRecoveryStrategy(type, severity);
+
+        // 执行自动恢复
+        RecoveryResult result = strategy.execute(event.getContext());
+
+        // 验证恢复效果
+        if (result.isSuccessful()) {
+            log.info("自动恢复成功: {}", result.getDescription());
+            sendRecoveryNotification(event, result);
+        } else {
+            log.error("自动恢复失败，升级人工处理: {}", result.getFailureReason());
+            escalateToHuman(event, result);
         }
     }
 
-    // 连接健康检查
-    public void healthCheckConnections() {
-        connectionPools.values().parallelStream()
-            .forEach(pool -> pool.validateConnections());
+    private RecoveryStrategy selectRecoveryStrategy(AnomalyType type, Severity severity) {
+
+        return switch (type) {
+            case HIGH_LATENCY -> new LatencyRecoveryStrategy();
+            case LOW_THROUGHPUT -> new ThroughputRecoveryStrategy();
+            case PARTICIPANT_FAILURE -> new ParticipantRecoveryStrategy();
+            case NETWORK_PARTITION -> new NetworkRecoveryStrategy();
+            case RESOURCE_EXHAUSTION -> new ResourceRecoveryStrategy();
+            default -> new GenericRecoveryStrategy();
+        };
+    }
+}
+
+@Component
+public class LatencyRecoveryStrategy implements RecoveryStrategy {
+
+    @Override
+    public RecoveryResult execute(RecoveryContext context) {
+
+        // 1. 分析延迟根因
+        LatencyAnalysisResult analysis = analyzeLatencyIssue(context);
+
+        // 2. 执行针对性恢复
+        return switch (analysis.getRootCause()) {
+            case CONNECTION_POOL_EXHAUSTION -> scaleConnectionPools();
+            case PARTICIPANT_OVERLOAD -> redistributeLoad();
+            case NETWORK_CONGESTION -> activateQosControl();
+            case GC_PRESSURE -> optimizeMemoryUsage();
+            default -> RecoveryResult.failure("未知延迟原因");
+        };
+    }
+
+    private RecoveryResult scaleConnectionPools() {
+        try {
+            connectionManager.scaleAllPools(1.5); // 扩容50%
+            Thread.sleep(10000); // 等待10秒观察效果
+
+            if (isLatencyImproved()) {
+                return RecoveryResult.success("连接池扩容恢复延迟问题");
+            } else {
+                return RecoveryResult.failure("连接池扩容无效");
+            }
+        } catch (Exception e) {
+            return RecoveryResult.failure("连接池扩容失败: " + e.getMessage());
+        }
     }
 }
 ```
-☁️ 云原生适配
 
-**Kubernetes集成**：
+### 🚀 弹性伸缩策略
+
+```java
+@Component
+public class ElasticScalingManager {
+
+    @Scheduled(fixedRate = 30000) // 每30秒检查一次
+    public void checkScalingNeed() {
+
+        ScalingMetrics metrics = collectScalingMetrics();
+        ScalingDecision decision = makeScalingDecision(metrics);
+
+        if (decision.shouldScale()) {
+            executeScaling(decision);
+        }
+    }
+
+    private ScalingDecision makeScalingDecision(ScalingMetrics metrics) {
+
+        // CPU基础扩缩容
+        if (metrics.getAvgCpuUsage() > 80) {
+            return ScalingDecision.scaleOut("CPU使用率过高");
+        }
+
+        if (metrics.getAvgCpuUsage() < 30 && metrics.getInstanceCount() > 2) {
+            return ScalingDecision.scaleIn("CPU使用率过低");
+        }
+
+        // 事务量预测扩缩容
+        TransactionPrediction prediction = predictTransactionLoad();
+        if (prediction.getExpectedLoad() > metrics.getCurrentCapacity() * 0.8) {
+            return ScalingDecision.scaleOut("预测流量峰值");
+        }
+
+        // 延迟响应扩缩容
+        if (metrics.getP99Latency() > Duration.ofMillis(500)) {
+            return ScalingDecision.scaleOut("响应延迟过高");
+        }
+
+        return ScalingDecision.noAction();
+    }
+
+    private void executeScaling(ScalingDecision decision) {
+
+        switch (decision.getType()) {
+            case SCALE_OUT:
+                kubernetesClient.scaleDeployment(
+                    "three-pc-coordinator",
+                    decision.getTargetReplicas()
+                );
+                break;
+
+            case SCALE_IN:
+                // 优雅缩容：等待事务完成
+                gracefulScaleIn(decision.getTargetReplicas());
+                break;
+        }
+
+        // 记录扩缩容决策用于机器学习
+        scalingHistoryRepository.save(
+            ScalingHistoryRecord.of(decision, System.currentTimeMillis())
+        );
+    }
+}
+```
+
+## 📦 云原生部署最佳实践
+
+### ☸️ Kubernetes部署优化
+
 ```yaml
-# 3PC协调者部署配置
+# 高可用3PC协调者部署
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: three-pc-coordinator
+  labels:
+    app: three-pc-coordinator
+    version: v1.0.0
 spec:
-  replicas: 3  # 高可用部署
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: three-pc-coordinator
+  template:
+    metadata:
+      labels:
+        app: three-pc-coordinator
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/actuator/prometheus"
+    spec:
+      # 亲和性配置：确保副本分散到不同节点
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - three-pc-coordinator
+            topologyKey: kubernetes.io/hostname
+
+      # 容器配置
+      containers:
+      - name: coordinator
+        image: three-pc-coordinator:v1.0.0
+        ports:
+        - containerPort: 8080
+          name: http
+        - containerPort: 9090
+          name: grpc
+
+        # 资源限制
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "0.5"
+          limits:
+            memory: "2Gi"
+            cpu: "2.0"
+
+        # 环境变量
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "kubernetes"
+        - name: JVM_OPTS
+          value: "-XX:+UseG1GC -XX:MaxGCPauseMillis=100 -Xms512m -Xmx1g"
+
+        # 健康检查
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+          initialDelaySeconds: 45
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+        # 优雅停机
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "sleep 15"]
+
+---
+# 服务配置
+apiVersion: v1
+kind: Service
+metadata:
+  name: three-pc-coordinator-service
+  labels:
+    app: three-pc-coordinator
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: http
+  - port: 9090
+    targetPort: 9090
+    name: grpc
+  selector:
+    app: three-pc-coordinator
+
+---
+# HPA自动扩缩容
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: three-pc-coordinator-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: three-pc-coordinator
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+```
+
+### 🌐 服务网格集成
+
+```java
+@Component
+public class ServiceMeshIntegration {
+
+    @Autowired
+    private TracingManager tracingManager;
+
+    @Autowired
+    private CircuitBreakerManager circuitBreakerManager;
+
+    public TransactionResult executeWithServiceMesh(String txnId,
+                                                   List<ThreePCParticipant> participants,
+                                                   TransactionOperation operation) {
+
+        // 1. 分布式链路追踪
+        Span span = tracingManager.startSpan("3pc-transaction")
+            .setTag("transaction.id", txnId)
+            .setTag("participants.count", participants.size())
+            .setTag("operation.type", operation.getType());
+
+        try {
+            // 2. 服务发现与负载均衡
+            List<ThreePCParticipant> optimizedParticipants =
+                serviceDiscovery.discoverAndBalance(participants);
+
+            // 3. 断路器保护
+            TransactionResult result = circuitBreakerManager
+                .executeWithBreaker("3pc-execution", () ->
+                    executeTransaction(txnId, optimizedParticipants, operation));
+
+            // 4. 记录成功指标
+            span.setTag("result.status", result.getStatus());
+            span.setTag("result.duration", result.getDuration());
+
+            return result;
+
+        } catch (Exception e) {
+            // 5. 记录错误指标
+            span.setTag("error", true);
+            span.setTag("error.message", e.getMessage());
+            span.log(Map.of("event", "error", "message", e.getMessage()));
+
+            throw e;
+        } finally {
+            span.finish();
+        }
+    }
+}
+```
+
+## 🎯 生产部署检查清单
+
+### ✅ 部署前检查
+
+| 📋 检查项目 | 🎯 检查要点 | ✅ 状态 | 📝 备注 |
+|-------------|-------------|---------|---------|
+| **代码质量** | 单元测试覆盖率 > 80% | ☐ | 使用JaCoCo检查 |
+| **集成测试** | 端到端测试通过 | ☐ | 包含异常场景 |
+| **性能测试** | 压力测试达标 | ☐ | TPS > 1000 |
+| **安全扫描** | 无高危漏洞 | ☐ | SonarQube扫描 |
+| **配置检查** | 生产配置就绪 | ☐ | 敏感信息加密 |
+| **监控配置** | 指标采集配置 | ☐ | Prometheus配置 |
+| **告警配置** | 告警规则设置 | ☐ | 多级告警机制 |
+| **备份方案** | 数据备份策略 | ☐ | 自动备份配置 |
+
+### 🚀 灰度发布策略
+
+```yaml
+# Argo Rollouts灰度发布配置
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: three-pc-coordinator-rollout
+spec:
+  replicas: 10
+  strategy:
+    canary:
+      steps:
+      - setWeight: 10      # 10%流量
+      - pause: {duration: 300s}  # 等待5分钟
+      - setWeight: 30      # 30%流量
+      - pause: {duration: 600s}  # 等待10分钟
+      - setWeight: 50      # 50%流量
+      - pause: {duration: 900s}  # 等待15分钟
+      - setWeight: 100     # 100%流量
+
+      # 自动回滚条件
+      analysis:
+        templates:
+        - templateName: success-rate-analysis
+        args:
+        - name: service-name
+          value: three-pc-coordinator-service
+
+      # 流量分割
+      trafficRouting:
+        istio:
+          virtualService:
+            name: three-pc-coordinator-vs
+          destinationRule:
+            name: three-pc-coordinator-dr
+            canarySubsetName: canary
+            stableSubsetName: stable
+
   selector:
     matchLabels:
       app: three-pc-coordinator
@@ -2838,54 +3759,1051 @@ spec:
       containers:
       - name: coordinator
         image: three-pc-coordinator:latest
-        env:
-        - name: CLUSTER_MODE
-          value: "kubernetes"
-        - name: SERVICE_DISCOVERY
-          value: "k8s-dns"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: 8080
-          initialDelaySeconds: 5
-          periodSeconds: 5
+        # ... 其他配置
 ```
 
-**服务网格集成**：
+**🎯 工程实践总结**：
+- 🏛️ **架构先行**：模块化、容错性、可扩展性三位一体
+- 🚀 **性能至上**：批量处理、智能连接、缓存优化全方位提升
+- 📊 **可观测性**：指标、追踪、日志、告警形成闭环
+- 🤖 **自动化**：从部署到运维的全链路自动化
+- ☁️ **云原生**：拥抱Kubernetes和服务网格生态
+### ☁️ 云原生适配：3PC的现代化转型
+
+> 💡 **云原生理念**：3PC在云原生环境中不仅是技术选择，更是构建弹性分布式系统的核心基石
+
+```mermaid
+graph TB
+    subgraph "☁️ 云原生3PC生态系统"
+        A[容器化部署] --> B[服务网格]
+        B --> C[微服务架构]
+        C --> D[可观测性]
+        D --> E[CI/CD管道]
+        E --> F[云平台集成]
+
+        A --> A1[Docker容器]
+        A --> A2[Kubernetes编排]
+        A --> A3[Helm包管理]
+
+        B --> B1[Istio服务网格]
+        B --> B2[流量管理]
+        B --> B3[安全策略]
+
+        C --> C1[API网关]
+        C --> C2[配置中心]
+        C --> C3[服务发现]
+
+        D --> D1[分布式追踪]
+        D --> D2[指标监控]
+        D --> D3[日志聚合]
+
+        E --> E1[GitOps工作流]
+        E --> E2[自动化测试]
+        E --> E3[蓝绿部署]
+
+        F --> F1[多云支持]
+        F --> F2[边缘计算]
+        F --> F3[Serverless]
+    end
+```
+
+## 🐳 容器化与编排进阶
+
+### 📦 多阶段构建优化
+
+```dockerfile
+# 多阶段构建：优化镜像大小和安全性
+FROM maven:3.8.6-openjdk-17 AS build-stage
+
+# 设置工作目录
+WORKDIR /app
+
+# 复制依赖文件（利用Docker层缓存）
+COPY pom.xml .
+COPY src/main/resources/dependencies.xml .
+RUN mvn dependency:go-offline -B
+
+# 复制源码并构建
+COPY src ./src
+RUN mvn clean package -DskipTests=true
+
+# 运行时镜像：最小化生产镜像
+FROM openjdk:17-jre-alpine AS runtime-stage
+
+# 安装必要工具
+RUN apk add --no-cache \
+    curl \
+    jq \
+    netcat-openbsd \
+    && rm -rf /var/cache/apk/*
+
+# 创建非特权用户
+RUN addgroup -g 1001 threepс && \
+    adduser -D -s /bin/sh -u 1001 -G threepс threepс
+
+# 设置JVM参数
+ENV JAVA_OPTS="-XX:+UseContainerSupport \
+               -XX:MaxRAMPercentage=75.0 \
+               -XX:+UseG1GC \
+               -XX:MaxGCPauseMillis=100 \
+               -XX:+ExitOnOutOfMemoryError \
+               -Djava.security.egd=file:/dev/./urandom"
+
+# 复制应用文件
+COPY --from=build-stage /app/target/three-pc-coordinator.jar /app/app.jar
+COPY --chown=threepс:threepс scripts/healthcheck.sh /app/
+COPY --chown=threepс:threepс config/ /app/config/
+
+# 设置工作目录和用户
+WORKDIR /app
+USER threepс
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD ./healthcheck.sh
+
+# 暴露端口
+EXPOSE 8080 9090
+
+# 启动命令
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+```
+
+### 🎛️ Kubernetes CRD自定义资源
+
+```yaml
+# 3PC事务自定义资源定义
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: threepcconfigs.distributed.io
+spec:
+  group: distributed.io
+  versions:
+  - name: v1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              coordinatorConfig:
+                type: object
+                properties:
+                  replicas:
+                    type: integer
+                    minimum: 1
+                    maximum: 10
+                  timeout:
+                    type: string
+                    pattern: '^[0-9]+[smh]$'
+                  retryPolicy:
+                    type: object
+                    properties:
+                      maxRetries:
+                        type: integer
+                      backoffMultiplier:
+                        type: number
+              participantConfig:
+                type: object
+                properties:
+                  autoDiscovery:
+                    type: boolean
+                  healthCheckInterval:
+                    type: string
+          status:
+            type: object
+            properties:
+              phase:
+                type: string
+                enum: ["Pending", "Running", "Failed"]
+              coordinatorStatus:
+                type: string
+              participantCount:
+                type: integer
+              lastUpdated:
+                type: string
+  scope: Namespaced
+  names:
+    plural: threepcconfigs
+    singular: threepcconfig
+    kind: ThreePCConfig
+
+---
+# 3PC配置实例
+apiVersion: distributed.io/v1
+kind: ThreePCConfig
+metadata:
+  name: production-3pc-config
+  namespace: transaction-system
+spec:
+  coordinatorConfig:
+    replicas: 5
+    timeout: "30s"
+    retryPolicy:
+      maxRetries: 3
+      backoffMultiplier: 2.0
+  participantConfig:
+    autoDiscovery: true
+    healthCheckInterval: "10s"
+```
+
+### 🔧 Operator模式实现
+
 ```java
 @Component
-public class ServiceMeshThreePC {
+@Slf4j
+public class ThreePCOperator {
 
     @Autowired
-    private ServiceMeshClient serviceMesh;
+    private KubernetesClient kubernetesClient;
 
-    public void executeWithServiceMesh(String txnId,
-                                      List<ThreePCParticipant> participants,
-                                      TransactionOperation operation) {
+    @Autowired
+    private ThreePCConfigRepository configRepository;
 
-        // 利用服务网格的负载均衡
-        List<ThreePCParticipant> loadBalancedParticipants =
-            serviceMesh.loadBalance(participants);
+    @EventListener
+    public void onConfigChange(ThreePCConfigChangedEvent event) {
+        ThreePCConfig config = event.getConfig();
+        log.info("处理3PC配置变更: {}", config.getMetadata().getName());
 
-        // 利用服务网格的链路追踪
-        try (Span span = serviceMesh.startSpan("3pc-transaction")) {
-            span.setTag("transaction.id", txnId);
-            span.setTag("participants.count", participants.size());
+        try {
+            // 1. 验证配置
+            validateConfig(config);
 
-            TransactionResult result = executeTransaction(
-                txnId, loadBalancedParticipants, operation);
+            // 2. 更新协调者部署
+            updateCoordinatorDeployment(config);
 
-            span.setTag("result", result.toString());
+            // 3. 更新参与者配置
+            updateParticipantConfig(config);
+
+            // 4. 更新网络策略
+            updateNetworkPolicies(config);
+
+            // 5. 更新状态
+            updateConfigStatus(config, "Running");
+
+        } catch (Exception e) {
+            log.error("配置更新失败", e);
+            updateConfigStatus(config, "Failed");
+            sendAlert(config, e);
+        }
+    }
+
+    private void updateCoordinatorDeployment(ThreePCConfig config) {
+        String deploymentName = "three-pc-coordinator";
+
+        Deployment deployment = kubernetesClient.apps().deployments()
+            .inNamespace(config.getMetadata().getNamespace())
+            .withName(deploymentName)
+            .get();
+
+        if (deployment != null) {
+            // 更新副本数
+            deployment.getSpec().setReplicas(
+                config.getSpec().getCoordinatorConfig().getReplicas()
+            );
+
+            // 更新环境变量
+            updateEnvironmentVariables(deployment, config);
+
+            // 应用更新
+            kubernetesClient.apps().deployments()
+                .inNamespace(config.getMetadata().getNamespace())
+                .withName(deploymentName)
+                .replace(deployment);
+
+            log.info("协调者部署更新完成");
+        }
+    }
+
+    private void updateNetworkPolicies(ThreePCConfig config) {
+        NetworkPolicy policy = new NetworkPolicyBuilder()
+            .withNewMetadata()
+                .withName("three-pc-network-policy")
+                .withNamespace(config.getMetadata().getNamespace())
+            .endMetadata()
+            .withNewSpec()
+                .addNewPodSelector()
+                    .addToMatchLabels("app", "three-pc-coordinator")
+                .endPodSelector()
+                .addNewIngress()
+                    .addNewFrom()
+                        .withNewPodSelector()
+                            .addToMatchLabels("role", "three-pc-participant")
+                        .endPodSelector()
+                    .endFrom()
+                    .addNewPort()
+                        .withProtocol("TCP")
+                        .withNewPort(8080)
+                    .endPort()
+                .endIngress()
+            .endSpec()
+            .build();
+
+        kubernetesClient.network().v1().networkPolicies()
+            .inNamespace(config.getMetadata().getNamespace())
+            .createOrReplace(policy);
+    }
+}
+```
+
+## 🌐 服务网格深度集成
+
+### 🔄 Istio流量管理
+
+```yaml
+# Istio虚拟服务：智能流量分配
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: three-pc-coordinator-vs
+spec:
+  hosts:
+  - three-pc-coordinator
+  http:
+  - match:
+    - headers:
+        transaction-priority:
+          exact: "high"
+    route:
+    - destination:
+        host: three-pc-coordinator
+        subset: high-performance
+      weight: 100
+    timeout: 10s
+    retries:
+      attempts: 2
+      perTryTimeout: 5s
+  - route:
+    - destination:
+        host: three-pc-coordinator
+        subset: standard
+      weight: 80
+    - destination:
+        host: three-pc-coordinator
+        subset: high-performance
+      weight: 20
+    timeout: 30s
+
+---
+# 目标规则：定义服务子集
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: three-pc-coordinator-dr
+spec:
+  host: three-pc-coordinator
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 100
+      http:
+        http1MaxPendingRequests: 50
+        maxRequestsPerConnection: 10
+    circuitBreaker:
+      consecutiveErrors: 3
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+  subsets:
+  - name: standard
+    labels:
+      version: v1.0
+    trafficPolicy:
+      connectionPool:
+        tcp:
+          maxConnections: 50
+  - name: high-performance
+    labels:
+      version: v1.1
+      performance: high
+    trafficPolicy:
+      connectionPool:
+        tcp:
+          maxConnections: 200
+```
+
+### 🔐 安全策略配置
+
+```yaml
+# mTLS策略：强制双向TLS
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: three-pc-mtls-policy
+spec:
+  selector:
+    matchLabels:
+      app: three-pc-coordinator
+  mtls:
+    mode: STRICT
+
+---
+# 授权策略：细粒度访问控制
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: three-pc-authorization
+spec:
+  selector:
+    matchLabels:
+      app: three-pc-coordinator
+  rules:
+  - from:
+    - source:
+        principals: ["cluster.local/ns/transaction-system/sa/three-pc-participant"]
+  - to:
+    - operation:
+        methods: ["POST"]
+        paths: ["/api/v1/transactions/*"]
+  - when:
+    - key: request.headers[transaction-id]
+      values: ["*"]
+    - key: request.headers[content-type]
+      values: ["application/json"]
+
+---
+# 请求认证：JWT验证
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: three-pc-jwt-auth
+spec:
+  selector:
+    matchLabels:
+      app: three-pc-coordinator
+  jwtRules:
+  - issuer: "https://auth.company.com"
+    jwksUri: "https://auth.company.com/.well-known/jwks.json"
+    audiences:
+    - "three-pc-service"
+    forwardOriginalToken: true
+```
+
+## 📊 云原生可观测性
+
+### 🔍 OpenTelemetry集成
+
+```java
+@Configuration
+@EnableAutoConfiguration
+public class ObservabilityConfig {
+
+    @Bean
+    public OpenTelemetry openTelemetry() {
+        return OpenTelemetrySdk.builder()
+            .setTracerProvider(
+                SdkTracerProvider.builder()
+                    .addSpanProcessor(BatchSpanProcessor.builder(
+                        OtlpGrpcSpanExporter.builder()
+                            .setEndpoint("http://jaeger-collector:14250")
+                            .build())
+                        .build())
+                    .setResource(Resource.getDefault()
+                        .merge(Resource.builder()
+                            .put(ResourceAttributes.SERVICE_NAME, "three-pc-coordinator")
+                            .put(ResourceAttributes.SERVICE_VERSION, "1.0.0")
+                            .put(ResourceAttributes.DEPLOYMENT_ENVIRONMENT,
+                                 System.getenv("ENV"))
+                            .build()))
+                    .build())
+            .setMeterProvider(
+                SdkMeterProvider.builder()
+                    .registerMetricReader(
+                        PeriodicMetricReader.builder(
+                            OtlpGrpcMetricExporter.builder()
+                                .setEndpoint("http://prometheus-gateway:4317")
+                                .build())
+                            .setInterval(Duration.ofSeconds(30))
+                            .build())
+                    .build())
+            .buildAndRegisterGlobal();
+    }
+
+    @Bean
+    public ThreePCInstrumentation threePCInstrumentation() {
+        return new ThreePCInstrumentation();
+    }
+}
+
+@Component
+public class ThreePCInstrumentation {
+
+    private final Tracer tracer = GlobalOpenTelemetry.getTracer("three-pc");
+    private final Meter meter = GlobalOpenTelemetry.getMeter("three-pc");
+
+    // 定义指标
+    private final LongCounter transactionCounter = meter
+        .counterBuilder("three_pc_transactions_total")
+        .setDescription("Total number of 3PC transactions")
+        .build();
+
+    private final LongHistogram transactionDuration = meter
+        .histogramBuilder("three_pc_transaction_duration_ms")
+        .setDescription("3PC transaction duration in milliseconds")
+        .setUnit("ms")
+        .build();
+
+    private final LongUpDownCounter activeTransactions = meter
+        .upDownCounterBuilder("three_pc_active_transactions")
+        .setDescription("Number of active 3PC transactions")
+        .build();
+
+    public void recordTransactionStart(String transactionId, String phase) {
+        Span span = tracer.spanBuilder("3pc-" + phase)
+            .setAttribute("transaction.id", transactionId)
+            .setAttribute("transaction.phase", phase)
+            .startSpan();
+
+        // 记录指标
+        transactionCounter.add(1,
+            Attributes.of(
+                AttributeKey.stringKey("phase"), phase,
+                AttributeKey.stringKey("status"), "started"
+            ));
+
+        activeTransactions.add(1);
+
+        span.addEvent("Transaction started",
+            Attributes.of(
+                AttributeKey.stringKey("transaction.id"), transactionId
+            ));
+    }
+
+    public void recordTransactionEnd(String transactionId, String phase,
+                                   String result, long duration) {
+        Span span = Span.current();
+
+        span.setAttribute("transaction.result", result);
+        span.setAttribute("transaction.duration.ms", duration);
+
+        // 记录指标
+        transactionDuration.record(duration,
+            Attributes.of(
+                AttributeKey.stringKey("phase"), phase,
+                AttributeKey.stringKey("result"), result
+            ));
+
+        transactionCounter.add(1,
+            Attributes.of(
+                AttributeKey.stringKey("phase"), phase,
+                AttributeKey.stringKey("status"), "completed",
+                AttributeKey.stringKey("result"), result
+            ));
+
+        activeTransactions.add(-1);
+
+        span.setStatus(
+            "success".equals(result) ?
+                StatusCode.OK : StatusCode.ERROR
+        );
+
+        span.end();
+    }
+}
+```
+
+### 📈 Prometheus自定义指标
+
+```yaml
+# ServiceMonitor：Prometheus监控配置
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: three-pc-coordinator-metrics
+  labels:
+    app: three-pc-coordinator
+spec:
+  selector:
+    matchLabels:
+      app: three-pc-coordinator
+  endpoints:
+  - port: metrics
+    interval: 15s
+    path: /actuator/prometheus
+    metricRelabelings:
+    - sourceLabels: [__name__]
+      regex: 'three_pc_.*'
+      targetLabel: __name__
+      replacement: '${1}'
+
+---
+# PrometheusRule：告警规则
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: three-pc-alerts
+spec:
+  groups:
+  - name: three-pc-coordinator.rules
+    rules:
+    - alert: ThreePCHighLatency
+      expr: histogram_quantile(0.95, three_pc_transaction_duration_ms_bucket) > 1000
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: "3PC transaction latency too high"
+        description: "95th percentile latency is {{ $value }}ms"
+
+    - alert: ThreePCLowSuccessRate
+      expr: |
+        (
+          sum(rate(three_pc_transactions_total{result="success"}[5m])) /
+          sum(rate(three_pc_transactions_total[5m]))
+        ) < 0.95
+      for: 3m
+      labels:
+        severity: critical
+      annotations:
+        summary: "3PC transaction success rate below threshold"
+        description: "Success rate is {{ $value | humanizePercentage }}"
+
+    - alert: ThreePCCoordinatorDown
+      expr: up{job="three-pc-coordinator"} == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "3PC Coordinator is down"
+        description: "3PC Coordinator instance {{ $labels.instance }} is down"
+```
+
+## 🚀 GitOps与CI/CD集成
+
+### 🔄 ArgoCD应用配置
+
+```yaml
+# ArgoCD应用定义
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: three-pc-coordinator
+  namespace: argocd
+spec:
+  project: distributed-systems
+  source:
+    repoURL: https://github.com/company/three-pc-coordinator-config
+    targetRevision: HEAD
+    path: overlays/production
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: transaction-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+    - CreateNamespace=true
+    - PrunePropagationPolicy=foreground
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+---
+# AppProject：项目配置
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: distributed-systems
+  namespace: argocd
+spec:
+  description: "分布式系统项目"
+  sourceRepos:
+  - 'https://github.com/company/*'
+  destinations:
+  - namespace: 'transaction-*'
+    server: https://kubernetes.default.svc
+  - namespace: 'monitoring'
+    server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+  - group: ''
+    kind: Namespace
+  - group: 'rbac.authorization.k8s.io'
+    kind: ClusterRole
+  - group: 'rbac.authorization.k8s.io'
+    kind: ClusterRoleBinding
+  namespaceResourceWhitelist:
+  - group: 'apps'
+    kind: Deployment
+  - group: ''
+    kind: Service
+  - group: 'networking.k8s.io'
+    kind: NetworkPolicy
+```
+
+### 🧪 Cloud Native测试策略
+
+```yaml
+# Tekton Pipeline：云原生CI/CD
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: three-pc-coordinator-pipeline
+spec:
+  params:
+  - name: git-url
+    type: string
+    description: Git repository URL
+  - name: git-revision
+    type: string
+    description: Git revision
+    default: main
+  - name: image-url
+    type: string
+    description: Container image URL
+
+  workspaces:
+  - name: source-workspace
+  - name: cache-workspace
+
+  tasks:
+  # 源码检出
+  - name: git-clone
+    taskRef:
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: source-workspace
+    params:
+    - name: url
+      value: $(params.git-url)
+    - name: revision
+      value: $(params.git-revision)
+
+  # 单元测试
+  - name: unit-tests
+    taskRef:
+      name: maven
+    runAfter:
+    - git-clone
+    workspaces:
+    - name: source
+      workspace: source-workspace
+    - name: maven-cache
+      workspace: cache-workspace
+    params:
+    - name: GOALS
+      value: ["test", "-DfailIfNoTests=false"]
+
+  # 集成测试
+  - name: integration-tests
+    taskRef:
+      name: maven
+    runAfter:
+    - unit-tests
+    workspaces:
+    - name: source
+      workspace: source-workspace
+    - name: maven-cache
+      workspace: cache-workspace
+    params:
+    - name: GOALS
+      value: ["verify", "-Dskip.unit.tests=true"]
+
+  # 安全扫描
+  - name: security-scan
+    taskRef:
+      name: trivy-scanner
+    runAfter:
+    - integration-tests
+    workspaces:
+    - name: source
+      workspace: source-workspace
+
+  # 构建镜像
+  - name: build-image
+    taskRef:
+      name: kaniko
+    runAfter:
+    - security-scan
+    workspaces:
+    - name: source
+      workspace: source-workspace
+    params:
+    - name: IMAGE
+      value: $(params.image-url)
+
+  # 部署到测试环境
+  - name: deploy-test
+    taskRef:
+      name: argocd-task-sync-and-wait
+    runAfter:
+    - build-image
+    params:
+    - name: application-name
+      value: three-pc-coordinator-test
+    - name: argocd-version
+      value: v2.8.0
+
+  # 端到端测试
+  - name: e2e-tests
+    taskRef:
+      name: three-pc-e2e-tests
+    runAfter:
+    - deploy-test
+
+  # 生产部署
+  - name: deploy-production
+    taskRef:
+      name: argocd-task-sync-and-wait
+    runAfter:
+    - e2e-tests
+    params:
+    - name: application-name
+      value: three-pc-coordinator-prod
+```
+
+## 🌍 多云与边缘计算
+
+### ☁️ 多云部署策略
+
+```java
+@Configuration
+public class MultiCloudConfig {
+
+    @Bean
+    @Profile("aws")
+    public CloudProvider awsProvider() {
+        return new AWSCloudProvider(
+            AwsCloudConfig.builder()
+                .region("us-west-2")
+                .serviceDiscovery("aws-cloud-map")
+                .loadBalancer("application-load-balancer")
+                .build()
+        );
+    }
+
+    @Bean
+    @Profile("azure")
+    public CloudProvider azureProvider() {
+        return new AzureCloudProvider(
+            AzureCloudConfig.builder()
+                .region("West US 2")
+                .serviceDiscovery("azure-service-fabric")
+                .loadBalancer("azure-load-balancer")
+                .build()
+        );
+    }
+
+    @Bean
+    @Profile("gcp")
+    public CloudProvider gcpProvider() {
+        return new GCPCloudProvider(
+            GCPCloudConfig.builder()
+                .region("us-west1")
+                .serviceDiscovery("google-service-directory")
+                .loadBalancer("google-cloud-load-balancer")
+                .build()
+        );
+    }
+
+    @Bean
+    public MultiCloudCoordinator multiCloudCoordinator(List<CloudProvider> providers) {
+        return new MultiCloudCoordinator(providers);
+    }
+}
+
+@Service
+public class MultiCloudCoordinator {
+
+    private final List<CloudProvider> cloudProviders;
+    private final LoadBalancer crossCloudLoadBalancer;
+
+    public TransactionResult executeAcrossClouds(String txnId,
+                                               List<ThreePCParticipant> participants,
+                                               TransactionOperation operation) {
+
+        // 1. 按云提供商分组参与者
+        Map<CloudProvider, List<ThreePCParticipant>> groupedParticipants =
+            groupParticipantsByCloud(participants);
+
+        // 2. 检查跨云网络连接
+        validateCrossCloudConnectivity(groupedParticipants.keySet());
+
+        // 3. 调整超时设置（跨云延迟更高）
+        TransactionConfig crossCloudConfig = operation.getConfig()
+            .withTimeout(operation.getConfig().getTimeout().multipliedBy(2))
+            .withRetryCount(operation.getConfig().getRetryCount() + 1);
+
+        // 4. 执行跨云3PC事务
+        return executeWithCloudAwareness(txnId, groupedParticipants,
+                                       operation.withConfig(crossCloudConfig));
+    }
+
+    private void validateCrossCloudConnectivity(Set<CloudProvider> clouds) {
+        for (CloudProvider cloud1 : clouds) {
+            for (CloudProvider cloud2 : clouds) {
+                if (!cloud1.equals(cloud2)) {
+                    NetworkLatency latency = measureLatency(cloud1, cloud2);
+                    if (latency.getAverageMs() > 100) {
+                        log.warn("跨云延迟较高: {} -> {} = {}ms",
+                               cloud1.getName(), cloud2.getName(), latency.getAverageMs());
+                    }
+                }
+            }
         }
     }
 }
 ```
+
+### 🌐 边缘计算适配
+
+```yaml
+# K3s边缘节点部署
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: three-pc-edge-config
+data:
+  application.yml: |
+    three-pc:
+      coordinator:
+        # 边缘环境优化配置
+        edge-mode: true
+        # 更短的超时时间
+        timeout: 15s
+        # 本地优先策略
+        participant-selection-strategy: LOCAL_FIRST
+        # 离线容错模式
+        offline-tolerance: true
+        # 数据同步策略
+        sync-strategy: EVENTUAL_CONSISTENCY
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: three-pc-edge-coordinator
+spec:
+  selector:
+    matchLabels:
+      app: three-pc-edge-coordinator
+  template:
+    metadata:
+      labels:
+        app: three-pc-edge-coordinator
+    spec:
+      # 节点选择器：只部署到边缘节点
+      nodeSelector:
+        node-type: edge
+
+      # 容忍边缘节点的污点
+      tolerations:
+      - key: edge-node
+        operator: Equal
+        value: "true"
+        effect: NoSchedule
+
+      containers:
+      - name: coordinator
+        image: three-pc-coordinator:edge-v1.0.0
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        env:
+        - name: EDGE_MODE
+          value: "true"
+        - name: CENTRAL_COORDINATOR
+          value: "three-pc-coordinator.default.svc.cluster.local"
+        volumeMounts:
+        - name: config
+          mountPath: /app/config
+        - name: local-storage
+          mountPath: /app/data
+
+      volumes:
+      - name: config
+        configMap:
+          name: three-pc-edge-config
+      - name: local-storage
+        hostPath:
+          path: /var/lib/three-pc
+          type: DirectoryOrCreate
+```
+
+## 🔮 Serverless与事件驱动
+
+### ⚡ Knative集成
+
+```yaml
+# Knative服务：无服务器3PC协调者
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: three-pc-serverless-coordinator
+spec:
+  template:
+    metadata:
+      annotations:
+        # 自动扩缩容配置
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/maxScale: "100"
+        autoscaling.knative.dev/target: "100"
+        # 冷启动优化
+        autoscaling.knative.dev/scaleDownDelay: "10s"
+        autoscaling.knative.dev/scaleToZeroGracePeriod: "30s"
+    spec:
+      containers:
+      - image: three-pc-coordinator:serverless-v1.0.0
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "512Mi"
+            cpu: "1000m"
+        env:
+        - name: SERVERLESS_MODE
+          value: "true"
+        - name: STATELESS_COORDINATOR
+          value: "true"
+        # 快速启动配置
+        - name: SPRING_MAIN_LAZY_INITIALIZATION
+          value: "true"
+        - name: JAVA_OPTS
+          value: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
+
+---
+# EventSource：事件源配置
+apiVersion: sources.knative.dev/v1
+kind: ApiServerSource
+metadata:
+  name: three-pc-event-source
+spec:
+  serviceAccountName: three-pc-event-source-sa
+  mode: Resource
+  resources:
+  - apiVersion: distributed.io/v1
+    kind: ThreePCTransaction
+  sink:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: three-pc-serverless-coordinator
+```
+
+**🎯 云原生适配总结**：
+- 🐳 **容器优化**：多阶段构建、安全加固、资源优化
+- ☸️ **Kubernetes增强**：CRD、Operator、自动化运维
+- 🌐 **服务网格**：流量管理、安全策略、可观测性
+- 📊 **可观测性**：分布式追踪、指标监控、智能告警
+- 🚀 **DevOps集成**：GitOps、CI/CD、自动化测试
+- 🌍 **多云边缘**：跨云部署、边缘计算、混合架构
+- ⚡ **现代化架构**：Serverless、事件驱动、弹性伸缩
 ## 🎯 总结与建议
 
 ### ✅ 核心要点回顾
