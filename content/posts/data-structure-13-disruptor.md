@@ -7,7 +7,7 @@ keywords: [Disruptor, 高性能队列, 无锁编程, 环形缓冲区, 内存屏�
 description: "深入剖析LMAX Disruptor高性能队列框架的核心数据结构和算法，揭示其无锁设计、环形缓冲区、序列器等关键技术"
 tags: [数据结构, 算法, Disruptor, 队列, 高性能, 无锁编程]
 categories: [数据结构与算法]
-author: "张三"
+author: "lesshash"
 ---
 
 Disruptor是由LMAX交易所开发的一个高性能队列框架，能够在单线程中每秒处理600万订单。它通过巧妙的数据结构设计和无锁算法，实现了远超传统队列的性能。本文将深入剖析Disruptor背后的核心技术原理。
