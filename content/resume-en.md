@@ -13,6 +13,7 @@ keywords: ["resume", "system analyst", "backend development", "Java", "C++", "ar
 > **Senior System Analyst & Architecture Expert**
 > 📧 jsalessandro@gmail.com | 📱 138-0000-0000 | 📍 Beijing, China
 > 🌐 GitHub: [github.com/jsalessandro](https://github.com/jsalessandro) | 📝 Blog: [blog.lesshash.com](https://blog.lesshash.com)
+> 🌍 English Version | [中文版本](/resume/)
 
 ---
 

@@ -13,6 +13,7 @@ keywords: ["简历", "系统分析师", "后端开发", "Java", "C++", "架构�
 > **高级系统分析师 & 资深架构专家**
 > 📧 jsalessandro@gmail.com | 📱 138-0000-0000 | 📍 北京
 > 🌐 GitHub: [github.com/jsalessandro](https://github.com/jsalessandro) | 📝 博客: [blog.lesshash.com](https://blog.lesshash.com)
+> 🌍 [English Version](/resume-en/) | 中文版本
 
 ---
 
