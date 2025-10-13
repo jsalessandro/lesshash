@@ -8,12 +8,17 @@ description: "jsalessandro的个人简历 - 高级系统分析师，18年后端�
 keywords: ["简历", "系统分析师", "后端开发", "Java", "C++", "架构设计", "jsalessandro"]
 ---
 
+<div align="right" style="font-size: 1.2em; margin-bottom: 20px;">
+  <strong>🌍 Language: </strong>
+  <a href="/resume-en/" style="font-size: 1.3em; font-weight: bold;">English</a> |
+  <span style="font-size: 1.3em; font-weight: bold;">中文</span>
+</div>
+
 # 🎯 jsalessandro
 
 > **高级系统分析师 & 资深架构专家**
 > 📧 jsalessandro@gmail.com | 📱 138-0000-0000 | 📍 北京
 > 🌐 GitHub: [github.com/jsalessandro](https://github.com/jsalessandro) | 📝 博客: [blog.lesshash.com](https://blog.lesshash.com)
-> 🌍 [English Version](/resume-en/) | 中文版本
 
 ---
 

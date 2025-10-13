@@ -8,12 +8,17 @@ description: "jsalessandro's Resume - Senior System Analyst with 18 years of bac
 keywords: ["resume", "system analyst", "backend development", "Java", "C++", "architecture design", "jsalessandro"]
 ---
 
+<div align="right" style="font-size: 1.2em; margin-bottom: 20px;">
+  <strong>🌍 Language: </strong>
+  <span style="font-size: 1.3em; font-weight: bold;">English</span> |
+  <a href="/resume/" style="font-size: 1.3em; font-weight: bold;">中文</a>
+</div>
+
 # 🎯 jsalessandro
 
 > **Senior System Analyst & Architecture Expert**
 > 📧 jsalessandro@gmail.com | 📱 138-0000-0000 | 📍 Beijing, China
 > 🌐 GitHub: [github.com/jsalessandro](https://github.com/jsalessandro) | 📝 Blog: [blog.lesshash.com](https://blog.lesshash.com)
-> 🌍 English Version | [中文版本](/resume/)
 
 ---
 
